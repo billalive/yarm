@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "yarm"
+version = "0.1.0"
+description = ""
+authors = ["Bill Alive <public+git@billalive.com>"]
+description = "Yet another report maker."
+license = "Apache 2.0"
+readme = "README.md"
+homepage = "https://github.com/billalive/yarm"
+repository = "https://github.com/billalive/yarm"
+keywords = ["yarm"]
+
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
