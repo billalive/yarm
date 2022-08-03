@@ -5,7 +5,7 @@ import tempfile
 import nox
 
 locations = "src", "tests", "noxfile.py"
-nox.options.sessions = "lint", "safety", "tests"
+nox.options.sessions = "lint", "mypy", "safety", "tests"
 
 
 def install_with_constraints(session, *args, **kwargs):
@@ -53,6 +53,13 @@ def black(session):
     args = session.posargs or locations
     install_with_constraints(session, "black")
     session.run("black", *args)
+
+
+@nox.session(python=["3.10", "3.9", "3.8", "3.7"])
+def mypy(session):
+    args = session.posargs or locations
+    install_with_constraints(session, "mypy")
+    session.run("mypy", *args)
 
 
 @nox.session(python=["3.10", "3.9", "3.8", "3.7"])
