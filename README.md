@@ -1,4 +1,4 @@
-# yarm 
+# yarm
 
 Yarm, yet another report maker.
 
