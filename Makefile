@@ -9,3 +9,6 @@ publish:
 
 run:
 	poetry run yarm
+
+list-sessions:
+	nox --list-sessions

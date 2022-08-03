@@ -9,5 +9,5 @@ from . import __version__
 @click.command()
 @click.version_option(version=__version__)
 def main():
-    """yarm: yet another report maker"""
+    """yarm: Yet Another Report Maker."""
     click.echo("Welcome to yarm.")

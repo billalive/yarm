@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Nox sessions."""
 
 import tempfile
 
@@ -9,6 +10,7 @@ nox.options.sessions = "lint", "mypy", "safety", "tests"
 
 
 def install_with_constraints(session, *args, **kwargs):
+    """Install packages constrained by Poetry's lock file."""
     # TODO Remove --without-hashes, which defeats the purpose
     # of --constraint, but is currently needed:
     # https://github.com/cjolowicz/hypermodern-python/issues/174
@@ -27,6 +29,7 @@ def install_with_constraints(session, *args, **kwargs):
 
 @nox.session(python=["3.10", "3.9", "3.8", "3.7"])
 def tests(session):
+    """Run the test suite."""
     args = session.posargs or ["--cov", "-m", "not e2e"]
     session.run("poetry", "install", "--no-dev", external=True)
     install_with_constraints(
@@ -37,6 +40,7 @@ def tests(session):
 
 @nox.session(python=["3.10", "3.9", "3.8", "3.7"])
 def lint(session):
+    """Lint using flake8."""
     args = session.posargs or locations
     install_with_constraints(
         session,
@@ -51,6 +55,7 @@ def lint(session):
 
 @nox.session(python=["3.10", "3.9", "3.8", "3.7"])
 def black(session):
+    """Run black code formatter."""
     args = session.posargs or locations
     install_with_constraints(session, "black")
     session.run("black", *args)
@@ -58,6 +63,7 @@ def black(session):
 
 @nox.session(python=["3.10", "3.9", "3.8", "3.7"])
 def mypy(session):
+    """Type-check using mypy."""
     args = session.posargs or locations
     install_with_constraints(session, "mypy")
     session.run("mypy", *args)
@@ -65,6 +71,7 @@ def mypy(session):
 
 @nox.session(python=["3.10", "3.9", "3.8", "3.7"])
 def safety(session):
+    """Check for security vulnerabilities in dependencies."""
     with tempfile.NamedTemporaryFile() as requirements:
         session.run(
             "poetry",
