@@ -2,9 +2,9 @@
 [flake8]
 application-import-names = yarm,tests
 import-order-style = google
-select = BLK,C,E,F,I,W
+select = B,B9,BLK,C,E,F,I,W
 # E203: Whitespace before ':'
 # W503: Line break before binary operator
-ignore = E203,W503
-max-line-length = 88
+ignore = E203,E501,W503
+max-line-length = 80
 max-complexity = 10
