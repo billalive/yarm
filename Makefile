@@ -6,3 +6,6 @@ build:
 
 publish:
 	poetry publish
+
+run:
+	poetry run yarm
