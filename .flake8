@@ -1,4 +1,10 @@
 # .flake8
 [flake8]
-select = C,E,F,W
+application-import-names = yarm,tests
+import-order-style = google
+select = BLK,C,E,F,I,W
+# E203: Whitespace before ':'
+# W503: Line break before binary operator
+ignore = E203,W503
+max-line-length = 88
 max-complexity = 10
