@@ -19,6 +19,8 @@ pytest = "^7.1.2"
 coverage = {extras = ["toml"], version = "^6.3.3"}
 pytest-cov = "^3.0.0"
 pytest-mock = "^3.7.0"
+# https://github.com/python-poetry/poetry/issues/5551#issuecomment-1120368263
+# sphinx is incompatible with flake8
 black = "^22.6.0"
 flake8 = "^5.0.3"
 flake8-black = "^0.3.3"
@@ -29,6 +31,8 @@ safety = "^2.1.1"
 mypy = "^0.971"
 flake8-docstrings = "^1.6.0"
 darglint = "^1.8.1"
+
+
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
