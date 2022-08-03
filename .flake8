@@ -2,7 +2,7 @@
 [flake8]
 application-import-names = yarm,tests
 import-order-style = google
-select = B,B9,BLK,C,D,E,F,I,W
+select = B,B9,BLK,C,D,DAR,E,F,I,W
 docstring-convention = numpy
 # E203: Whitespace before ':'
 # W503: Line break before binary operator
