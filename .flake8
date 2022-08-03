@@ -2,7 +2,7 @@
 [flake8]
 application-import-names = yarm,tests
 import-order-style = google
-select = B,B9,BLK,C,E,F,I,W
+select = B,B9,BLK,C,D,E,F,I,W
 # E203: Whitespace before ':'
 # W503: Line break before binary operator
 ignore = E203,E501,W503
