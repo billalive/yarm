@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import nox
 import tempfile
+
+import nox
 
 locations = "src", "tests", "noxfile.py"
 nox.options.sessions = "lint", "safety", "tests"
