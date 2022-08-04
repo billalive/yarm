@@ -1,4 +1,4 @@
-test:
+nox:
 	nox -r
 
 tests:
