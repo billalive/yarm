@@ -4,7 +4,7 @@ import re
 import pytest
 from click.testing import CliRunner
 
-from yarm import __main__
+from yarm.__main__ import main
 
 
 @pytest.fixture
@@ -17,10 +17,17 @@ def runner() -> CliRunner:
 # She tries running yarm with no arguments to see what happens.
 def test_no_arguments_show_welcome(runner: CliRunner) -> None:
     """With no arguments, it shows a welcome message."""
-    result = runner.invoke(__main__.main)
+    result = runner.invoke(main)
     assert result.exit_code == 0
     assert re.match("yarm: Yet Another Report Maker.", result.output)
-    # assert result.output == "Welcome to yarm!"
+
+
+# She tries the help.
+def test_show_help(runner: CliRunner) -> None:
+    """It shows the help screen."""
+    result = runner.invoke(main, ["--help"])
+    assert result.exit_code == 0
+    assert re.match("Usage:", result.output)
 
 
 # However, she gets a warning that she needs to either supply a
