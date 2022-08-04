@@ -46,7 +46,7 @@ xdoctest = {extras = ["colors"], version = ">=0.15.10"}
 myst-parser = {version = ">=0.16.1"}
 
 [tool.poetry.scripts]
-yarm = "yarm.__main__:main"
+yarm = "yarm.__main__:cli"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]

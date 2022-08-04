@@ -3,7 +3,7 @@
 nox:
 	nox -r
 
-tests: 
+tests:
 	nox -rxs tests
 
 docs:

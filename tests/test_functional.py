@@ -4,7 +4,7 @@ import re
 import pytest
 from click.testing import CliRunner
 
-from yarm.__main__ import main
+from yarm.__main__ import cli
 
 
 @pytest.fixture
@@ -17,29 +17,35 @@ def runner() -> CliRunner:
 # She tries running yarm with no arguments to see what happens.
 def test_no_arguments_show_welcome(runner: CliRunner) -> None:
     """With no arguments, it shows a welcome message."""
-    result = runner.invoke(main)
+    result = runner.invoke(cli)
     assert result.exit_code == 0
     assert re.match("yarm: Yet Another Report Maker.", result.output)
 
 
+# She gets a warning that she needs to either supply a
+# configuration file or initialize a new project.
 # She tries the help.
 def test_show_help(runner: CliRunner) -> None:
     """It shows the help screen."""
-    result = runner.invoke(main, ["--help"])
+    result = runner.invoke(cli, ["--help"])
     assert result.exit_code == 0
     assert re.match("Usage:", result.output)
 
 
-# However, she gets a warning that she needs to either supply a
-# configuration file or initialize a new project.
-
-# Now that the tool is working, she tries checking the help.
-
+# She decides to initialize a new project.
 
 # INITIALIZE A NEW PROJECT
 
-# She decides that she does want to set up a new report.
-# She initializes a new project, based on a standard template.
+# She initializes a new project.
+def test_run_new(runner: CliRunner) -> None:
+    """It creates a new config file, then opens it in default editor."""
+    result = runner.invoke(cli, ["new"])
+    assert result.exit_code == 0
+    assert re.match("new", result.output)
+
+
+# She tries to initialize a new project again, but this fails
+# because there is already a config file in this directory.
 
 
 # Then she tries to run the report.
