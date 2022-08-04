@@ -6,6 +6,8 @@ import click
 
 
 default_config_file: str = "report.yaml"
+dir_templates: str = "templates"
+template_config_file: str = f"{dir_templates}/{default_config_file}"
 
 
 @click.group(invoke_without_command=True)
