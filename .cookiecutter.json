@@ -1,0 +1,14 @@
+{
+  "_output_dir": "/a/Repos",
+  "_template": "gh:cjolowicz/cookiecutter-hypermodern-python",
+  "author": "Bill Alive",
+  "copyright_year": "2022",
+  "development_status": "Development Status :: 1 - Planning",
+  "email": "public+git@billalive.com",
+  "friendly_name": "Yarm",
+  "github_user": "billalive",
+  "license": "Apache-2.0",
+  "package_name": "yarm",
+  "project_name": "yarm",
+  "version": "0.1.0"
+}
