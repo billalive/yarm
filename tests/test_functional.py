@@ -1,7 +1,7 @@
 """Functional test cases (user story)."""
-import pytest
 import re
 
+import pytest
 from click.testing import CliRunner
 
 from yarm import __main__
@@ -19,17 +19,17 @@ def test_no_arguments_show_welcome(runner: CliRunner) -> None:
     """With no arguments, it shows a welcome message."""
     result = runner.invoke(__main__.main)
     assert result.exit_code == 0
-    assert re.match("Welcome to yarm!", result.output)
+    assert re.match("yarm: Yet Another Report Maker.", result.output)
+    # assert result.output == "Welcome to yarm!"
 
 
 # However, she gets a warning that she needs to either supply a
 # configuration file or initialize a new project.
 
-
 # Now that the tool is working, she tries checking the help.
 
 
-## INITIALIZE A NEW PROJECT
+# INITIALIZE A NEW PROJECT
 
 # She decides that she does want to set up a new report.
 # She initializes a new project, based on a standard template.
@@ -45,7 +45,7 @@ def test_no_arguments_show_welcome(runner: CliRunner) -> None:
 # But now the report fails because the data files don't exist.
 
 
-## EXPORT TABLES
+# EXPORT TABLES
 
 # She edits the config to point to one actual data file, a CSV.
 # But she has not specified any output.
@@ -104,7 +104,7 @@ def test_no_arguments_show_welcome(runner: CliRunner) -> None:
 # Success! Now both data sources have been exported to CSVs in the output dir.
 #
 
-## QUERIES
+# QUERIES
 
 # Alicia decides to query these tables she's created.
 # She adds a simple SELECT * from one of the tables.
@@ -119,10 +119,10 @@ def test_no_arguments_show_welcome(runner: CliRunner) -> None:
 #
 # Success! The output CSV shows all the columns from both tables.
 #
-## TODO Write tests for more query options.
+# TODO Write tests for more query options.
 
 
-## TABLE OPTIONS
+# TABLE OPTIONS
 
 # Because the default config file has "slugify-columns" set as True...
 #
@@ -131,4 +131,4 @@ def test_no_arguments_show_welcome(runner: CliRunner) -> None:
 #
 # ... the new file has a lovely column name that is easy to work with.
 
-## TODO Write a test for every config option.
+# TODO Write a test for every config option.
