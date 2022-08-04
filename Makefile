@@ -1,8 +1,10 @@
+.PHONY: nox tests
+
 nox:
 	nox -r
 
-tests:
-	nox -rs tests
+tests: 
+	nox -rxs tests
 
 docs:
 	nox -rs docs
