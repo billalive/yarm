@@ -15,7 +15,7 @@ template_config_file: str = f"{dir_templates}/{default_config_file}"
 @click.pass_context
 def cli(ctx: Optional[click.Context]) -> Any:
     """yarm: Yet Another Report Maker."""
-    if ctx is not None:
+    if ctx is not None:  # pragma: no branch
         if ctx.invoked_subcommand is None:
             welcome: str = f"""yarm: Yet Another Report Maker.
 
@@ -45,4 +45,4 @@ def new() -> None:
 
 
 if __name__ == "__main__":
-    cli(prog_name="yarm")  # pylint: disable=E1120
+    cli(prog_name="yarm")  # pylint: disable=E1120 # pragma: no cover
