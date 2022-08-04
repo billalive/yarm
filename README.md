@@ -52,6 +52,10 @@ $ pip install yarm
 
 Please see the [Command-line Reference] for details.
 
+## Documentation
+
+Full documentation is at [yarm.readthedocs.io][read the docs]
+
 ## Contributing
 
 Contributions are very welcome.

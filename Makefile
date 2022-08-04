@@ -1,4 +1,4 @@
-.PHONY: nox tests
+.PHONY: nox tests docs mypy list-sessions coverage
 
 nox:
 	nox -r
@@ -10,7 +10,7 @@ mypy:
 	nox -rxs mypy
 
 docs:
-	nox -rs docs
+	nox -rxs docs
 
 build:
 	poetry build
