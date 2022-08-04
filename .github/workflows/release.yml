@@ -36,6 +36,7 @@ jobs:
         run: |
           echo "::set-output name=sha::$(git rev-parse --verify --quiet HEAD^)"
 
+      # BUG Action fails on git push.
       # - name: Detect and tag new version
       #   id: check-version
       #   if: steps.check-parent-commit.outputs.sha
