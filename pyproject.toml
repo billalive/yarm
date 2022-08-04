@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yarm"
-version = "0.1.0"
+version = "0.1.1-alpha.0"
 description = "Yarm"
 authors = ["Bill Alive <public+git@billalive.com>"]
 license = "Apache-2.0"
