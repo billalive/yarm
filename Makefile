@@ -6,6 +6,9 @@ nox:
 tests:
 	nox -rxs tests
 
+mypy:
+	nox -rxs mypy
+
 docs:
 	nox -rs docs
 

@@ -13,23 +13,24 @@ default_config_file: str = "report.yaml"
 @click.pass_context
 def cli(ctx: Optional[click.Context]) -> Any:
     """yarm: Yet Another Report Maker."""
-    if ctx.invoked_subcommand is None:
-        welcome: str = f"""yarm: Yet Another Report Maker.
+    if ctx is not None:
+        if ctx.invoked_subcommand is None:
+            welcome: str = f"""yarm: Yet Another Report Maker.
 
-Import CSV or XLSX files, run queries, output reports as CSV or XLSX.
+    Import CSV or XLSX files, run queries, output reports as CSV or XLSX.
 
-No config file found. (Default: {default_config_file})
+    No config file found. (Default: {default_config_file})
 
-Please either:
-    - Supply a config file: yarm -c CONFIG.yaml
-    - Or create a new config file: yarm new
+    Please either:
+        - Supply a config file: yarm -c CONFIG.yaml
+        - Or create a new config file: yarm new
 
-For more options:
-    yarm --help
-"""
-        click.echo(welcome)
-    else:
-        pass
+    For more options:
+        yarm --help
+    """
+            click.echo(welcome)
+        else:
+            pass
 
 
 @cli.command()
@@ -42,4 +43,4 @@ def new() -> None:
 
 
 if __name__ == "__main__":
-    cli(prog_name="yarm")  # pragma: no cover
+    cli(prog_name="yarm")  # pylint: disable=E1120
