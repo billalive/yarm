@@ -6,9 +6,8 @@ import pytest
 from click.testing import CliRunner
 
 from yarm import __main__
+from yarm.__main__ import Settings
 from yarm.__main__ import cli
-from yarm.__main__ import default_config_file
-from yarm.__main__ import dir_templates
 
 
 # import os
@@ -28,8 +27,9 @@ def test_main_succeeds(runner: CliRunner) -> None:
 
 def test_default_config_template_exists() -> None:
     """The default config file template exists."""
+    s = Settings()
     # assert pkg_resources.is_resource("yarm", template_config_name)
-    assert pkg_resources.is_resource(f"yarm.{dir_templates}", default_config_file)
+    assert pkg_resources.is_resource(f"yarm.{s.DIR_TEMPLATES}", s.DEFAULT_CONFIG_FILE)
 
 
 @pytest.fixture

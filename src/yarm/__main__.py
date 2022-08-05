@@ -8,15 +8,24 @@ from typing import Optional
 import click
 
 
-default_config_file: str = "report.yaml"
-dir_templates: str = "templates"
-template_config_file: str = f"{dir_templates}/{default_config_file}"
-msg_abort: str = "Aborted."
-msg_success: str = "Success!"
-msg_warn: str = "Warning:"
-color_error: str = "red"
-color_success: str = "bright_green"
-color_warn: str = "bright_yellow"
+class Settings:
+    """Define global settings.
+
+    When you need a setting in a function, make an instance
+    of this class. These settings should NOT be changed; treat
+    them as constants.
+    """
+
+    DEFAULT_CONFIG_FILE: str = "report.yaml"
+    DIR_TEMPLATES: str = "templates"
+    TEMPLATE_CONFIG_FILE: str = "templates/report.yaml"
+    MSG_ABORT: str = "Aborted."
+    MSG_SUCCESS: str = "Success!"
+    MSG_WARN: str = "Warning:"
+    COLOR_ERROR: str = "red"
+    COLOR_SUCCESS: str = "bright_green"
+    COLOR_WARN: str = "bright_yellow"
+    TEST_CUSTOM_CONFIG_FILE: str = "custom.yaml"
 
 
 @click.group(invoke_without_command=True)
@@ -24,13 +33,14 @@ color_warn: str = "bright_yellow"
 @click.pass_context
 def cli(ctx: Optional[click.Context]) -> Any:
     """yarm: Yet Another Report Maker."""
+    s = Settings()
     if ctx is not None:  # pragma: no branch
         if ctx.invoked_subcommand is None:
             welcome: str = f"""yarm: Yet Another Report Maker.
 
     Import CSV or XLSX files, run queries, output reports as CSV or XLSX.
 
-    No config file found. (Default: {default_config_file})
+    No config file found. (Default: {s.DEFAULT_CONFIG_FILE})
 
     Please either:
         - Supply a config file: yarm -c CONFIG.yaml
@@ -71,13 +81,14 @@ def new(edit: Any, force: Any, config: str) -> None:
     This will create a new config file and, by default,
     open the new file in your default editor.
     """
-    config_file: str = default_config_file
+    s = Settings()
+    config_file: str = s.DEFAULT_CONFIG_FILE
     if config is not None:
         config_file = config
 
     # Do not use pkg_resources.path; it causes problems with testing on python < 3.10
     default_config: str = pkg_resources.read_text(
-        f"yarm.{dir_templates}", default_config_file
+        f"yarm.{s.DIR_TEMPLATES}", s.DEFAULT_CONFIG_FILE
     )
     if os.path.isfile(config_file):
         if not force:
@@ -95,7 +106,7 @@ def new(edit: Any, force: Any, config: str) -> None:
 
 To run this report, type:
     """
-    if config_file == default_config_file:
+    if config_file == s.DEFAULT_CONFIG_FILE:
         msg += "yarm"
     else:
         msg += f"yarm -c {config_file}"
@@ -104,7 +115,8 @@ To run this report, type:
 
 def warn(msg: str) -> None:
     """Show warning, but proceed."""
-    click.secho(msg_warn, fg=color_warn, nl=False, bold=True)
+    s = Settings()
+    click.secho(s.MSG_WARN, fg=s.COLOR_WARN, nl=False, bold=True)
     click.echo(" ", nl=False)
     click.echo(msg)
     return
@@ -112,7 +124,8 @@ def warn(msg: str) -> None:
 
 def abort(msg: str) -> None:
     """Abort with error message and status 1."""
-    click.secho(msg_abort, fg=color_error, nl=False, bold=True)
+    s = Settings()
+    click.secho(s.MSG_ABORT, fg=s.COLOR_ERROR, nl=False, bold=True)
     click.echo(" ", nl=False)
     click.echo(msg)
     sys.exit(1)
@@ -120,7 +133,8 @@ def abort(msg: str) -> None:
 
 def success(msg: str) -> None:
     """End with success message and status 0."""
-    click.secho(msg_success, fg=color_success, nl=False, bold=True)
+    s = Settings()
+    click.secho(s.MSG_SUCCESS, fg=s.COLOR_SUCCESS, nl=False, bold=True)
     click.echo(" ", nl=False)
     click.echo(msg)
 

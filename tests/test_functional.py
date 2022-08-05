@@ -5,11 +5,8 @@ import re
 import pytest
 from click.testing import CliRunner
 
+from yarm.__main__ import Settings
 from yarm.__main__ import cli
-from yarm.__main__ import default_config_file
-from yarm.__main__ import msg_abort
-from yarm.__main__ import msg_success
-from yarm.__main__ import msg_warn
 
 
 @pytest.fixture
@@ -50,11 +47,12 @@ def test_new_create_config_no_edit(runner: CliRunner) -> None:
     but there is currently no simple way to test click.edit().
     https://github.com/pallets/click/issues/1720
     """
+    s = Settings()
     # Test in a temporary new directory.
     with runner.isolated_filesystem():
-        assert isinstance(default_config_file, str)
+        assert isinstance(s.DEFAULT_CONFIG_FILE, str)
         result = runner.invoke(cli, ["new", "--no-edit"])
-        assert os.path.isfile(default_config_file)
+        assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
         assert result.exit_code == 0
 
 
@@ -62,26 +60,28 @@ def test_new_create_config_no_edit(runner: CliRunner) -> None:
 # because there is already a config file in this directory.
 def test_new_config_file_exists_abort(runner: CliRunner) -> None:
     """It detects an existing config file and aborts."""
+    s = Settings()
     with runner.isolated_filesystem():
-        assert isinstance(default_config_file, str)
+        assert isinstance(s.DEFAULT_CONFIG_FILE, str)
         # Run once, to generate the first config file.
         result = runner.invoke(cli, ["new", "--no-edit"])
         # Run a second time.
         result = runner.invoke(cli, ["new", "--no-edit"])
-        assert re.match(msg_abort, result.output)
+        assert re.match(s.MSG_ABORT, result.output)
         assert result.exit_code == 1
 
 
 # Irritated, she forces yarm to overwrite this existing config file.
 def test_new_config_file_exists_force(runner: CliRunner) -> None:
     """It detects an existing config file, but forces an overwrite."""
+    s = Settings()
     with runner.isolated_filesystem():
-        assert isinstance(default_config_file, str)
+        assert isinstance(s.DEFAULT_CONFIG_FILE, str)
         # Run once, to generate the first config file.
         result = runner.invoke(cli, ["new", "--no-edit"])
         # Run a second time, and force overwrite.
         result = runner.invoke(cli, ["new", "--no-edit", "--force"])
-        assert re.match(msg_warn, result.output)
+        assert re.match(s.MSG_WARN, result.output)
         assert result.exit_code == 0
 
 
@@ -89,10 +89,14 @@ def test_new_config_file_exists_force(runner: CliRunner) -> None:
 # the config file.
 def test_new_config_file_custom(runner: CliRunner) -> None:
     """It creates a config file with a custom name."""
+    s = Settings()
     with runner.isolated_filesystem():
-        assert isinstance(default_config_file, str)
-        result = runner.invoke(cli, ["new", "--no-edit", "--config", "custom.yaml"])
-        assert re.match(msg_success, result.output)
+        assert isinstance(s.TEST_CUSTOM_CONFIG_FILE, str)
+        result = runner.invoke(
+            cli, ["new", "--no-edit", "--config", s.TEST_CUSTOM_CONFIG_FILE]
+        )
+        assert re.match(s.MSG_SUCCESS, result.output)
+        assert os.path.isfile(s.TEST_CUSTOM_CONFIG_FILE)
         assert result.exit_code == 0
 
 
