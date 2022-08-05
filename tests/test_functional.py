@@ -5,10 +5,10 @@ import re
 import pytest
 from click.testing import CliRunner
 
-# from yarm.__main__ import msg_success
 from yarm.__main__ import cli
 from yarm.__main__ import default_config_file
 from yarm.__main__ import msg_abort
+from yarm.__main__ import msg_success
 from yarm.__main__ import msg_warn
 
 
@@ -87,15 +87,28 @@ def test_new_config_file_exists_force(runner: CliRunner) -> None:
 
 # Then she decides to initalize a new project using a custom name for
 # the config file.
+def test_new_config_file_custom(runner: CliRunner) -> None:
+    """It creates a config file with a custom name."""
+    with runner.isolated_filesystem():
+        assert isinstance(default_config_file, str)
+        result = runner.invoke(cli, ["new", "--config", "custom.yaml"])
+        assert re.match(msg_success, result.output)
+        assert result.exit_code == 0
 
 
 # Just for good measure, she tries to initialize a new project again,
 # using that same custom name. This fails, because that file exists.
 
 
+# Now even more irritated, she overwrites that custom file with --force
+
+
 # Then she tries to run the report.
 # But she forgot to edit the config file, so she gets a message reminding her
 # that she needs to edit the config file first.
+# TODO Tokenize template file and get words with all caps from it.
+# Be careful that all words are implausible enough that they wouldn't appear
+# in an actual spreadsheet.
 
 
 # She cleverly edits only the config line that's preventing the report from
