@@ -60,7 +60,7 @@ def test_new_create_config_no_edit(runner: CliRunner) -> None:
 
 # She tries to initialize a new project again, but this fails
 # because there is already a config file in this directory.
-def test_new_config_file_exists(runner: CliRunner) -> None:
+def test_new_config_file_exists_abort(runner: CliRunner) -> None:
     """It detects an existing config file and aborts."""
     with runner.isolated_filesystem():
         assert isinstance(default_config_file, str)
@@ -91,7 +91,7 @@ def test_new_config_file_custom(runner: CliRunner) -> None:
     """It creates a config file with a custom name."""
     with runner.isolated_filesystem():
         assert isinstance(default_config_file, str)
-        result = runner.invoke(cli, ["new", "--config", "custom.yaml"])
+        result = runner.invoke(cli, ["new", "--no-edit", "--config", "custom.yaml"])
         assert re.match(msg_success, result.output)
         assert result.exit_code == 0
 

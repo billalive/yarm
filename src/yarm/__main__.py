@@ -59,14 +59,22 @@ def cli(ctx: Optional[click.Context]) -> Any:
     show_default=True,
     help="Force overwrite if config file already exists?",
 )
-def new(edit: Any, force: Any) -> None:
+@click.option(
+    "--config",
+    "-c",
+    help="Custom filename for new config file.",
+    type=click.Path(exists=False),
+)
+def new(edit: Any, force: Any, config: str) -> None:
     """Initialize a new yarm project.
 
     This will create a new config file and, by default,
     open the new file in your default editor.
     """
-    # TODO Allow config option to override.
     config_file: str = default_config_file
+    if config is not None:
+        config_file = config
+
     # Do not use pkg_resources.path; it causes problems with testing on python < 3.10
     default_config: str = pkg_resources.read_text(
         f"yarm.{dir_templates}", default_config_file
