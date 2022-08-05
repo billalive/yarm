@@ -82,6 +82,7 @@ def test_new_config_file_exists_force(runner: CliRunner) -> None:
         # Run a second time, and force overwrite.
         result = runner.invoke(cli, ["new", "--no-edit", "--force"])
         assert re.match(s.MSG_WARN, result.output)
+        assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
         assert result.exit_code == 0
 
 
@@ -120,6 +121,22 @@ def test_new_config_file_custom_exists_abort(runner: CliRunner) -> None:
 
 
 # Now even more irritated, she overwrites that custom file with --force
+def test_new_config_file_custom_exists_force(runner: CliRunner) -> None:
+    """It detects an existing custom config file and aborts."""
+    s = Settings()
+    with runner.isolated_filesystem():
+        assert isinstance(s.DEFAULT_CONFIG_FILE, str)
+        # Run once, to generate the first config file.
+        result = runner.invoke(
+            cli, ["new", "--no-edit", "--config", s.TEST_CUSTOM_CONFIG_FILE]
+        )
+        # Run a second time, with --force.
+        result = runner.invoke(
+            cli, ["new", "--no-edit", "--force", "--config", s.TEST_CUSTOM_CONFIG_FILE]
+        )
+        assert re.match(s.MSG_WARN, result.output)
+        assert os.path.isfile(s.TEST_CUSTOM_CONFIG_FILE)
+        assert result.exit_code == 0
 
 
 # Then she tries to run the report.
