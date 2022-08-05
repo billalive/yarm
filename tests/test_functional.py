@@ -166,9 +166,9 @@ def test_report_aborts_invalid_config_no_edits(runner: CliRunner) -> None:
         # Generate default config file.
         result = runner.invoke(cli, ["new", "--no-edit"])
         # Try to run report without any edits.
-        result = runner.invoke(cli)
+        result = runner.invoke(cli, [s.CMD_RUN])
         assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
-        assert re.match(s.MSG_ABORT, result.output)
+        assert re.search(s.MSG_INVALID_CONFIG_NO_EDITS, result.output)
         assert result.exit_code == 1
 
 

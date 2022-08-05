@@ -14,6 +14,9 @@ import click
 import yaml
 
 
+# from yaml import CLoader as Loader
+
+
 class Settings:
     """Define global settings.
 
@@ -30,6 +33,10 @@ class Settings:
     MSG_SUCCESS: str = "Success!"
     MSG_WARN: str = "Warning:"
     MSG_USAGE: str = "Usage:"
+
+    MSG_INVALID_CONFIG_NO_EDITS: str = (
+        "This config file does not appear to have been edited."
+    )
 
     COLOR_ERROR: str = "red"
     COLOR_SUCCESS: str = "bright_green"
@@ -85,10 +92,33 @@ def run(config_path: str) -> None:
 
 def validate_config(config: Dict[Any, Any]) -> Any:
     """Validate config file before running report."""
+    s = Settings()
     # Why no test whether file exists? click() handles this.
-    for key in config:
-        print(key, config[key])
-    return
+    # DEBUG:
+    # for key in config:
+    #    print(key, config[key])
+
+    # Check whether config file has been edited.
+    # Rather than an exhaustive search, just check a critical setting.
+
+    # NOTE "It is not safe to call yaml.load with any data received
+    # from an untrusted source!"
+    # https://pyyaml.org/wiki/PyYAMLDocumentation
+    default_config = yaml.safe_load(
+        pkg_resources.read_text(f"yarm.{s.DIR_TEMPLATES}", s.DEFAULT_CONFIG_FILE),
+    )
+
+    if config["output"]["basename"] == default_config["output"]["basename"]:
+        abort(
+            f"""{s.MSG_INVALID_CONFIG_NO_EDITS}
+
+output.basename is still set to the default: {default_config["output"]["basename"]}
+
+Please edit your config file, then try running this report again.
+"""
+        )
+    # If all tests pass, config file is validated.
+    return True
 
 
 @cli.command()
