@@ -5,7 +5,8 @@ import pytest
 from click.testing import CliRunner
 
 from yarm import __main__
-from yarm.__main__ import cli
+
+# from yarm.__main__ import cli
 from yarm.__main__ import default_config_file
 from yarm.__main__ import dir_templates
 
@@ -56,9 +57,3 @@ def test_default_config_template_exists() -> None:
 #         print("path to template (inside):", str(path_template_config_file))
 #    To see these print statements, the test needs to fail.
 #    assert False
-
-
-def test_new_succeeds(runner: CliRunner) -> None:
-    """It exits with a status code of zero."""
-    result = runner.invoke(cli, ["new"])
-    assert result.exit_code == 0

@@ -38,7 +38,8 @@ def cli(ctx: Optional[click.Context]) -> Any:
 
 
 @cli.command()
-def new() -> None:
+@click.option("--edit/--no-edit", "-e/-E", default=True)
+def new(edit: Any) -> None:
     """Initialize a new yarm project.
 
     This will create a new config file and open it in your default editor.
@@ -52,6 +53,8 @@ def new() -> None:
     with open(config_file, "wt") as new_config:
         new_config.write(default_config)
     new_config.close()
+    if edit:
+        click.edit(filename=config_file)
     click.echo("new")
     sys.exit(0)
 

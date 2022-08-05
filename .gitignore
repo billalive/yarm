@@ -9,3 +9,6 @@
 /src/*.egg-info/
 __pycache__/
 /htmlcov/
+
+# Specific to yarm
+report.yaml

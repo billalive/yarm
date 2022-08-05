@@ -39,15 +39,19 @@ def test_show_help(runner: CliRunner) -> None:
 # INITIALIZE A NEW PROJECT
 
 # She initializes a new project.
-def test_new_create_config(runner: CliRunner) -> None:
-    """It creates a new config file, then opens it in default editor."""
+def test_new_create_config_no_edit(runner: CliRunner) -> None:
+    """It creates a new config file (but skips click.edit).
+
+    Note: the default behavior is to open the config file with click.edit(),
+    but there is currently no simple way to test click.edit().
+    https://github.com/pallets/click/issues/1720
+    """
     # Test in a temporary new directory.
     with runner.isolated_filesystem():
         assert isinstance(default_config_file, str)
-        result = runner.invoke(cli, ["new"])
+        result = runner.invoke(cli, ["new", "--no-edit"])
         assert os.path.isfile(default_config_file)
         assert result.exit_code == 0
-        # assert re.match("new", result.output)
 
 
 # She tries to initialize a new project again, but this fails
