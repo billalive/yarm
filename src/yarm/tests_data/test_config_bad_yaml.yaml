@@ -1,0 +1,10 @@
+---
+# Test: Bad YAML
+
+output:
+  dir output
+  basename: YOUR_BASENAME
+  prepend_date: true
+  export_queries: csv
+  styles:
+    column_width: 15

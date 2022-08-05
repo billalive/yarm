@@ -1,4 +1,6 @@
 """Command-line interface."""
+# pylint: disable=invalid-name
+
 import importlib.resources as pkg_resources
 import os
 import sys
@@ -14,9 +16,6 @@ import click
 import yaml
 
 
-# from yaml import CLoader as Loader
-
-
 class Settings:
     """Define global settings.
 
@@ -25,9 +24,11 @@ class Settings:
     them as constants.
     """
 
+    PKG = "yarm"
     DEFAULT_CONFIG_FILE: str = "report.yaml"
     DIR_TEMPLATES: str = "templates"
-    TEMPLATE_CONFIG_FILE: str = "templates/report.yaml"
+    DIR_TESTS_DATA: str = "tests_data"
+    TEST_CONFIG_BAD_YAML: str = "test_config_bad_yaml.yaml"
 
     MSG_ABORT: str = "Aborted."
     MSG_SUCCESS: str = "Success!"
@@ -37,6 +38,10 @@ class Settings:
     MSG_INVALID_CONFIG_NO_EDITS: str = (
         "This config file does not appear to have been edited."
     )
+    MSG_INVALID_CONFIG_BAD_YAML: str = (
+        "This config file has invalid YAML. Please fix the error below and try again."
+    )
+    MSG_COULDNT_OPEN_YAML: str = "Could not open YAML file."
 
     COLOR_ERROR: str = "red"
     COLOR_SUCCESS: str = "bright_green"
@@ -156,7 +161,7 @@ def new(edit: Any, force: Any, custom_config_path: str) -> None:
 
     # Do not use pkg_resources.path; it causes problems with testing on python < 3.10
     default_config: str = pkg_resources.read_text(
-        f"yarm.{s.DIR_TEMPLATES}", s.DEFAULT_CONFIG_FILE
+        f"{s.PKG}.{s.DIR_TEMPLATES}", s.DEFAULT_CONFIG_FILE
     )
     if os.path.isfile(config_file):
         if not force:
@@ -166,7 +171,6 @@ def new(edit: Any, force: Any, custom_config_path: str) -> None:
 
     with open(config_file, "wt") as new_config:
         new_config.write(default_config)
-    new_config.close()
 
     if edit:
         click.edit(filename=config_file)
@@ -175,9 +179,9 @@ def new(edit: Any, force: Any, custom_config_path: str) -> None:
 To run this report, type:
     """
     if config_file == s.DEFAULT_CONFIG_FILE:
-        msg += "yarm"
+        msg += "yarm run"
     else:
-        msg += f"yarm -c {config_file}"
+        msg += f"yarm run -c {config_file}"
     success(msg)
 
 
@@ -209,12 +213,16 @@ def success(msg: str) -> None:
 
 def yaml_to_dict(input_file: str) -> Dict[Any, Any]:
     """Read YAML file, return dictionary."""
+    s = Settings()
     try:
         with open(input_file, "rb") as yaml_file:
             new_dict: Dict[Any, Any] = yaml.safe_load(yaml_file)
             return new_dict
+    except yaml.scanner.ScannerError as err:
+        abort(f"{s.MSG_INVALID_CONFIG_BAD_YAML}\n{err}")
+        sys.exit()
     except OSError as err:
-        abort(f"Could not open YAML file: {err}")
+        abort(f"{s.MSG_COULDNT_OPEN_YAML}\n{err}")
         sys.exit()
 
 

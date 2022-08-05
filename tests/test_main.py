@@ -15,9 +15,6 @@ from yarm.__main__ import Settings
 from yarm.__main__ import cli
 
 
-# import os
-
-
 @pytest.fixture
 def runner() -> CliRunner:
     """Fixture for invoking command-line interfaces."""
@@ -33,8 +30,9 @@ def test_main_succeeds(runner: CliRunner) -> None:
 def test_default_config_template_exists() -> None:
     """The default config file template exists."""
     s = Settings()
-    # assert pkg_resources.is_resource("yarm", template_config_name)
-    assert pkg_resources.is_resource(f"yarm.{s.DIR_TEMPLATES}", s.DEFAULT_CONFIG_FILE)
+    assert pkg_resources.is_resource(
+        f"{s.PKG}.{s.DIR_TEMPLATES}", s.DEFAULT_CONFIG_FILE
+    )
 
 
 @pytest.fixture
@@ -51,7 +49,6 @@ def mock_click_edit(monkeypatch: Any) -> Any:
     ) -> Any:
         return True
 
-    # monkeypatch.setattr(click, "edit", fake_edit)
     monkeypatch.setattr("click.edit", fake_click_edit)
 
 

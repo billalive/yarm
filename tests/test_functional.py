@@ -1,4 +1,5 @@
 """Functional test cases (user story)."""
+import importlib.resources as pkg_resources
 import os
 import re
 
@@ -173,16 +174,34 @@ def test_report_aborts_invalid_config_no_edits(runner: CliRunner) -> None:
 
 
 # She tries to edit the file, but accidentally breaks the YAML.
+def test_report_aborts_invalid_config_bad_yaml(runner: CliRunner) -> None:
+    """Report aborts because config file has bad YAML."""
+    s = Settings()
+    with runner.isolated_filesystem():
+        assert isinstance(s.DEFAULT_CONFIG_FILE, str)
+        # Copy in a config file with malformed YAML.
+        assert pkg_resources.is_resource(
+            f"{s.PKG}.{s.DIR_TESTS_DATA}", s.TEST_CONFIG_BAD_YAML
+        )
+        with open(s.DEFAULT_CONFIG_FILE, "wt") as textfile:
+            textfile.write(
+                pkg_resources.read_text(
+                    f"{s.PKG}.{s.DIR_TESTS_DATA}", s.TEST_CONFIG_BAD_YAML
+                )
+            )
+        assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
+
+        # Try to run report with bad yaml.
+        result = runner.invoke(cli, [s.CMD_RUN])
+        assert re.search(s.MSG_INVALID_CONFIG_BAD_YAML, result.output)
+        assert result.exit_code == 1
 
 
-# TODO Tokenize template file and get words with all caps from it.
-# Be careful that all words are implausible enough that they wouldn't appear
-# in an actual spreadsheet.
+# She tries editing the config file again. She fixes the YAML, but
+# accidentally breaks some of the options. The report fails.
 
-
-# She cleverly edits only the config line that's preventing the report from
-# running and tries again.
-# But now the report fails because the data files don't exist.
+# She edits the config file again, and finally all the options are valid.
+# But one of the data sources doesn't exist, so the report fails.
 
 
 # EXPORT TABLES
@@ -243,8 +262,8 @@ def test_report_aborts_invalid_config_no_edits(runner: CliRunner) -> None:
 #
 # Success! Now both data sources have been exported to CSVs in the output dir.
 #
-# Tired of typing "yarm report" over and over, she tries just "yarm".
-# It defaults to "yarm report"
+# Tired of typing "yarm run" over and over, she tries just "yarm".
+# It defaults to "yarm run"
 
 # QUERIES
 
