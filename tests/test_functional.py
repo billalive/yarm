@@ -94,7 +94,7 @@ def test_new_config_file_custom(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         assert isinstance(s.TEST_CUSTOM_CONFIG_FILE, str)
         result = runner.invoke(
-            cli, ["new", "--no-edit", "--config", s.TEST_CUSTOM_CONFIG_FILE]
+            cli, ["new", "--no-edit", "--path", s.TEST_CUSTOM_CONFIG_FILE]
         )
         assert re.match(s.MSG_SUCCESS, result.output)
         assert os.path.isfile(s.TEST_CUSTOM_CONFIG_FILE)
@@ -110,11 +110,11 @@ def test_new_config_file_custom_exists_abort(runner: CliRunner) -> None:
         assert isinstance(s.DEFAULT_CONFIG_FILE, str)
         # Run once, to generate the first config file.
         result = runner.invoke(
-            cli, ["new", "--no-edit", "--config", s.TEST_CUSTOM_CONFIG_FILE]
+            cli, ["new", "--no-edit", "--path", s.TEST_CUSTOM_CONFIG_FILE]
         )
         # Run a second time.
         result = runner.invoke(
-            cli, ["new", "--no-edit", "--config", s.TEST_CUSTOM_CONFIG_FILE]
+            cli, ["new", "--no-edit", "--path", s.TEST_CUSTOM_CONFIG_FILE]
         )
         assert re.match(s.MSG_ABORT, result.output)
         assert result.exit_code == 1
@@ -128,20 +128,37 @@ def test_new_config_file_custom_exists_force(runner: CliRunner) -> None:
         assert isinstance(s.DEFAULT_CONFIG_FILE, str)
         # Run once, to generate the first config file.
         result = runner.invoke(
-            cli, ["new", "--no-edit", "--config", s.TEST_CUSTOM_CONFIG_FILE]
+            cli, ["new", "--no-edit", "--path", s.TEST_CUSTOM_CONFIG_FILE]
         )
         # Run a second time, with --force.
         result = runner.invoke(
-            cli, ["new", "--no-edit", "--force", "--config", s.TEST_CUSTOM_CONFIG_FILE]
+            cli, ["new", "--no-edit", "--force", "--path", s.TEST_CUSTOM_CONFIG_FILE]
         )
         assert re.match(s.MSG_WARN, result.output)
         assert os.path.isfile(s.TEST_CUSTOM_CONFIG_FILE)
         assert result.exit_code == 0
 
 
+# Satisfied, she decides that maybe the default config file is fine after all.
 # Then she tries to run the report.
-# But she forgot to edit the config file, so she gets a message reminding her
-# that she needs to edit the config file first.
+# But she forgot to edit the config file, so she gets a message reminding
+# her that she needs to edit the config file first.
+
+
+def test_report_aborts_invalid_config_no_edits(runner: CliRunner) -> None:
+    """Report aborts because config file not edited."""
+    s = Settings()
+    with runner.isolated_filesystem():
+        assert isinstance(s.DEFAULT_CONFIG_FILE, str)
+        # Generate default config file.
+        result = runner.invoke(cli, ["new", "--no-edit"])
+        # Try to run report.
+        result = runner.invoke(cli)
+        assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
+        assert re.match(s.MSG_ABORT, result.output)
+        assert result.exit_code == 1
+
+
 # TODO Tokenize template file and get words with all caps from it.
 # Be careful that all words are implausible enough that they wouldn't appear
 # in an actual spreadsheet.

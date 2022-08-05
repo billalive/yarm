@@ -38,20 +38,33 @@ def cli(ctx: Optional[click.Context]) -> Any:
         if ctx.invoked_subcommand is None:
             welcome: str = f"""yarm: Yet Another Report Maker.
 
-    Import CSV or XLSX files, run queries, output reports as CSV or XLSX.
+Import CSV or XLSX files, run queries, output reports as CSV or XLSX.
 
-    No config file found. (Default: {s.DEFAULT_CONFIG_FILE})
+No config file found. (Default: {s.DEFAULT_CONFIG_FILE})
 
-    Please either:
-        - Supply a config file: yarm -c CONFIG.yaml
-        - Or create a new config file: yarm new
+Please either:
+    - Supply a config file: yarm -c CONFIG.yaml
+    - Or create a new config file: yarm new
 
-    For more options:
-        yarm --help
-    """
+For more options:
+    yarm --help
+        """
             click.echo(welcome)
         else:
             pass
+
+
+@cli.command()
+@click.option(
+    "--config",
+    "-c",
+    "config_path",
+    help="Config file for this project.",
+    type=click.Path(exists=True),
+)
+def run(config_path: Any) -> None:
+    """Run the report(s)."""
+    return
 
 
 @cli.command()
@@ -70,12 +83,13 @@ def cli(ctx: Optional[click.Context]) -> Any:
     help="Force overwrite if config file already exists?",
 )
 @click.option(
-    "--config",
-    "-c",
-    help="Custom filename for new config file.",
+    "--path",
+    "-p",
+    "custom_config_path",
+    help="Custom path for new config file.",
     type=click.Path(exists=False),
 )
-def new(edit: Any, force: Any, config: str) -> None:
+def new(edit: Any, force: Any, custom_config_path: str) -> None:
     """Initialize a new yarm project.
 
     This will create a new config file and, by default,
@@ -83,8 +97,8 @@ def new(edit: Any, force: Any, config: str) -> None:
     """
     s = Settings()
     config_file: str = s.DEFAULT_CONFIG_FILE
-    if config is not None:
-        config_file = config
+    if custom_config_path is not None:
+        config_file = custom_config_path
 
     # Do not use pkg_resources.path; it causes problems with testing on python < 3.10
     default_config: str = pkg_resources.read_text(
