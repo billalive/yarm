@@ -59,7 +59,7 @@ def test_new_create_config_no_edit(runner: CliRunner) -> None:
 # because there is already a config file in this directory.
 
 
-# Then she decides to initalize a new project using her own name for
+# Then she decides to initalize a new project using a custom name for
 # the config file.
 
 
