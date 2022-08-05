@@ -50,11 +50,13 @@ def mock_click_edit(monkeypatch):
 
 def test_new_noargs_succeeds(runner: CliRunner, mock_click_edit: Any) -> None:
     """It exits with a status code of zero."""
-    result = runner.invoke(cli, ["new"])
-    assert result.exit_code == 0
+    with runner.isolated_filesystem():
+        result = runner.invoke(cli, ["new"])
+        assert result.exit_code == 0
 
 
 def test_new_edit_succeeds(runner: CliRunner, mock_click_edit: Any) -> None:
     """It exits with a status code of zero."""
-    result = runner.invoke(cli, ["new", "--edit"])
-    assert result.exit_code == 0
+    with runner.isolated_filesystem():
+        result = runner.invoke(cli, ["new", "--edit"])
+        assert result.exit_code == 0

@@ -5,8 +5,11 @@ import re
 import pytest
 from click.testing import CliRunner
 
+# from yarm.__main__ import msg_success
 from yarm.__main__ import cli
 from yarm.__main__ import default_config_file
+from yarm.__main__ import msg_abort
+from yarm.__main__ import msg_warn
 
 
 @pytest.fixture
@@ -57,10 +60,37 @@ def test_new_create_config_no_edit(runner: CliRunner) -> None:
 
 # She tries to initialize a new project again, but this fails
 # because there is already a config file in this directory.
+def test_new_config_file_exists(runner: CliRunner) -> None:
+    """It detects an existing config file and aborts."""
+    with runner.isolated_filesystem():
+        assert isinstance(default_config_file, str)
+        # Run once, to generate the first config file.
+        result = runner.invoke(cli, ["new", "--no-edit"])
+        # Run a second time.
+        result = runner.invoke(cli, ["new", "--no-edit"])
+        assert re.match(msg_abort, result.output)
+        assert result.exit_code == 1
+
+
+# Irritated, she forces yarm to overwrite this existing config file.
+def test_new_config_file_exists_force(runner: CliRunner) -> None:
+    """It detects an existing config file, but forces an overwrite."""
+    with runner.isolated_filesystem():
+        assert isinstance(default_config_file, str)
+        # Run once, to generate the first config file.
+        result = runner.invoke(cli, ["new", "--no-edit"])
+        # Run a second time, and force overwrite.
+        result = runner.invoke(cli, ["new", "--no-edit", "--force"])
+        assert re.match(msg_warn, result.output)
+        assert result.exit_code == 0
 
 
 # Then she decides to initalize a new project using a custom name for
 # the config file.
+
+
+# Just for good measure, she tries to initialize a new project again,
+# using that same custom name. This fails, because that file exists.
 
 
 # Then she tries to run the report.
