@@ -5,6 +5,7 @@
 
 
 import importlib.resources as pkg_resources
+import os
 from typing import Any
 
 import pytest
@@ -70,3 +71,36 @@ def test_new_edit_succeeds(
     with runner.isolated_filesystem():
         result = runner.invoke(cli, ["new", "--edit"])
         assert result.exit_code == 0
+
+
+def test_prep_config(test_config_file: str) -> None:
+    """Prepare test config file for a particular test.
+
+    Several tests need a particular file in place as the config file
+    for the test. This helper function sets that up.
+
+    Use this helper function inside other tests.
+
+    With this function, a new test requires:
+
+    - Create the malformed config file in s.DIR_TESTS_DATA
+    - In __main__ class Settings, define attributes for:
+       - filename for this config file
+       - unique error message that this config file should trigger.
+    - Then write a test that uses this function.
+
+    For example tests that use this function, see:
+
+    - test_report_aborts_invalid_config_bad_yaml()
+    - test_report_aborts_invalid_config_bad_options()
+    """
+    s = Settings()
+    # make sure we have a default config file location.
+    assert isinstance(s.DEFAULT_CONFIG_FILE, str)
+    # copy in the config file for this test.
+    assert pkg_resources.is_resource(f"{s.PKG}.{s.DIR_TESTS_DATA}", test_config_file)
+    with open(s.DEFAULT_CONFIG_FILE, "wt") as textfile:
+        textfile.write(
+            pkg_resources.read_text(f"{s.PKG}.{s.DIR_TESTS_DATA}", test_config_file)
+        )
+    assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
