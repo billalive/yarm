@@ -1,10 +1,12 @@
 """Functional test cases (user story)."""
+import os
 import re
 
 import pytest
 from click.testing import CliRunner
 
 from yarm.__main__ import cli
+from yarm.__main__ import default_config_file
 
 
 @pytest.fixture
@@ -37,15 +39,23 @@ def test_show_help(runner: CliRunner) -> None:
 # INITIALIZE A NEW PROJECT
 
 # She initializes a new project.
-def test_run_new(runner: CliRunner) -> None:
+def test_new_create_config(runner: CliRunner) -> None:
     """It creates a new config file, then opens it in default editor."""
-    result = runner.invoke(cli, ["new"])
-    assert result.exit_code == 0
-    assert re.match("new", result.output)
+    # Test in a temporary new directory.
+    with runner.isolated_filesystem():
+        assert isinstance(default_config_file, str)
+        result = runner.invoke(cli, ["new"])
+        assert os.path.isfile(default_config_file)
+        assert result.exit_code == 0
+        # assert re.match("new", result.output)
 
 
 # She tries to initialize a new project again, but this fails
 # because there is already a config file in this directory.
+
+
+# Then she decides to initalize a new project using her own name for
+# the config file.
 
 
 # Then she tries to run the report.

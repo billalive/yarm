@@ -1,4 +1,6 @@
 """Command-line interface."""
+import importlib.resources as pkg_resources
+import sys
 from typing import Any
 from typing import Optional
 
@@ -41,7 +43,17 @@ def new() -> None:
 
     This will create a new config file and open it in your default editor.
     """
+    # TODO Allow config option to override.
+    config_file: str = default_config_file
+    # Do not use pkg_resources.path; it causes problems with testing on python < 3.10
+    default_config: str = pkg_resources.read_text(
+        f"yarm.{dir_templates}", default_config_file
+    )
+    with open(config_file, "wt") as new_config:
+        new_config.write(default_config)
+    new_config.close()
     click.echo("new")
+    sys.exit(0)
 
 
 if __name__ == "__main__":
