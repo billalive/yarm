@@ -77,7 +77,7 @@ def run(config_path: str) -> None:
     """Run the report(s)."""
     s = Settings()
     if config_path is None:
-        config_path = s.DEFAULT_CONFIG_FILE
+        config_path = s.DEFAULT_CONFIG_FILE  # type: ignore[unreachable]
     report_config = yaml_to_dict(config_path)
     validate_config(report_config)
     sys.exit()
