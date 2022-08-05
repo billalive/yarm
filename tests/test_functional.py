@@ -102,6 +102,21 @@ def test_new_config_file_custom(runner: CliRunner) -> None:
 
 # Just for good measure, she tries to initialize a new project again,
 # using that same custom name. This fails, because that file exists.
+def test_new_config_file_custom_exists_abort(runner: CliRunner) -> None:
+    """It detects an existing custom config file and aborts."""
+    s = Settings()
+    with runner.isolated_filesystem():
+        assert isinstance(s.DEFAULT_CONFIG_FILE, str)
+        # Run once, to generate the first config file.
+        result = runner.invoke(
+            cli, ["new", "--no-edit", "--config", s.TEST_CUSTOM_CONFIG_FILE]
+        )
+        # Run a second time.
+        result = runner.invoke(
+            cli, ["new", "--no-edit", "--config", s.TEST_CUSTOM_CONFIG_FILE]
+        )
+        assert re.match(s.MSG_ABORT, result.output)
+        assert result.exit_code == 1
 
 
 # Now even more irritated, she overwrites that custom file with --force
