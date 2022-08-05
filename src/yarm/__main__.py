@@ -29,6 +29,7 @@ class Settings:
     DIR_TEMPLATES: str = "templates"
     DIR_TESTS_DATA: str = "tests_data"
     TEST_CONFIG_BAD_YAML: str = "test_config_bad_yaml.yaml"
+    TEST_CONFIG_BAD_OPTIONS: str = "test_config_bad_options.yaml"
 
     MSG_ABORT: str = "Aborted."
     MSG_SUCCESS: str = "Success!"
@@ -42,6 +43,7 @@ class Settings:
         "This config file has invalid YAML. Please fix the error below and try again."
     )
     MSG_COULDNT_OPEN_YAML: str = "Could not open YAML file."
+    MSG_INVALID_CONFIG_BAD_OPTIONS: str = "This config file has misconfigured options."
 
     COLOR_ERROR: str = "red"
     COLOR_SUCCESS: str = "bright_green"

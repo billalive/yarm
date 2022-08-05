@@ -173,25 +173,37 @@ def test_report_aborts_invalid_config_no_edits(runner: CliRunner) -> None:
         assert result.exit_code == 1
 
 
+def prep_config_file(test_config_file: str) -> None:
+    """Prepare test config file for a particular test.
+
+    Several tests need a particular file in place as the config file
+    for the test. This helper function sets that up.
+
+    Use this helper function inside other tests.
+
+    For examples, see tests like:
+
+    - test_report_aborts_invalid_config_bad_yaml()
+    - test_report_aborts_invalid_config_bad_options()
+    """
+    s = Settings()
+    # make sure we have a default config file location.
+    assert isinstance(s.DEFAULT_CONFIG_FILE, str)
+    # copy in the config file for this test.
+    assert pkg_resources.is_resource(f"{s.PKG}.{s.DIR_TESTS_DATA}", test_config_file)
+    with open(s.DEFAULT_CONFIG_FILE, "wt") as textfile:
+        textfile.write(
+            pkg_resources.read_text(f"{s.PKG}.{s.DIR_TESTS_DATA}", test_config_file)
+        )
+    assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
+
+
 # She tries to edit the file, but accidentally breaks the YAML.
 def test_report_aborts_invalid_config_bad_yaml(runner: CliRunner) -> None:
     """Report aborts because config file has bad YAML."""
     s = Settings()
     with runner.isolated_filesystem():
-        assert isinstance(s.DEFAULT_CONFIG_FILE, str)
-        # Copy in a config file with malformed YAML.
-        assert pkg_resources.is_resource(
-            f"{s.PKG}.{s.DIR_TESTS_DATA}", s.TEST_CONFIG_BAD_YAML
-        )
-        with open(s.DEFAULT_CONFIG_FILE, "wt") as textfile:
-            textfile.write(
-                pkg_resources.read_text(
-                    f"{s.PKG}.{s.DIR_TESTS_DATA}", s.TEST_CONFIG_BAD_YAML
-                )
-            )
-        assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
-
-        # Try to run report with bad yaml.
+        prep_config_file(s.TEST_CONFIG_BAD_YAML)
         result = runner.invoke(cli, [s.CMD_RUN])
         assert re.search(s.MSG_INVALID_CONFIG_BAD_YAML, result.output)
         assert result.exit_code == 1
@@ -199,6 +211,15 @@ def test_report_aborts_invalid_config_bad_yaml(runner: CliRunner) -> None:
 
 # She tries editing the config file again. She fixes the YAML, but
 # accidentally breaks some of the options. The report fails.
+def test_report_aborts_invalid_config_bad_options(runner: CliRunner) -> None:
+    """Report aborts because config file has bad YAML."""
+    s = Settings()
+    with runner.isolated_filesystem():
+        prep_config_file(s.TEST_CONFIG_BAD_OPTIONS)
+        result = runner.invoke(cli, [s.CMD_RUN])
+        assert re.search(s.MSG_INVALID_CONFIG_BAD_OPTIONS, result.output)
+        assert result.exit_code == 1
+
 
 # She edits the config file again, and finally all the options are valid.
 # But one of the data sources doesn't exist, so the report fails.
