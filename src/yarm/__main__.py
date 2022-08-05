@@ -3,9 +3,15 @@ import importlib.resources as pkg_resources
 import os
 import sys
 from typing import Any
+from typing import Dict
 from typing import Optional
 
+# Dependencies
+#
+# If your distribution does not include openpyxl with pandas, you may need
+# to install python-openpyxl separately.
 import click
+import yaml
 
 
 class Settings:
@@ -19,13 +25,16 @@ class Settings:
     DEFAULT_CONFIG_FILE: str = "report.yaml"
     DIR_TEMPLATES: str = "templates"
     TEMPLATE_CONFIG_FILE: str = "templates/report.yaml"
+
     MSG_ABORT: str = "Aborted."
     MSG_SUCCESS: str = "Success!"
     MSG_WARN: str = "Warning:"
     MSG_USAGE: str = "Usage:"
+
     COLOR_ERROR: str = "red"
     COLOR_SUCCESS: str = "bright_green"
     COLOR_WARN: str = "bright_yellow"
+
     TEST_CUSTOM_CONFIG_FILE: str = "custom.yaml"
     CMD_RUN = "run"
 
@@ -66,14 +75,19 @@ For more options:
 )
 def run(config_path: str) -> None:
     """Run the report(s)."""
-    print("type:", type(config_path))
-    validate_config_file(config_path)
-    return
+    s = Settings()
+    if config_path is None:
+        config_path = s.DEFAULT_CONFIG_FILE
+    report_config = yaml_to_dict(config_path)
+    validate_config(report_config)
+    sys.exit()
 
 
-def validate_config_file(config_path: str) -> Any:
+def validate_config(config: Dict[Any, Any]) -> Any:
     """Validate config file before running report."""
     # Why no test whether file exists? click() handles this.
+    for key in config:
+        print(key, config[key])
     return
 
 
@@ -161,6 +175,17 @@ def success(msg: str) -> None:
     click.secho(s.MSG_SUCCESS, fg=s.COLOR_SUCCESS, nl=False, bold=True)
     click.echo(" ", nl=False)
     click.echo(msg)
+
+
+def yaml_to_dict(input_file: str) -> Dict[Any, Any]:
+    """Read YAML file, return dictionary."""
+    try:
+        with open(input_file, "rb") as yaml_file:
+            new_dict: Dict[Any, Any] = yaml.safe_load(yaml_file)
+            return new_dict
+    except OSError as err:
+        abort(f"Could not open YAML file: {err}")
+        sys.exit()
 
 
 if __name__ == "__main__":

@@ -149,11 +149,10 @@ def test_report_aborts_no_config_file(runner: CliRunner) -> None:
         assert isinstance(s.DEFAULT_CONFIG_FILE, str)
         # No config file.
         assert not os.path.isfile(s.DEFAULT_CONFIG_FILE)
-        # Try to run report.
+        # Try to run report, with default config file.
         result = runner.invoke(cli, [s.CMD_RUN])
-        # Click prevents this directly.
-        assert result.return_value is None
-        assert result.exit_code == 0
+        assert re.search(s.MSG_ABORT, result.output)
+        assert result.exit_code == 1
 
 
 # Then she tries to run the report.
@@ -166,11 +165,14 @@ def test_report_aborts_invalid_config_no_edits(runner: CliRunner) -> None:
         assert isinstance(s.DEFAULT_CONFIG_FILE, str)
         # Generate default config file.
         result = runner.invoke(cli, ["new", "--no-edit"])
-        # Try to run report.
+        # Try to run report without any edits.
         result = runner.invoke(cli)
         assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
         assert re.match(s.MSG_ABORT, result.output)
         assert result.exit_code == 1
+
+
+# She tries to edit the file, but accidentally breaks the YAML.
 
 
 # TODO Tokenize template file and get words with all caps from it.
@@ -241,6 +243,8 @@ def test_report_aborts_invalid_config_no_edits(runner: CliRunner) -> None:
 #
 # Success! Now both data sources have been exported to CSVs in the output dir.
 #
+# Tired of typing "yarm report" over and over, she tries just "yarm".
+# It defaults to "yarm report"
 
 # QUERIES
 
