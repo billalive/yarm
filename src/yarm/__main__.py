@@ -22,10 +22,12 @@ class Settings:
     MSG_ABORT: str = "Aborted."
     MSG_SUCCESS: str = "Success!"
     MSG_WARN: str = "Warning:"
+    MSG_USAGE: str = "Usage:"
     COLOR_ERROR: str = "red"
     COLOR_SUCCESS: str = "bright_green"
     COLOR_WARN: str = "bright_yellow"
     TEST_CUSTOM_CONFIG_FILE: str = "custom.yaml"
+    CMD_RUN = "run"
 
 
 @click.group(invoke_without_command=True)
@@ -62,8 +64,16 @@ For more options:
     help="Config file for this project.",
     type=click.Path(exists=True),
 )
-def run(config_path: Any) -> None:
+def run(config_path: str) -> None:
     """Run the report(s)."""
+    print("type:", type(config_path))
+    validate_config_file(config_path)
+    return
+
+
+def validate_config_file(config_path: str) -> Any:
+    """Validate config file before running report."""
+    # Why no test whether file exists? click() handles this.
     return
 
 

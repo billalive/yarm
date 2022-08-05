@@ -140,11 +140,25 @@ def test_new_config_file_custom_exists_force(runner: CliRunner) -> None:
 
 
 # Satisfied, she decides that maybe the default config file is fine after all.
+# But she accidentally deletes both those config files.
+# She tries to run the report, but it fails.
+def test_report_aborts_no_config_file(runner: CliRunner) -> None:
+    """Report aborts because config file doesn't exist."""
+    s = Settings()
+    with runner.isolated_filesystem():
+        assert isinstance(s.DEFAULT_CONFIG_FILE, str)
+        # No config file.
+        assert not os.path.isfile(s.DEFAULT_CONFIG_FILE)
+        # Try to run report.
+        result = runner.invoke(cli, [s.CMD_RUN])
+        # Click prevents this directly.
+        assert result.return_value is None
+        assert result.exit_code == 0
+
+
 # Then she tries to run the report.
 # But she forgot to edit the config file, so she gets a message reminding
 # her that she needs to edit the config file first.
-
-
 def test_report_aborts_invalid_config_no_edits(runner: CliRunner) -> None:
     """Report aborts because config file not edited."""
     s = Settings()
