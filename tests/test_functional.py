@@ -39,6 +39,7 @@ def test_show_help(runner: CliRunner) -> None:
 # INITIALIZE A NEW PROJECT
 
 # She initializes a new project.
+# Since she dislikes automatic editors, she passes "--no-edit"
 def test_new_create_config_no_edit(runner: CliRunner) -> None:
     """It creates a new config file (but skips click.edit).
 
