@@ -4,12 +4,21 @@
 
 import sys
 from typing import Any
-from typing import Dict
 
 import click
-import yaml
+from path import Path
+
+# from strictyaml import Int
+# from strictyaml import Map
+# from strictyaml import Seq
+# from strictyaml import Str
+from strictyaml import YAMLError
+from strictyaml import load
 
 from yarm.settings import Settings
+
+
+# from typing import Dict
 
 
 def warn(msg: str) -> None:
@@ -38,15 +47,13 @@ def success(msg: str) -> None:
     click.echo(msg)
 
 
-def yaml_to_dict(input_file: str) -> Dict[Any, Any]:
-    """Read YAML file, return dictionary."""
+def load_yaml_file(input_file: str) -> Any:
+    """Read YAML file into strictyaml."""
     s = Settings()
     try:
-        with open(input_file, "rb") as yaml_file:
-            new_dict: Dict[Any, Any] = yaml.safe_load(yaml_file)
-            return new_dict
-    except yaml.scanner.ScannerError as err:
-        abort(f"{s.MSG_INVALID_CONFIG_BAD_YAML}\n{err}")
+        return load(Path(input_file).text())
+    except YAMLError as err:
+        abort(f"{s.MSG_INVALID_CONFIG_BAD_YAML}\nFile: {input_file}\n{err}")
         sys.exit()
     except OSError as err:
         abort(f"{s.MSG_COULDNT_OPEN_YAML}\n{err}")

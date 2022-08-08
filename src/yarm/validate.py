@@ -8,7 +8,12 @@ import importlib.resources as pkg_resources
 from typing import Any
 from typing import Dict
 
-import yaml
+# from strictyaml import Int
+# from strictyaml import Map
+# from strictyaml import Seq
+# from strictyaml import Str
+# from strictyaml import YAMLError
+from strictyaml import load
 
 from yarm.helpers import abort
 
@@ -68,7 +73,7 @@ def validate_config_schema(config: Dict[Any, Any]) -> bool:
 def get_default_config() -> Any:
     """Get default config."""
     s = Settings()
-    return yaml.safe_load(
+    return load(
         pkg_resources.read_text(f"{s.PKG}.{s.DIR_TEMPLATES}", s.DEFAULT_CONFIG_FILE),
     )
 
@@ -95,7 +100,7 @@ def get_config_schema() -> Any:
     actually create the specific tables you need for this report.
     """
     s = Settings()
-    return yaml.safe_load(
+    return load(
         pkg_resources.read_text(f"{s.PKG}.{s.DIR_TEMPLATES}", s.CONFIG_SCHEMA),
     )
 
