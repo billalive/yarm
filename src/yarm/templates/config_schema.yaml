@@ -1,28 +1,24 @@
 ---
 # Config options.
 # See define_config_options()
+include:
+  - path: "PATH"
 tables_config:
-  TABLE_NAME:
-    - path: "PATH"
+  TABLE_NAME_01:
+    - path: "PATH_01"
+    - path: "PATH_02"
       sheet: "SHEET NAME"
       datetime:
-        FIELD: NONE_OR_STR
+        FIELD_01: NONE_OR_STR
+        FIELD_02: NONE_OR_STR
       pivot:
         index: FIELD_ID
         columns: FIELD_KEY
         values: FIELD_VALUE
 create_tables:
-  NONE_OR_LIST:
-    - path: "PATH"
-      sheet: "SHEET NAME"
-      datetime:
-        FIELD: NONE_OR_STR
-      pivot:
-        index: FIELD_ID
-        columns: FIELD_KEY
-        values: FIELD_VALUE
-include:
-  - path: "PATH"
+  # If no create_tables is provided, all tables in tables_config are created.
+  - TABLE_NAME_01
+  - INCLUDED_TABLE_02
 output:
   dir: "PATH"
   basename: "BASENAME"

@@ -21,6 +21,7 @@ click = ">=8.0.1"
 PyYAML = "^6.0"
 strictyaml = "^1.6.1"
 path = "^16.4.0"
+nob = "^0.8.2"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"

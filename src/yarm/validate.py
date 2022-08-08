@@ -5,14 +5,22 @@
 """Validate config file."""
 
 import importlib.resources as pkg_resources
+import os
 from typing import Any
 from typing import Dict
 
+import strictyaml.Any
+from path import Path
+
+# from strictyaml import MapCombined
 # from strictyaml import Int
-# from strictyaml import Map
-# from strictyaml import Seq
-# from strictyaml import Str
-# from strictyaml import YAMLError
+from strictyaml import EmptyNone
+from strictyaml import Map
+from strictyaml import MapPattern
+from strictyaml import Optional
+from strictyaml import Seq
+from strictyaml import Str
+from strictyaml import YAMLError
 from strictyaml import load
 
 from yarm.helpers import abort
@@ -64,9 +72,103 @@ Please edit your config file, then try running this report again.
     return True
 
 
+def check_is_file(list_of_paths, key):
+    """For each item with key (e.g. 'path'), check that the value is a file."""
+    for item in list_of_paths:
+        path = item[key]
+        print("checking", path)
+        result = True
+        if not os.path.exists(path):
+            print(f"not a path: {path}")
+            result = False
+    return result
+
+
+class StrNotEmpty(Str):
+    """A string that must not be empty."""
+
+    @staticmethod
+    def validate_scalar(chunk: str) -> str:
+        """String does not validate if it is empty."""
+        if any([chunk.contents == ""]):
+            chunk.expecting_but_found("when expecting a string that is not empty")
+        return chunk.contents
+
+
 def validate_config_schema(config: Dict[Any, Any]) -> bool:
     """Check whether config options are valid."""
-    # config_schema = get_config_schema()
+    # During initial validation, all fields are Optional because they
+    # may be spread across multiple included files.
+    # Once we have processed all config files, we will check separately that
+    # all critical config items have been provided.
+    schema = Map(
+        {
+            Optional("tables_config", drop_if_none=False): EmptyNone() | Any(),
+            Optional("create_tables"): Any(),
+            Optional("include"): Any(),
+            Optional("output"): Any(),
+            Optional("import_module"): Any(),
+            Optional("import"): Any(),
+            Optional("queries"): Any(),
+        }
+    )
+    try:
+        c = strictyaml.load(Path("tmp/tmp_config.yaml").read_text(), schema)
+    except YAMLError as error:
+        print(error)
+
+    # tables_config:
+    #  TABLE_NAME_01:
+    #    - path: "PATH"
+    #      sheet: "SHEET NAME"
+    #      datetime:
+    #        FIELD_01: NONE_OR_STR
+    #        FIELD_02: NONE_OR_STR
+    #      pivot:
+    #        index: FIELD_ID
+    #        columns: FIELD_KEY
+    #        values: FIELD_VALUE
+    if c["tables_config"].data:
+        print("Validating tables_config")
+        c["tables_config"].revalidate(MapPattern(Str(), Seq(Any())))
+        for table_name in c["tables_config"].data:
+            check_is_file(c["tables_config"][table_name].data, "path")
+            table = c["tables_config"][table_name]
+            table.revalidate(
+                Seq(
+                    Map(
+                        {
+                            "path": StrNotEmpty(),
+                            Optional("sheet"): StrNotEmpty(),
+                            Optional("datetime", drop_if_none=False): EmptyNone()
+                            | Any(),
+                            Optional("pivot", drop_if_none=False): EmptyNone() | Any(),
+                        }
+                    )
+                )
+            )
+            # datetime:
+            for source in table:
+                if source["datetime"].data:
+                    source["datetime"].revalidate(
+                        MapPattern(Str(), EmptyNone() | Any())
+                    )
+                if source["pivot"].data:
+                    source["pivot"].revalidate(
+                        Map(
+                            {
+                                "index": StrNotEmpty(),
+                                "columns": StrNotEmpty(),
+                                "values": StrNotEmpty(),
+                            }
+                        )
+                    )
+
+    # include:
+    #  - path: "PATH1"
+    #  - path: "PATH2"
+    c["include"].revalidate(Seq(Map({"path": Str()})))
+    check_is_file(c["include"].data, "path")
     return True
 
 

@@ -960,6 +960,18 @@ optional = false
 python-versions = ">=3.5"
 
 [[package]]
+name = "nob"
+version = "0.8.2"
+description = "Nested OBject manipulations"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+docs = ["sphinx", "myst-parser"]
+test = ["numpy"]
+
+[[package]]
 name = "nodeenv"
 version = "1.6.0"
 description = "Node.js virtual environment builder"
@@ -1875,7 +1887,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7"
-content-hash = "255897e69a20bdb31c385c5c76ede193dd6187225baf37a99cee828c7eb19228"
+content-hash = "ce4e1071316628ef32239b51b2ae7ebcfebb596a7ff302343aca7d77606521f1"
 
 [metadata.files]
 alabaster = [
@@ -2385,6 +2397,9 @@ nbformat = [
 nest-asyncio = [
     {file = "nest_asyncio-1.5.5-py3-none-any.whl", hash = "sha256:b98e3ec1b246135e4642eceffa5a6c23a3ab12c82ff816a92c612d68205813b2"},
     {file = "nest_asyncio-1.5.5.tar.gz", hash = "sha256:e442291cd942698be619823a17a86a5759eabe1f8613084790de189fe9e16d65"},
+]
+nob = [
+    {file = "nob-0.8.2-py2.py3-none-any.whl", hash = "sha256:668edaeffd8ab93b3ca4e906403a8e5e7f6a504e00eb0cc6373c89578a34a63f"},
 ]
 nodeenv = [
     {file = "nodeenv-1.6.0-py2.py3-none-any.whl", hash = "sha256:621e6b7076565ddcacd2db0294c0381e01fd28945ab36bcf00f41c5daf63bef7"},
