@@ -12,3 +12,5 @@ __pycache__/
 
 # Specific to yarm
 report.yaml
+*.ipynb
+/tmp/

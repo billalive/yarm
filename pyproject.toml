@@ -49,6 +49,8 @@ xdoctest = {extras = ["colors"], version = ">=0.15.10"}
 myst-parser = {version = ">=0.16.1"}
 pytest-mock = "^3.8.2"
 types-PyYAML = "^6.0.11"
+jupyter = "^1.0.0"
+ipykernel = "^6.15.1"
 
 [tool.poetry.scripts]
 yarm = "yarm.__main__:cli"

@@ -3,7 +3,6 @@
 """Helper functions."""
 
 import sys
-from typing import Any
 
 import click
 from path import Path
@@ -14,6 +13,7 @@ from path import Path
 # from strictyaml import Str
 from strictyaml import YAMLError
 from strictyaml import load
+from strictyaml.representation import YAML
 
 from yarm.settings import Settings
 
@@ -47,11 +47,11 @@ def success(msg: str) -> None:
     click.echo(msg)
 
 
-def load_yaml_file(input_file: str) -> Any:
+def load_yaml_file(input_file: str) -> YAML:
     """Read YAML file into strictyaml."""
     s = Settings()
     try:
-        return load(Path(input_file).text())
+        return load(Path(input_file).read_text())
     except YAMLError as err:
         abort(f"{s.MSG_INVALID_CONFIG_BAD_YAML}\nFile: {input_file}\n{err}")
         sys.exit()

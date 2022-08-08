@@ -187,7 +187,7 @@ def test_report_aborts_invalid_config_bad_yaml(runner: CliRunner) -> None:
 # She tries editing the config file again. She fixes the YAML, but
 # accidentally breaks some of the options. The report fails.
 def test_report_aborts_invalid_config_bad_options(runner: CliRunner) -> None:
-    """Report aborts because config file has bad YAML."""
+    """Report aborts because config file has options that do not match schema."""
     s = Settings()
     with runner.isolated_filesystem():
         prep_test_config(s.TEST_CONFIG_BAD_OPTIONS)
