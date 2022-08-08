@@ -12,8 +12,8 @@ import pytest
 from click.testing import CliRunner
 
 from yarm import __main__
-from yarm.__main__ import Settings
 from yarm.__main__ import cli
+from yarm.settings import Settings
 
 
 @pytest.fixture
@@ -73,7 +73,7 @@ def test_new_edit_succeeds(
         assert result.exit_code == 0
 
 
-def test_prep_config(test_config_file: str) -> None:
+def prep_test_config(test_config_file: str) -> None:
     """Prepare test config file for a particular test.
 
     Several tests need a particular file in place as the config file

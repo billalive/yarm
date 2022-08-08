@@ -5,7 +5,6 @@ import importlib.resources as pkg_resources
 import os
 import sys
 from typing import Any
-from typing import Dict
 from typing import Optional
 
 # Dependencies
@@ -13,9 +12,13 @@ from typing import Optional
 # If your distribution does not include openpyxl with pandas, you may need
 # to install python-openpyxl separately.
 import click
-import yaml
 
+from yarm.helpers import abort
+from yarm.helpers import success
+from yarm.helpers import warn
+from yarm.helpers import yaml_to_dict
 from yarm.settings import Settings
+from yarm.validate import validate_config
 
 
 @click.group(invoke_without_command=True)
@@ -60,37 +63,6 @@ def run(config_path: str) -> None:
     report_config = yaml_to_dict(config_path)
     validate_config(report_config)
     sys.exit()
-
-
-def validate_config(config: Dict[Any, Any]) -> Any:
-    """Validate config file before running report."""
-    s = Settings()
-    # Why no test whether file exists? click() handles this.
-    # DEBUG:
-    # for key in config:
-    #    print(key, config[key])
-
-    # Check whether config file has been edited.
-    # Rather than an exhaustive search, just check a critical setting.
-
-    # NOTE "It is not safe to call yaml.load with any data received
-    # from an untrusted source!"
-    # https://pyyaml.org/wiki/PyYAMLDocumentation
-    default_config = yaml.safe_load(
-        pkg_resources.read_text(f"yarm.{s.DIR_TEMPLATES}", s.DEFAULT_CONFIG_FILE),
-    )
-
-    if config["output"]["basename"] == default_config["output"]["basename"]:
-        abort(
-            f"""{s.MSG_INVALID_CONFIG_NO_EDITS}
-
-output.basename is still set to the default: {default_config["output"]["basename"]}
-
-Please edit your config file, then try running this report again.
-"""
-        )
-    # If all tests pass, config file is validated.
-    return True
 
 
 @cli.command()
@@ -150,47 +122,6 @@ To run this report, type:
     else:
         msg += f"yarm run -c {config_file}"
     success(msg)
-
-
-def warn(msg: str) -> None:
-    """Show warning, but proceed."""
-    s = Settings()
-    click.secho(s.MSG_WARN, fg=s.COLOR_WARN, nl=False, bold=True)
-    click.echo(" ", nl=False)
-    click.echo(msg)
-    return
-
-
-def abort(msg: str) -> None:
-    """Abort with error message and status 1."""
-    s = Settings()
-    click.secho(s.MSG_ABORT, fg=s.COLOR_ERROR, nl=False, bold=True)
-    click.echo(" ", nl=False)
-    click.echo(msg)
-    sys.exit(1)
-
-
-def success(msg: str) -> None:
-    """End with success message and status 0."""
-    s = Settings()
-    click.secho(s.MSG_SUCCESS, fg=s.COLOR_SUCCESS, nl=False, bold=True)
-    click.echo(" ", nl=False)
-    click.echo(msg)
-
-
-def yaml_to_dict(input_file: str) -> Dict[Any, Any]:
-    """Read YAML file, return dictionary."""
-    s = Settings()
-    try:
-        with open(input_file, "rb") as yaml_file:
-            new_dict: Dict[Any, Any] = yaml.safe_load(yaml_file)
-            return new_dict
-    except yaml.scanner.ScannerError as err:
-        abort(f"{s.MSG_INVALID_CONFIG_BAD_YAML}\n{err}")
-        sys.exit()
-    except OSError as err:
-        abort(f"{s.MSG_COULDNT_OPEN_YAML}\n{err}")
-        sys.exit()
 
 
 if __name__ == "__main__":

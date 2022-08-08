@@ -1,0 +1,51 @@
+---
+# Config options.
+# See define_config_options()
+tables_config:
+  TABLE_NAME:
+    - path: "PATH"
+      sheet: "SHEET NAME"
+      datetime:
+        FIELD: NONE_OR_STR
+      pivot:
+        index: FIELD_ID
+        columns: FIELD_KEY
+        values: FIELD_VALUE
+create_tables:
+  NONE_OR_LIST:
+    - path: "PATH"
+      sheet: "SHEET NAME"
+      datetime:
+        FIELD: NONE_OR_STR
+      pivot:
+        index: FIELD_ID
+        columns: FIELD_KEY
+        values: FIELD_VALUE
+include:
+  - path: "PATH"
+output:
+  dir: "PATH"
+  basename: "BASENAME"
+  export_queries: csv
+  export_tables: csv
+  append_date: true
+  prepend_date: true
+  styles:
+    column_width: 15
+import_module:
+  - module: "MODULE_NAME"
+import:
+  strip: true
+  slugify_columns: true
+  lowercase_columns: true
+  uppercase_rows: true
+queries:
+  - sheet: "SHEET NAME"
+    sql: >-
+      YOUR SQL
+      ;
+    datetime: true
+    df_postprocess: FUNCTION_NAME
+    replace:
+      COLUMN_NAME:
+        FIELD_MATCH: FIELD_REPLACE

@@ -5,9 +5,9 @@ import re
 import pytest
 from click.testing import CliRunner
 
-from tests.test_main import test_prep_config
-from yarm.__main__ import Settings
+from tests.test_main import prep_test_config
 from yarm.__main__ import cli
+from yarm.settings import Settings
 
 
 @pytest.fixture
@@ -178,7 +178,7 @@ def test_report_aborts_invalid_config_bad_yaml(runner: CliRunner) -> None:
     """Report aborts because config file has bad YAML."""
     s = Settings()
     with runner.isolated_filesystem():
-        test_prep_config(s.TEST_CONFIG_BAD_YAML)
+        prep_test_config(s.TEST_CONFIG_BAD_YAML)
         result = runner.invoke(cli, [s.CMD_RUN])
         assert re.search(s.MSG_INVALID_CONFIG_BAD_YAML, result.output)
         assert result.exit_code == 1
@@ -190,7 +190,7 @@ def test_report_aborts_invalid_config_bad_options(runner: CliRunner) -> None:
     """Report aborts because config file has bad YAML."""
     s = Settings()
     with runner.isolated_filesystem():
-        test_prep_config(s.TEST_CONFIG_BAD_OPTIONS)
+        prep_test_config(s.TEST_CONFIG_BAD_OPTIONS)
         result = runner.invoke(cli, [s.CMD_RUN])
         assert re.search(s.MSG_INVALID_CONFIG_BAD_OPTIONS, result.output)
         assert result.exit_code == 1

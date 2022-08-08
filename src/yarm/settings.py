@@ -17,6 +17,7 @@ class Settings:
     DIR_TESTS_DATA: str = "tests_data"
     TEST_CONFIG_BAD_YAML: str = "test_config_bad_yaml.yaml"
     TEST_CONFIG_BAD_OPTIONS: str = "test_config_bad_options.yaml"
+    CONFIG_SCHEMA = "config_schema.yaml"
 
     MSG_ABORT: str = "Aborted."
     MSG_SUCCESS: str = "Success!"

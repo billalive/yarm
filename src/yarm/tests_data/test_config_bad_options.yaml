@@ -6,7 +6,7 @@
 
 output:
   dir: output
-  basename: YOUR_BASENAME
+  basename: test_config_bad_options
   prepend_date: true
   export_queries: csv
   styles:
