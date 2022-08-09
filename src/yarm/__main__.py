@@ -14,7 +14,6 @@ from typing import Optional
 import click
 
 from yarm.helpers import abort
-from yarm.helpers import load_yaml_file
 from yarm.helpers import success
 from yarm.helpers import warn
 from yarm.settings import Settings
@@ -60,8 +59,7 @@ def run(config_path: str) -> None:
     s = Settings()
     if config_path is None:
         config_path = s.DEFAULT_CONFIG_FILE  # type: ignore[unreachable]
-    report_config = load_yaml_file(config_path)
-    validate_config(report_config)
+    validate_config(config_path)
     sys.exit()
 
 

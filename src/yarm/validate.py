@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=invalid-name
 
 # noqa: B950
 
@@ -9,11 +10,13 @@ import os
 from typing import Any
 from typing import Dict
 
-import strictyaml.Any
 from path import Path
 
 # from strictyaml import MapCombined
 # from strictyaml import Int
+# namespace collision: we're already using Any from typing.
+from strictyaml import YAML
+from strictyaml import Any as AnyYAML
 from strictyaml import EmptyNone
 from strictyaml import Map
 from strictyaml import MapPattern
@@ -37,24 +40,32 @@ from yarm.settings import Settings
 # from yarm.helpers import echo_verbose
 
 
-def validate_config(config: Dict[Any, Any]) -> bool:
-    """Validate config file before running report."""
+def validate_config(config_path: str) -> YAML:
+    """Validate config file before running report.
+
+    Args:
+        config_path (str): Path to config file
+
+    Returns:
+        config (YAML): validated config as YAML
+
+    """
     # Why no test whether file exists? click() handles this.
 
     # DEBUG:
     # for key in config:
     #    print(key, config[key])
 
+    config = validate_config_schema(config_path)
     validate_config_edited(config)
-    validate_config_schema(config)
 
     # Check whether config options are valid.
 
     # If all tests pass, config file is validated.
-    return True
+    return config
 
 
-def validate_config_edited(config: Dict[Any, Any]) -> bool:
+def validate_config_edited(config: YAML) -> bool:
     """Check whether config has been edited."""
     # Rather than an exhaustive search, just check a critical setting.
     s = Settings()
@@ -95,31 +106,43 @@ class StrNotEmpty(Str):
         return chunk.contents
 
 
-def validate_config_schema(config: Dict[Any, Any]) -> bool:
-    """Check whether config options are valid."""
+def validate_config_schema(config_path: str) -> Any:
+    """Return config file if it validates agaist schema.
+
+    Args:
+        config_path (str): Path to config file
+
+    Returns:
+        config (YAML): validated config as YAML
+
+    """
+    s = Settings()
     # During initial validation, all fields are Optional because they
     # may be spread across multiple included files.
     # Once we have processed all config files, we will check separately that
     # all critical config items have been provided.
     schema = Map(
         {
-            Optional("tables_config", drop_if_none=False): EmptyNone() | Any(),
-            Optional("create_tables"): Any(),
-            Optional("include"): Any(),
-            Optional("output"): Any(),
-            Optional("import_module"): Any(),
-            Optional("import"): Any(),
-            Optional("queries"): Any(),
+            Optional("tables_config", drop_if_none=False): EmptyNone() | AnyYAML(),
+            Optional("create_tables"): AnyYAML(),
+            Optional("include"): AnyYAML(),
+            Optional("output"): AnyYAML(),
+            Optional("import_module"): AnyYAML(),
+            Optional("import"): AnyYAML(),
+            Optional("queries"): AnyYAML(),
         }
     )
+
     try:
-        c = strictyaml.load(Path("tmp/tmp_config.yaml").read_text(), schema)
+        c = load(Path(config_path).read_text(), schema)
     except YAMLError as error:
-        print(error)
+        abort(s.MSG_INVALID_YAML, error=error, file_path=config_path)
+    except FileNotFoundError:
+        abort(s.MSG_CONFIG_FILE_NOT_FOUND, file_path=config_path)
 
     # tables_config:
     #  TABLE_NAME_01:
-    #    - path: "PATH"
+    #    - path: "PATH_01.csv"
     #      sheet: "SHEET NAME"
     #      datetime:
     #        FIELD_01: NONE_OR_STR
@@ -130,7 +153,7 @@ def validate_config_schema(config: Dict[Any, Any]) -> bool:
     #        values: FIELD_VALUE
     if c["tables_config"].data:
         print("Validating tables_config")
-        c["tables_config"].revalidate(MapPattern(Str(), Seq(Any())))
+        c["tables_config"].revalidate(MapPattern(Str(), Seq(AnyYAML())))
         for table_name in c["tables_config"].data:
             check_is_file(c["tables_config"][table_name].data, "path")
             table = c["tables_config"][table_name]
@@ -141,8 +164,9 @@ def validate_config_schema(config: Dict[Any, Any]) -> bool:
                             "path": StrNotEmpty(),
                             Optional("sheet"): StrNotEmpty(),
                             Optional("datetime", drop_if_none=False): EmptyNone()
-                            | Any(),
-                            Optional("pivot", drop_if_none=False): EmptyNone() | Any(),
+                            | AnyYAML(),
+                            Optional("pivot", drop_if_none=False): EmptyNone()
+                            | AnyYAML(),
                         }
                     )
                 )
@@ -151,7 +175,7 @@ def validate_config_schema(config: Dict[Any, Any]) -> bool:
             for source in table:
                 if source["datetime"].data:
                     source["datetime"].revalidate(
-                        MapPattern(Str(), EmptyNone() | Any())
+                        MapPattern(Str(), EmptyNone() | AnyYAML())
                     )
                 if source["pivot"].data:
                     source["pivot"].revalidate(
@@ -165,11 +189,13 @@ def validate_config_schema(config: Dict[Any, Any]) -> bool:
                     )
 
     # include:
-    #  - path: "PATH1"
-    #  - path: "PATH2"
+    #  - path: "INCLUDE_PATH_01.yaml"
+    #  - path: "INCLUDE_PATH_02.yaml"
     c["include"].revalidate(Seq(Map({"path": Str()})))
     check_is_file(c["include"].data, "path")
-    return True
+
+    # If configuration validates, return config object.
+    return c
 
 
 def get_default_config() -> Any:
@@ -186,11 +212,6 @@ def get_config_schema() -> Any:
     When you add an option, you must add it to this template file,
     so that validate_config_schema() will recognize it.
 
-    An UPPERCASE value means that the user can define their own custom name.
-    E.g. TABLE_NAME.
-
-    NONE_OR_STR means that the user can either provide a string or leave this
-    blank.
 
     tables_config and create_tables should have identical options.
 

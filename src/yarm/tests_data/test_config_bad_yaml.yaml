@@ -1,8 +1,8 @@
 ---
 # Test: Bad YAML
 
-output:
-  dir output
+output
+  dir: output
   basename: YOUR_BASENAME
   prepend_date: true
   export_queries: csv
