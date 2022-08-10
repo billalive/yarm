@@ -5,6 +5,7 @@
 
 
 import importlib.resources as pkg_resources
+import inspect
 import os
 import shutil
 from typing import Any
@@ -14,6 +15,7 @@ from click.testing import CliRunner
 from path import Path
 
 from yarm import __main__
+from yarm import tests_data
 from yarm.__main__ import cli
 from yarm.settings import Settings
 
@@ -114,15 +116,29 @@ def prep_test_config(test_config_name: str) -> None:
     with open(s.DEFAULT_CONFIG_FILE, "wt") as textfile:
         textfile.write(pkg_resources.read_text(dir_tests_data, test_config_file))
     assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
-    # If there is a dir named test_config_name, copy all files in that dir into
-    # the temporary testing dir.
-    src = pkg_resources.path(dir_tests_data, test_config_name)
-    print(type(src))
-    # Note: The complex wrapping with Path() seems needed for compatibility down to 3.7.
-    if Path(pkg_resources.path(dir_tests_data, test_config_name)).exists():
-        if os.path.isdir(Path(pkg_resources.path(dir_tests_data, test_config_name))):
-            shutil.copytree(
-                pkg_resources.path(dir_tests_data, test_config_name),
-                ".",
-                dirs_exist_ok=True,
-            )
+    # Does this test have a test directory?
+    # If so, copy all files from that dir into the temporary testing dir.
+    # Use inspect to get the actual path.
+    # NOTE Is there a way to avoid hard-coding 'tests_data' here? Does it matter?
+    dir_tests_data: str = os.path.dirname(inspect.getfile(tests_data))
+    print("dir_tests_data:", dir_tests_data)
+    assert os.path.isdir(os.path.dirname(dir_tests_data))
+    dir_test_config_name: str = f"{dir_tests_data}/{test_config_name}"
+    if os.path.isdir(os.path.dirname(dir_test_config_name)):
+        print("is a dir:", dir_test_config_name)
+        for f in Path(dir_test_config_name).glob("*"):
+            if os.path.isfile(f):
+                shutil.copy(f, ".")
+    else:
+        print("not a dir:", dir_test_config_name)
+
+
+def test_prep_config_copies_files(runner: CliRunner) -> None:
+    """Copy test_config_name/ files into testing environment."""
+    # Test in a temporary new directory.
+    with runner.isolated_filesystem():
+        test_config_name: str = "test_prep_config_copies_files"
+        prep_test_config(test_config_name)
+        assert os.path.isfile("file1.txt")
+        assert os.path.isfile("file2.txt")
+        assert not os.path.isfile("does_not_exist.txt")
