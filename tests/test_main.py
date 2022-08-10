@@ -109,18 +109,16 @@ def prep_test_config(test_config_name: str) -> None:
     s = Settings()
     # make sure we have a default config file location.
     assert isinstance(s.DEFAULT_CONFIG_FILE, str)
-    test_config_file = f"{test_config_name}{s.EXT_YAML}"
     # copy in the config file for this test.
-    dir_tests_data: str = f"{s.PKG}.{s.DIR_TESTS_DATA}"
-    assert pkg_resources.is_resource(dir_tests_data, test_config_file)
-    with open(s.DEFAULT_CONFIG_FILE, "wt") as textfile:
-        textfile.write(pkg_resources.read_text(dir_tests_data, test_config_file))
+    # NOTE Is there a way to avoid hard-coding 'tests_data' here? Does it matter?
+    dir_tests_data: str = os.path.dirname(inspect.getfile(tests_data))
+    test_config_file: str = f"{dir_tests_data}/{test_config_name}{s.EXT_YAML}"
+    assert os.path.isfile(test_config_file)
+    shutil.copy(test_config_file, s.DEFAULT_CONFIG_FILE)
     assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
     # Does this test have a test directory?
     # If so, copy all files from that dir into the temporary testing dir.
     # Use inspect to get the actual path.
-    # NOTE Is there a way to avoid hard-coding 'tests_data' here? Does it matter?
-    dir_tests_data: str = os.path.dirname(inspect.getfile(tests_data))
     print("dir_tests_data:", dir_tests_data)
     assert os.path.isdir(os.path.dirname(dir_tests_data))
     dir_test_config_name: str = f"{dir_tests_data}/{test_config_name}"
