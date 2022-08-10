@@ -10,8 +10,6 @@ import os
 from typing import Any
 from typing import Dict
 
-from path import Path
-
 # from strictyaml import MapCombined
 # from strictyaml import Int
 # namespace collision: we're already using Any from typing.
@@ -23,14 +21,13 @@ from strictyaml import MapPattern
 from strictyaml import Optional
 from strictyaml import Seq
 from strictyaml import Str
-from strictyaml import YAMLError
 from strictyaml import load
 
 from yarm.helpers import abort
+from yarm.helpers import load_yaml_file
 
 # from yarm.helpers import success
 # from yarm.helpers import warn
-# from yarm.helpers import yaml_to_dict
 from yarm.settings import Settings
 
 
@@ -114,7 +111,6 @@ def validate_config_schema(config_path: str) -> Any:
         config (YAML): validated config as YAML
 
     """
-    s = Settings()
     # During initial validation, all fields are Optional because they
     # may be spread across multiple included files.
     # Once we have processed all config files, we will check separately that
@@ -131,12 +127,7 @@ def validate_config_schema(config_path: str) -> Any:
         }
     )
 
-    try:
-        c = load(Path(config_path).read_text(), schema)
-    except YAMLError as error:
-        abort(s.MSG_INVALID_YAML, error=error, file_path=config_path)
-    except FileNotFoundError:
-        abort(s.MSG_CONFIG_FILE_NOT_FOUND, file_path=config_path)
+    c = load_yaml_file(config_path, schema)
 
     # tables_config:
     #  TABLE_NAME_01:

@@ -107,10 +107,13 @@ def prep_test_config(test_config_name: str) -> None:
 
     """
     s = Settings()
-    # make sure we have a default config file location.
+    # Make sure we have a default config file location.
     assert isinstance(s.DEFAULT_CONFIG_FILE, str)
-    # copy in the config file for this test.
+    # Copy in the config file for this test.
     # NOTE Is there a way to avoid hard-coding 'tests_data' here? Does it matter?
+    # NOTE We use inspect() rather than importlib() to get this path, because
+    # importlib has changed much more since 3.7, esp in how it handles dirs
+    # within other dirs. Using inspect() to get the paths seems simpler.
     dir_tests_data: str = os.path.dirname(inspect.getfile(tests_data))
     test_config_file: str = f"{dir_tests_data}/{test_config_name}{s.EXT_YAML}"
     assert os.path.isfile(test_config_file)
@@ -133,7 +136,6 @@ def prep_test_config(test_config_name: str) -> None:
 
 def test_prep_config_copies_files(runner: CliRunner) -> None:
     """Copy test_config_name/ files into testing environment."""
-    # Test in a temporary new directory.
     with runner.isolated_filesystem():
         test_config_name: str = "test_prep_config_copies_files"
         prep_test_config(test_config_name)
