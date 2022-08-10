@@ -10,6 +10,9 @@ import os
 from typing import Any
 from typing import Dict
 
+import click
+from nob import Nob
+
 # from strictyaml import MapCombined
 # from strictyaml import Int
 # namespace collision: we're already using Any from typing.
@@ -26,15 +29,11 @@ from strictyaml import load
 from yarm.helpers import abort
 from yarm.helpers import load_yaml_file
 
-# from yarm.helpers import success
 # from yarm.helpers import warn
 from yarm.settings import Settings
 
 
 # from typing import List
-
-
-# from yarm.helpers import echo_verbose
 
 
 def validate_config(config_path: str) -> YAML:
@@ -67,12 +66,14 @@ def validate_config_edited(config: YAML) -> bool:
     # Rather than an exhaustive search, just check a critical setting.
     s = Settings()
     default_config = get_default_config()
-    if config["output"]["basename"] == default_config["output"]["basename"]:
-        abort(
-            f"""{s.MSG_INVALID_CONFIG_NO_EDITS}
-output.basename is still set to the default: {default_config["output"]["basename"]}
-Please edit your config file, then try running this report again."""
-        )
+    c = Nob(config.data)
+    if "/output/basename" in c:
+        if c.output.basename == default_config.output.basename:
+            abort(
+                f"""{s.MSG_INVALID_CONFIG_NO_EDITS}
+    output.basename is still set to the default: {default_config.output.basename}
+    Please edit your config file, then try running this report again."""
+            )
 
 
 def check_is_file(list_of_paths, key):
@@ -101,6 +102,14 @@ class StrNotEmpty(Str):
         return chunk.contents
 
 
+def msg_validating_key(key: str):
+    """Show a message that a key is being validated."""
+    s = Settings()
+    click.echo(s.MSG_VALIDATING_KEY, nl=False)
+    click.secho(key, fg=s.COLOR_DATA)
+    # TODO Only show if verbose
+
+
 def validate_config_schema(config_path: str) -> Any:
     """Return config file if it validates agaist schema.
 
@@ -111,6 +120,7 @@ def validate_config_schema(config_path: str) -> Any:
         config (YAML): validated config as YAML
 
     """
+    s = Settings()
     # During initial validation, all fields are Optional because they
     # may be spread across multiple included files.
     # Once we have processed all config files, we will check separately that
@@ -141,9 +151,10 @@ def validate_config_schema(config_path: str) -> Any:
     #        columns: FIELD_KEY
     #        values: FIELD_VALUE
     if c["tables_config"].data:
-        print("Validating tables_config")
+        msg_validating_key("tables_config")
         c["tables_config"].revalidate(MapPattern(Str(), Seq(AnyYAML())))
         for table_name in c["tables_config"].data:
+            msg_validating_key(table_name)
             check_is_file(c["tables_config"][table_name].data, "path")
             table = c["tables_config"][table_name]
             table.revalidate(
@@ -185,36 +196,20 @@ def validate_config_schema(config_path: str) -> Any:
         check_is_file(c["include"].data, "path")
 
     # If configuration validates, return config object.
+    click.echo(s.MSG_CONFIG_FILE_VALID, nl=False)
+    click.secho(config_path, fg=s.COLOR_DATA)
     return c
 
 
-def get_default_config() -> Any:
+def get_default_config() -> Nob:
     """Get default config."""
     s = Settings()
-    return load(
-        pkg_resources.read_text(f"{s.PKG}.{s.DIR_TEMPLATES}", s.DEFAULT_CONFIG_FILE),
-    )
-
-
-def get_config_schema() -> Any:
-    """Get 'schema' of config options.
-
-    When you add an option, you must add it to this template file,
-    so that validate_config_schema() will recognize it.
-
-
-    tables_config and create_tables should have identical options.
-
-    Except: where tables_config has TABLE_NAME, create_tables has NONE_OR_LIST.
-    This allows you to define a table fully
-
-    They are separate so that you can include a config file with a tables_config
-    that defines ALL the tables you often use, but then use create_tables to only
-    actually create the specific tables you need for this report.
-    """
-    s = Settings()
-    return load(
-        pkg_resources.read_text(f"{s.PKG}.{s.DIR_TEMPLATES}", s.CONFIG_SCHEMA),
+    return Nob(
+        load(
+            pkg_resources.read_text(
+                f"{s.PKG}.{s.DIR_TEMPLATES}", s.DEFAULT_CONFIG_FILE
+            ),
+        ).data
     )
 
 

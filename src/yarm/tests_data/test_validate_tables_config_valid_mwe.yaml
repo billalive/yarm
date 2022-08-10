@@ -1,0 +1,4 @@
+---
+tables_config:
+  products:
+    - path: "products.csv"

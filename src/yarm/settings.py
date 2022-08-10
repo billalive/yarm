@@ -33,6 +33,8 @@ class Settings:
     MSG_INVALID_YAML: str = """This config file has invalid YAML or a misconfiguration.
 Please fix the error below and try again."""
     MSG_PATH_NOT_FOUND: str = "One or more paths in your config could not be found:"
+    MSG_VALIDATING_KEY: str = "Validating: "
+    MSG_CONFIG_FILE_VALID: str = "Configuration file validated: "
 
     COLOR_ERROR: str = "red"
     COLOR_SUCCESS: str = "bright_green"

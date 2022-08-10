@@ -31,7 +31,7 @@ def warn(msg: str) -> None:
     return
 
 
-def abort(msg: str, error: str = None, file_path: str = None) -> None:
+def abort(msg: str, error: str = None, file_path: str = None):
     """Abort with error message and status 1.
 
     Args:
@@ -50,11 +50,19 @@ def abort(msg: str, error: str = None, file_path: str = None) -> None:
     if error is not None:
         click.echo("Error: ", nl=False)
         click.secho(error, fg=s.COLOR_ERROR)
+    # FIXME sys.exit(1) appears to break coverage, resulting in many lines
+    # that are tested showing up as not tested. But this may be a bug in coverage:
+    # https://github.com/nedbat/coveragepy/issues/1433
     sys.exit(1)
 
 
 def success(msg: str) -> None:
-    """End with success message and status 0."""
+    """Show success message.
+
+    Args:
+        msg: (str)  message
+
+    """
     s = Settings()
     click.secho(s.MSG_SUCCESS, fg=s.COLOR_SUCCESS, nl=False, bold=True)
     click.echo(" ", nl=False)

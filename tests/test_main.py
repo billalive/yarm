@@ -122,16 +122,16 @@ def prep_test_config(test_config_name: str) -> None:
     # Does this test have a test directory?
     # If so, copy all files from that dir into the temporary testing dir.
     # Use inspect to get the actual path.
-    print("dir_tests_data:", dir_tests_data)
+    # print("dir_tests_data:", dir_tests_data)
     assert os.path.isdir(os.path.dirname(dir_tests_data))
     dir_test_config_name: str = f"{dir_tests_data}/{test_config_name}"
     if os.path.isdir(os.path.dirname(dir_test_config_name)):
-        print("is a dir:", dir_test_config_name)
+        # print("is a dir:", dir_test_config_name)
         for f in Path(dir_test_config_name).glob("*"):
             if os.path.isfile(f):
                 shutil.copy(f, ".")
-    else:
-        print("not a dir:", dir_test_config_name)
+    # else:
+    # print("not a dir:", dir_test_config_name)
 
 
 def test_prep_config_copies_files(runner: CliRunner) -> None:
