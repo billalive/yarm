@@ -76,20 +76,22 @@ def validate_config_edited(config: YAML) -> bool:
 output.basename is still set to the default: {default_config["output"]["basename"]}
 Please edit your config file, then try running this report again."""
         )
-        return False
     return True
 
 
 def check_is_file(list_of_paths, key):
     """For each item with key (e.g. 'path'), check that the value is a file."""
+    s = Settings()
+    missing: list = []
     for item in list_of_paths:
         path = item[key]
-        print("checking", path)
         result = True
         if not os.path.exists(path):
-            print(f"not a path: {path}")
+            missing.append(path)
             result = False
-    return result
+    if not result:
+        file_path: str = "\n".join(map(str, missing))
+        abort(f"{s.MSG_PATH_NOT_FOUND}\n{file_path}")
 
 
 class StrNotEmpty(Str):

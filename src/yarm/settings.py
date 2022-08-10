@@ -15,10 +15,12 @@ class Settings:
     DEFAULT_CONFIG_FILE: str = "report.yaml"
     DIR_TEMPLATES: str = "templates"
     DIR_TESTS_DATA: str = "tests_data"
+
     TEST_CONFIG_BAD_YAML: str = "test_config_bad_yaml.yaml"
     TEST_CONFIG_BAD_OPTIONS: str = "test_config_bad_options.yaml"
+    TEST_VALIDATE_FAILS_CHECK_IS_FILE: str = "test_validate_fails_check_is_file.yaml"
 
-    MSG_ABORT: str = "Aborted."
+    MSG_ABORT: str = "Failed."
     MSG_SUCCESS: str = "Success!"
     MSG_WARN: str = "Warning:"
     MSG_USAGE: str = "Usage:"
@@ -29,6 +31,7 @@ class Settings:
     )
     MSG_INVALID_YAML: str = """This config file has invalid YAML or a misconfiguration.
 Please fix the error below and try again."""
+    MSG_PATH_NOT_FOUND: str = "One or more paths in your config could not be found:"
 
     COLOR_ERROR: str = "red"
     COLOR_SUCCESS: str = "bright_green"

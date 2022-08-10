@@ -1,0 +1,13 @@
+# test_validate_fails_check_is_file
+---
+include:
+  - path: "nonexistent_path_01.yaml"
+  - path: "nonexistent_path_02.yaml"
+
+tables_config:
+  table_A:
+    - path: "nonexistent_path_A01.yaml"
+    - path: "nonexistent_path_A02.yaml"
+  table_B:
+    - path: "nonexistent_path_B01.yaml"
+    - path: "nonexistent_path_B02.yaml"
