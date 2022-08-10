@@ -16,8 +16,10 @@ class Settings:
     DIR_TEMPLATES: str = "templates"
     DIR_TESTS_DATA: str = "tests_data"
 
-    TEST_CONFIG_BAD_YAML: str = "test_config_bad_yaml.yaml"
-    TEST_CONFIG_BAD_OPTIONS: str = "test_config_bad_options.yaml"
+    EXT_YAML: str = ".yaml"
+
+    TEST_CONFIG_BAD_YAML: str = "test_config_bad_yaml"
+    TEST_CONFIG_BAD_OPTIONS: str = "test_config_bad_options"
 
     MSG_ABORT: str = "Failed."
     MSG_SUCCESS: str = "Success!"

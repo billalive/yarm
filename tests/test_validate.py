@@ -29,7 +29,7 @@ def test_validate_config_mistakes(runner: CliRunner) -> None:
     test_config: list = [("test_validate_fails_check_is_file", s.MSG_PATH_NOT_FOUND)]
     for test_tuple in test_config:
         with runner.isolated_filesystem():
-            prep_test_config(f"{test_tuple[0]}.yaml")
+            prep_test_config(test_tuple[0])
             result = runner.invoke(cli, [s.CMD_RUN])
             assert re.search(test_tuple[1], result.output)
             assert result.exit_code == 1

@@ -76,7 +76,6 @@ def validate_config_edited(config: YAML) -> bool:
 output.basename is still set to the default: {default_config["output"]["basename"]}
 Please edit your config file, then try running this report again."""
         )
-    return True
 
 
 def check_is_file(list_of_paths, key):
@@ -99,7 +98,7 @@ class StrNotEmpty(Str):
 
     @staticmethod
     def validate_scalar(chunk: str) -> str:
-        """String does not validate if it is empty."""
+        """Invalidate if string is empty."""
         if any([chunk.contents == ""]):
             chunk.expecting_but_found("when expecting a string that is not empty")
         return chunk.contents
