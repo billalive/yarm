@@ -27,7 +27,7 @@ class Settings:
     MSG_INVALID_CONFIG_NO_EDITS: str = (
         "This config file does not appear to have been edited."
     )
-    MSG_INVALID_YAML: str = """This config file has invalid or misconfigured YAML.
+    MSG_INVALID_YAML: str = """This config file has invalid YAML or a misconfiguration.
 Please fix the error below and try again."""
 
     COLOR_ERROR: str = "red"

@@ -73,11 +73,8 @@ def validate_config_edited(config: YAML) -> bool:
     if config["output"]["basename"] == default_config["output"]["basename"]:
         abort(
             f"""{s.MSG_INVALID_CONFIG_NO_EDITS}
-
 output.basename is still set to the default: {default_config["output"]["basename"]}
-
-Please edit your config file, then try running this report again.
-"""
+Please edit your config file, then try running this report again."""
         )
         return False
     return True
@@ -124,12 +121,12 @@ def validate_config_schema(config_path: str) -> Any:
     schema = Map(
         {
             Optional("tables_config", drop_if_none=False): EmptyNone() | AnyYAML(),
-            Optional("create_tables"): AnyYAML(),
-            Optional("include"): AnyYAML(),
-            Optional("output"): AnyYAML(),
-            Optional("import_module"): AnyYAML(),
-            Optional("import"): AnyYAML(),
-            Optional("queries"): AnyYAML(),
+            Optional("create_tables", drop_if_none=False): EmptyNone() | AnyYAML(),
+            Optional("include", drop_if_none=False): EmptyNone() | AnyYAML(),
+            Optional("output", drop_if_none=False): EmptyNone() | AnyYAML(),
+            Optional("import_module", drop_if_none=False): EmptyNone() | AnyYAML(),
+            Optional("import", drop_if_none=False): EmptyNone() | AnyYAML(),
+            Optional("queries", drop_if_none=False): EmptyNone() | AnyYAML(),
         }
     )
 
@@ -191,8 +188,9 @@ def validate_config_schema(config_path: str) -> Any:
     # include:
     #  - path: "INCLUDE_PATH_01.yaml"
     #  - path: "INCLUDE_PATH_02.yaml"
-    c["include"].revalidate(Seq(Map({"path": Str()})))
-    check_is_file(c["include"].data, "path")
+    if c["include"].data:
+        c["include"].revalidate(Seq(Map({"path": Str()})))
+        check_is_file(c["include"].data, "path")
 
     # If configuration validates, return config object.
     return c
