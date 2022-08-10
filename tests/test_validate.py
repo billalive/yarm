@@ -21,11 +21,15 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-def test_validate_fails_check_is_file(runner: CliRunner) -> None:
-    """Validation fails because config file has path to missing file."""
+def test_validate_config_mistakes(runner: CliRunner) -> None:
+    """Validation fails on a series of config mistakes."""
     s = Settings()
-    with runner.isolated_filesystem():
-        prep_test_config(s.TEST_VALIDATE_FAILS_CHECK_IS_FILE)
-        result = runner.invoke(cli, [s.CMD_RUN])
-        assert re.search(s.MSG_PATH_NOT_FOUND, result.output)
-        assert result.exit_code == 1
+    # Each mistake is defined in a short test file, and the result
+    # should be a particular message defined in class Settings.
+    test_config: list = [("test_validate_fails_check_is_file", s.MSG_PATH_NOT_FOUND)]
+    for test_tuple in test_config:
+        with runner.isolated_filesystem():
+            prep_test_config(f"{test_tuple[0]}.yaml")
+            result = runner.invoke(cli, [s.CMD_RUN])
+            assert re.search(test_tuple[1], result.output)
+            assert result.exit_code == 1
