@@ -54,10 +54,10 @@ For more options:
     help="Config file for this project.",
     type=click.Path(exists=True),
 )
-def run(config_path: str) -> None:
+def run(config_path: Optional[str]) -> None:
     """Run the report(s)."""
     s = Settings()
-    if config_path is None:
+    if config_path is None:  # pragma: no branch
         config_path = s.DEFAULT_CONFIG_FILE  # type: ignore[unreachable]
     validate_config(config_path)
     sys.exit()

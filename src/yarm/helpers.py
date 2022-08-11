@@ -91,7 +91,7 @@ def load_yaml_file(input_file: str, schema: Any) -> YAML:
 def echo_verbose(msg: str, verbose_level: int = 1) -> bool:
     """Show message if args.verbose is >= than verbose_level."""
     # FIXME args_verbose should be actual argument.
-    args_verbose: int = 1
-    if args_verbose >= verbose_level:
-        print(msg)
-    return True
+    args_verbose: int = 1  # pragma: no cover
+    if args_verbose >= verbose_level:  # pragma: no cover
+        print(msg)  # pragma: no cover
+    return True  # pragma: no cover
