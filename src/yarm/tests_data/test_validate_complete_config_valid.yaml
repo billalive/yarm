@@ -1,0 +1,64 @@
+# Stub YAML to begin your report.
+# See examples/ for more options.
+
+# If you want to add a df_postprocess function, see report.py
+import_module:
+  - path: "MODULE_A.py"
+
+include:
+  - path: "INCLUDE_A.yaml"
+  - path: "INCLUDE_B.yaml"
+
+output:
+  dir: output
+  basename: your_basename
+  prepend_date: true
+  export_tables: csv
+  export_queries: csv
+  styles:
+    column_width: 15
+
+import:
+  strip: true
+  slugify_columns: true
+  lowercase_columns: true
+
+create_tables:
+  table_from_spreadsheet:
+    - path: "SOURCE_A.xlsx"
+      sheet: "Sheet A.1"
+      datetime:
+        created:
+        last_saved: "%Y-%m-%d"
+  table_from_csv:
+    - path: "SOURCE_B.csv"
+  table_from_multiple_sources:
+    - path: "SOURCE_C.xlsx"
+      sheet: "SHEET C #1"
+    - path: "SOURCE_C.xlsx"
+      sheet: "SHEET C #2"
+    - path: "SOURCE_D.xlsx"
+      sheet: "SHEET D #1"
+    - path: "SOURCE_E.csv"
+
+queries:
+  - sheet: "QUERY A"
+    sql: |
+      SELECT
+      *
+      FROM
+      table_from_spreadsheet AS s
+      ;
+
+  - sheet: "QUERY B"
+    df_postprocess: postprocess_df
+    sql: |
+      SELECT
+      *
+      FROM
+      table_from_spreadsheet AS s
+      JOIN
+      table_from_csv AS c
+      ON
+      s.id = c.id
+      ;

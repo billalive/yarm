@@ -41,3 +41,20 @@ def test_validate_config_mistakes(runner: CliRunner) -> None:
             result = runner.invoke(cli, [s.CMD_RUN])
             assert re.search(msg, result.output)
             assert result.exit_code == exit_code
+
+
+def test_validate_complete_config_valid(runner: CliRunner) -> None:
+    """Validation succeeds with values for every config option.
+
+    If you modify, add or remove a config option, update this test and
+    its config file.
+    """
+    s = Settings()
+    test: str = "test_validate_complete_config_valid"
+    messages: list = [s.MSG_CONFIG_FILE_VALID]
+    with runner.isolated_filesystem():
+        prep_test_config(test)
+        result = runner.invoke(cli, [s.CMD_RUN])
+        for msg in messages:
+            assert re.search(msg, result.output)
+        assert result.exit_code == 0
