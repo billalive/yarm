@@ -131,6 +131,7 @@ def prep_test_config(test_config_name: str) -> None:
         for f in Path(dir_test_config_name).glob("*"):
             if os.path.isfile(f):  # pragma: no branch
                 shutil.copy(f, ".")
+                # print("copying in:", f)
     # else:
     # print("not a dir:", dir_test_config_name)
 

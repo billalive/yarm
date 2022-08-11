@@ -9,6 +9,7 @@ import importlib.resources as pkg_resources
 import os
 from typing import Any
 from typing import Dict
+from typing import Optional
 
 import click
 from nob import Nob
@@ -18,10 +19,11 @@ from nob import Nob
 # namespace collision: we're already using Any from typing.
 from strictyaml import YAML
 from strictyaml import Any as AnyYAML
+from strictyaml import Bool
 from strictyaml import EmptyNone
 from strictyaml import Map
 from strictyaml import MapPattern
-from strictyaml import Optional
+from strictyaml import Optional as OptionalYAML
 from strictyaml import Seq
 from strictyaml import Str
 from strictyaml import load
@@ -76,12 +78,28 @@ def validate_config_edited(config: YAML) -> bool:
             )
 
 
-def check_is_file(list_of_paths, key):
-    """For each item with key (e.g. 'path'), check that the value is a file."""
+def check_is_file(list_of_paths, key: Optional[str]):
+    """For each item in a list, check that the value is a file.
+
+    Args:
+        list_of_paths: (list) List of strings or dictionaries
+        key: (str) (optional) If dictionaries, this key matches the paths.
+
+    """
     s = Settings()
     missing: list = []
     for item in list_of_paths:
-        path = item[key]
+        path: str = ""
+        if isinstance(item, str):
+            path = item
+        elif isinstance(item, dict):
+            if key is None:
+                abort("List of paths is a dict, but no key (e.g. 'path') is provided.")
+            else:
+                path = item[key]
+        else:
+            abort("List of paths must contain either strings or dictionaries.")
+
         result = True
         if not os.path.exists(path):
             missing.append(path)
@@ -110,62 +128,56 @@ def msg_validating_key(key: str):
     # TODO Only show if verbose
 
 
-def validate_config_schema(config_path: str) -> Any:
-    """Return config file if it validates agaist schema.
+def validate_key_include(c: YAML):
+    """Validate config key: include.
 
-    Args:
-        config_path (str): Path to config file
+    Example Format:
 
-    Returns:
-        config (YAML): validated config as YAML
-
+    include:
+     - path: "INCLUDE_A.yaml"
+     - path: "INCLUDE_B.yaml"
     """
-    s = Settings()
-    # During initial validation, all fields are Optional because they
-    # may be spread across multiple included files.
-    # Once we have processed all config files, we will check separately that
-    # all critical config items have been provided.
-    schema = Map(
-        {
-            Optional("tables_config", drop_if_none=False): EmptyNone() | AnyYAML(),
-            Optional("create_tables", drop_if_none=False): EmptyNone() | AnyYAML(),
-            Optional("include", drop_if_none=False): EmptyNone() | AnyYAML(),
-            Optional("output", drop_if_none=False): EmptyNone() | AnyYAML(),
-            Optional("import_module", drop_if_none=False): EmptyNone() | AnyYAML(),
-            Optional("import", drop_if_none=False): EmptyNone() | AnyYAML(),
-            Optional("queries", drop_if_none=False): EmptyNone() | AnyYAML(),
-        }
-    )
+    if c["include"].data:
+        msg_validating_key("include")
+        c["include"].revalidate(Seq(Map({"path": Str()})))
+        check_is_file(c["include"].data, "path")
 
-    c = load_yaml_file(config_path, schema)
 
-    # tables_config:
-    #  TABLE_NAME_01:
-    #    - path: "PATH_01.csv"
-    #      sheet: "SHEET NAME"
-    #      datetime:
-    #        FIELD_01: NONE_OR_STR
-    #        FIELD_02: NONE_OR_STR
-    #      pivot:
-    #        index: FIELD_ID
-    #        columns: FIELD_KEY
-    #        values: FIELD_VALUE
-    if c["tables_config"].data:
-        msg_validating_key("tables_config")
-        c["tables_config"].revalidate(MapPattern(Str(), Seq(AnyYAML())))
-        for table_name in c["tables_config"].data:
+def validate_key_tables_config(c: YAML):
+    """Validate config key: tables_config.
+
+    Example Format:
+
+    tables_config:
+     TABLE_NAME_A:
+       - path: "SOURCE_A.xlsx"
+         sheet: "SHEET A.1"
+         datetime:
+           FIELD_1: NONE_OR_STR
+           FIELD_2: NONE_OR_STR
+         pivot:
+           index: FIELD_ID
+           columns: FIELD_KEY
+           values: FIELD_VALUE
+     TABLE_NAME_B:
+       - path: "SOURCE_B.csv"
+    """
+    key: str = check_key("tables_config", c)
+    if key:
+        c[key].revalidate(MapPattern(Str(), Seq(AnyYAML())))
+        for table_name in c[key].data:
             msg_validating_key(table_name)
-            check_is_file(c["tables_config"][table_name].data, "path")
-            table = c["tables_config"][table_name]
+            check_is_file(c[key][table_name].data, "path")
+            table = c[key][table_name]
             table.revalidate(
                 Seq(
                     Map(
                         {
                             "path": StrNotEmpty(),
-                            Optional("sheet"): StrNotEmpty(),
-                            Optional("datetime", drop_if_none=False): EmptyNone()
+                            OptionalYAML("sheet"): StrNotEmpty(),
+                            OptionalYAML("datetime", drop_if_none=False): EmptyNone()
                             | AnyYAML(),
-                            Optional("pivot", drop_if_none=False): EmptyNone()
+                            OptionalYAML("pivot", drop_if_none=False): EmptyNone()
                             | AnyYAML(),
                         }
                     )
@@ -188,12 +200,145 @@ def validate_config_schema(config_path: str) -> Any:
                         )
                     )
 
-    # include:
-    #  - path: "INCLUDE_PATH_01.yaml"
-    #  - path: "INCLUDE_PATH_02.yaml"
-    if c["include"].data:
-        c["include"].revalidate(Seq(Map({"path": Str()})))
-        check_is_file(c["include"].data, "path")
+
+def validate_key_create_tables(c: YAML):
+    """Validate config key: create_tables.
+
+    Example Format:
+
+    create_tables:
+     - TABLE_NAME_A
+     - TABLE_NAME_B
+    """
+    key: str = check_key("create_tables", c)
+    if key:
+        for table in c[key].data:
+            print("creating table: ", table)
+        # TODO Check that tables exist in configuration object.
+
+
+def check_key(key: str, c: YAML):
+    """Check whether a key exists in configuration YAML.
+
+    Args:
+       key (str)   name of key
+       c (YAML)    config YAML
+
+    Returns:
+       name of key (str) if present, None if not
+    """
+    if c[key].data:
+        msg_validating_key(key)
+        return key
+    else:
+        return None
+
+
+def validate_key_import(c: YAML):
+    """Validate config key: import.
+
+    Example Format:
+
+    import:
+     - path: "MODULE_A.py"
+     - path: "MODULE_B.py"
+    """
+    key: str = check_key("import", c)
+    if key:
+        c[key].revalidate(Seq(Map({"path": Str()})))
+        check_is_file(c[key].data, "path")
+
+
+def validate_key_input(c: YAML):
+    """Validate config key: input.
+
+    Example Format:
+
+    input:
+        strip: true
+        slugify_columns: true
+        lowercase_columns: true
+    """
+    key: str = check_key("input", c)
+    if key:
+        c[key].revalidate(
+            Map(
+                {
+                    "strip": Bool(),
+                    "slugify_columns": Bool(),
+                    "lowercase_columns": Bool(),
+                }
+            )
+        )
+
+
+def validate_key_output(c: YAML):
+    """Validate config key: output.
+
+    Example Format:
+
+    output:
+        dir: output
+        basename: BASENAME
+        prepend_date: true
+        export_tables: csv
+        export_queries: csv
+        styles:
+            column_width: 15
+    """
+    key: str = check_key("output", c)
+    if key:
+        c[key].revalidate(
+            Map(
+                {
+                    "dir": StrNotEmpty(),
+                    "basename": StrNotEmpty(),
+                    "prepend_date": Bool(),
+                    # FIXME Use a sequence of allowed choices: csv | xlsx
+                    "export_tables": Str(),
+                    "export_queries": Str(),
+                    "styles": AnyYAML(),
+                }
+            )
+        )
+        # FIXME Revalidate styles
+
+
+def validate_config_schema(config_path: str) -> Any:
+    """Return config file if it validates agaist schema.
+
+    Args:
+        config_path (str): Path to config file
+
+    Returns:
+        config (YAML): validated config as YAML
+
+    """
+    s = Settings()
+    # During initial validation, all fields are Optional because they
+    # may be spread across multiple included files.
+    # Once we have processed all config files, we will check separately that
+    # all critical config items have been provided.
+    schema = Map(
+        {
+            OptionalYAML("include", drop_if_none=False): EmptyNone() | AnyYAML(),
+            OptionalYAML("tables_config", drop_if_none=False): EmptyNone() | AnyYAML(),
+            OptionalYAML("create_tables", drop_if_none=False): EmptyNone() | Seq(Str()),
+            OptionalYAML("import", drop_if_none=False): EmptyNone() | AnyYAML(),
+            OptionalYAML("output", drop_if_none=False): EmptyNone() | AnyYAML(),
+            OptionalYAML("input", drop_if_none=False): EmptyNone() | AnyYAML(),
+            OptionalYAML("queries", drop_if_none=False): EmptyNone() | AnyYAML(),
+        }
+    )
+
+    c = load_yaml_file(config_path, schema)
+
+    validate_key_include(c)
+    validate_key_tables_config(c)
+    validate_key_create_tables(c)
+    validate_key_import(c)
+    validate_key_input(c)
+    validate_key_output(c)
 
     # If configuration validates, return config object.
     click.echo(s.MSG_CONFIG_FILE_VALID, nl=False)

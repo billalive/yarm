@@ -4,7 +4,7 @@
 # pylint: disable=invalid-name
 # pylint: disable=import-error
 
-
+import os
 import re
 
 import pytest
@@ -46,15 +46,43 @@ def test_validate_config_mistakes(runner: CliRunner) -> None:
 def test_validate_complete_config_valid(runner: CliRunner) -> None:
     """Validation succeeds with values for every config option.
 
-    If you modify, add or remove a config option, update this test and
-    its config file.
+    If you modify, add or remove a config option:
+
+    - Update this test and its config file.
+    - Update validate_config_schema()
     """
     s = Settings()
     test: str = "test_validate_complete_config_valid"
-    messages: list = [s.MSG_CONFIG_FILE_VALID]
+    files: list = [
+        "INCLUDE_A.yaml",
+        "INCLUDE_B.yaml",
+        "MODULE_A.py",
+        "SOURCE_A.xlsx",
+        "SOURCE_B.csv",
+        "SOURCE_C.xlsx",
+        "SOURCE_D.csv",
+    ]
+    # TODO Should this list of keys to check for be dynamically
+    # generated? Or is hard-coding it (again) the point of a test?
+    messages: list = [
+        s.MSG_CONFIG_FILE_VALID,
+        s.MSG_VALIDATING_KEY,
+        f"{s.MSG_VALIDATING_KEY}include",
+        f"{s.MSG_VALIDATING_KEY}tables_config",
+        f"{s.MSG_VALIDATING_KEY}table_from_spreadsheet",
+        f"{s.MSG_VALIDATING_KEY}table_from_csv",
+        f"{s.MSG_VALIDATING_KEY}table_from_multiple_sources",
+        f"{s.MSG_VALIDATING_KEY}create_tables",
+        f"{s.MSG_VALIDATING_KEY}import",
+        f"{s.MSG_VALIDATING_KEY}input",
+        f"{s.MSG_VALIDATING_KEY}output",
+        f"{s.MSG_VALIDATING_KEY}queries",
+    ]
     with runner.isolated_filesystem():
         prep_test_config(test)
         result = runner.invoke(cli, [s.CMD_RUN])
+        for f in files:
+            assert os.path.isfile(f)
         for msg in messages:
             assert re.search(msg, result.output)
         assert result.exit_code == 0
