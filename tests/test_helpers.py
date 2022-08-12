@@ -80,3 +80,17 @@ def prep_test_config(test_config_name: str, skip_config_file: bool = False) -> N
                 # print("copying in:", f)
     # else:
     # print("not a dir:", dir_test_config_name)
+
+
+def string_as_config(config: str):
+    """Write a multiline string as the config file for a test.
+
+    Intended for use within a temporary directory.
+    """
+    s = Settings()
+    assert isinstance(s.DEFAULT_CONFIG_FILE, str)
+    # Ensure we're not writing over an existing config file.
+    assert not os.path.isfile(s.DEFAULT_CONFIG_FILE)
+    with open(s.DEFAULT_CONFIG_FILE, "w") as f:
+        f.write(config)
+    assert os.path.isfile(s.DEFAULT_CONFIG_FILE)

@@ -36,6 +36,9 @@ Please fix the error below and try again."""
     MSG_VALIDATING_KEY: str = "Validating"
     MSG_CONFIG_FILE_VALID: str = "Configuration file validated: "
 
+    MSG_INCLUDE_KEY: str = "Included from file: "
+    MSG_OVERIDE_KEY: str = "Overriden from file: "
+
     COLOR_ERROR: str = "red"
     COLOR_SUCCESS: str = "bright_green"
     COLOR_WARN: str = "bright_yellow"
@@ -45,3 +48,6 @@ Please fix the error below and try again."""
     CMD_RUN = "run"
 
     CONFIG_SCHEMA = "config_schema.yaml"
+
+    MSG_TEST_KEY_NOT_IN_SCHEMA: str = "key not in schema"
+    MSG_TEST_EXPECTED_LIST: str = "found a mapping"

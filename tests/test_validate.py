@@ -12,6 +12,7 @@ from click.testing import CliRunner
 from tests.test_helpers import assert_files_exist
 from tests.test_helpers import assert_messages
 from tests.test_helpers import prep_test_config
+from tests.test_helpers import string_as_config
 from yarm.__main__ import cli
 from yarm.settings import Settings
 
@@ -86,3 +87,109 @@ def test_validate_complete_config_valid(runner: CliRunner) -> None:
         assert_files_exist(files)
         assert_messages(messages, result.output)
         assert result.exit_code == 0
+
+
+def test_validate_include_hierarchy(runner: CliRunner) -> None:
+    """Multiple levels of include files are correctly combined."""
+    s = Settings()
+    with runner.isolated_filesystem():
+        prep_test_config("test_validate_include_hierarchy")
+        result = runner.invoke(cli, [s.CMD_RUN])
+        assert result.exit_code == 0
+        messages = [s.MSG_CONFIG_FILE_VALID, s.MSG_INCLUDE_KEY, s.MSG_OVERIDE_KEY]
+        assert_messages(messages, result.output)
+
+
+def test_validate_invalid_config(runner: CliRunner) -> None:
+    """Invalid config fragments that should fail."""
+    s = Settings()
+    fragments = [
+        (
+            """
+bad_key_top:
+""",
+            s.MSG_TEST_KEY_NOT_IN_SCHEMA,
+        ),
+        (
+            """
+import:
+  - path:
+""",
+            "path",
+        ),
+        (
+            """
+import:
+  - bad_key:
+""",
+            s.MSG_TEST_KEY_NOT_IN_SCHEMA,
+        ),
+        (
+            """
+include:
+  - path:
+""",
+            "path",
+        ),
+        (
+            """
+include:
+  - bad_key: MODULE_A.py
+""",
+            s.MSG_TEST_KEY_NOT_IN_SCHEMA,
+        ),
+        (
+            """
+output:
+  bad_key:
+""",
+            s.MSG_TEST_KEY_NOT_IN_SCHEMA,
+        ),
+        (
+            """
+output:
+  basename: BASENAME
+  styles:
+    column_width: fifteen
+""",
+            "found arbitrary text",
+        ),
+        # Each table needs to be a list.
+        (
+            """
+tables_config:
+  table_from_spreadsheet:
+    path: SOURCE_A.xlsx
+    sheet: SHEET A.1
+""",
+            s.MSG_TEST_EXPECTED_LIST,
+        ),
+        (
+            """
+create_tables:
+  table_from_spreadsheet:
+  table_from_csv:
+""",
+            s.MSG_TEST_EXPECTED_LIST,
+        ),
+        (
+            """
+queries:
+  name:
+  sql:
+""",
+            s.MSG_TEST_EXPECTED_LIST,
+        ),
+    ]
+    for fragment in fragments:
+        fragment_config = fragment[0]
+        fragment_msg = fragment[1]
+        messages: list = [
+            s.MSG_INVALID_YAML,
+            fragment_msg,
+        ]
+        with runner.isolated_filesystem():
+            string_as_config(fragment_config)
+            result = runner.invoke(cli, [s.CMD_RUN])
+            assert_messages(messages, result.output)
+            assert result.exit_code == 1

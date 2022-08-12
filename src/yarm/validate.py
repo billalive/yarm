@@ -147,7 +147,7 @@ def validate_key_include(c: YAML, config_path: str):
     """
     key: str = check_key("include", c)
     if key:
-        schema = Seq(Map({"path": Str()}))
+        schema = Seq(Map({"path": StrNotEmpty()}))
         revalidate_yaml(c[key], schema, config_path)
         check_is_file(c[key].data, "path")
 
@@ -256,7 +256,7 @@ def validate_key_import(c: YAML, config_path: str):
     """
     key: str = check_key("import", c)
     if key:
-        schema = Seq(Map({"path": Str()}))
+        schema = Seq(Map({"path": StrNotEmpty()}))
         revalidate_yaml(c[key], schema, config_path)
         check_is_file(c[key].data, "path")
 
@@ -310,7 +310,7 @@ def validate_key_output(c: YAML, config_path: str):
             }
         )
         revalidate_yaml(c[key], schema, config_path)
-        if c[key]["styles"].data:
+        if "styles" in c[key]:
             schema = Map(
                 {
                     "column_width": Int(),
@@ -430,7 +430,7 @@ def validate_config_schema(config_path: str) -> Any:
         {
             OptionalYAML("include"): EmptyNone() | AnyYAML(),
             OptionalYAML("tables_config"): EmptyNone() | AnyYAML(),
-            OptionalYAML("create_tables"): EmptyNone() | Seq(Str()),
+            OptionalYAML("create_tables"): EmptyNone() | Seq(StrNotEmpty()),
             OptionalYAML("import"): EmptyNone() | AnyYAML(),
             OptionalYAML("output"): EmptyNone() | AnyYAML(),
             OptionalYAML("input"): EmptyNone() | AnyYAML(),
