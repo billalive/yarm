@@ -165,7 +165,12 @@ def test_report_aborts_invalid_config_no_edits(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         assert isinstance(s.DEFAULT_CONFIG_FILE, str)
         # Generate default config file.
+        # Test dir should contain referenced files in templates/yarm.yaml,
+        # but let's create the default config using the official command:
         result = runner.invoke(cli, ["new", "--no-edit"])
+        prep_test_config(
+            "test_report_aborts_invalid_config_no_edits", skip_config_file=True
+        )
         # Try to run report without any edits.
         result = runner.invoke(cli, [s.CMD_RUN])
         assert os.path.isfile(s.DEFAULT_CONFIG_FILE)

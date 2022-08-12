@@ -1,9 +1,8 @@
----
 # Stub YAML to begin your report.
 # Change values in ALL CAPS to your desired values.
 #
 # For (many) more options, see: yarm.readthedocs.io
-
+---
 output:
   dir: output
   basename: YOUR_BASENAME
@@ -12,37 +11,38 @@ output:
   styles:
     column_width: 15
 
-import:
+input:
   strip: true
   slugify_columns: true
   lowercase_columns: true
 
 # You need at least one table.
 # Here are two examples. Delete what you don't need.
-create_tables:
+tables_config:
   # CSV file: the easiest data source.
   c:
-    - path: "./YOUR-CSV.csv"
+    - path: YOUR_CSV.csv
   # Spreadsheet: You need both the path and the sheet name.
   s:
-    - path: "./YOUR-SPREADSHEET.xlsx"
-      sheet: "SHEET A"
+    - path: YOUR_SPREADSHEET.xlsx
+      sheet: SHEET A
   # You can combine multiple data sources into a single table.
   multiple:
-    - path: "./YOUR-SPREADSHEET.xlsx"
-      sheet: "SHEET B"
-    - path: "./YOUR-CSV-2.csv"
+    - path: YOUR_SPREADSHEET.xlsx
+      sheet: SHEET B
+    - path: YOUR_CSV_2.csv
 
 # Queries: You (usually) need at least one query.
 # Be careful with indentation, as YAML can be finicky.
 queries:
-  - sheet: "YOUR QUERY 1"
-    sql: >-
+  - name: YOUR QUERY 1
+    sql: |
       SELECT *
       FROM s
       ;
-  - sheet: "YOUR QUERY 2"
-    sql: >-
+
+  - name: YOUR QUERY 2
+    sql: |
       SELECT *
       FROM s
       JOIN c

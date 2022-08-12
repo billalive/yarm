@@ -5,17 +5,14 @@
 
 
 import importlib.resources as pkg_resources
-import inspect
 import os
-import shutil
 from typing import Any
 
 import pytest
 from click.testing import CliRunner
-from path import Path
 
+from tests.test_helpers import prep_test_config
 from yarm import __main__
-from yarm import tests_data
 from yarm.__main__ import cli
 from yarm.settings import Settings
 
@@ -75,65 +72,6 @@ def test_new_edit_succeeds(
     with runner.isolated_filesystem():
         result = runner.invoke(cli, ["new", "--edit"])
         assert result.exit_code == 0
-
-
-def prep_test_config(test_config_name: str) -> None:
-    """Prepare test config file for a particular test.
-
-    Several tests need a particular file in place as the config file
-    for the test. This helper function sets that up.
-
-    Use this helper function inside other tests.
-
-    - Create the malformed config file in s.DIR_TESTS_DATA
-      - Name it with only letters, numbers, and undescores.
-      - Extension should be ".yaml"
-
-    - Optional: If your test needs any supporting files, create a directory in
-      tests_data/ with the same name as test_config_name. When this function is
-      called with test_config_name, every file in this dir will also be copied
-      into the temporary dir for this test. Note that when the test is run,
-      these files will be in the *same* dir as the config file, so set the path
-      accordingly in the config file.
-
-    For example tests that use this function, see:
-
-    - test_report_aborts_invalid_config_bad_yaml()
-    - test_report_aborts_invalid_config_bad_options()
-    - test_validate_config_mistakes()
-
-    Args:
-        test_config_name (str): basename of config file, without ".yaml"
-
-    """
-    s = Settings()
-    # Make sure we have a default config file location.
-    assert isinstance(s.DEFAULT_CONFIG_FILE, str)
-    # Copy in the config file for this test.
-    # NOTE Is there a way to avoid hard-coding 'tests_data' here? Does it matter?
-    # NOTE We use inspect() rather than importlib() to get this path, because
-    # importlib has changed much more since 3.7, esp in how it handles dirs
-    # within other dirs. Using inspect() to get the paths seems simpler.
-    dir_tests_data: str = os.path.dirname(inspect.getfile(tests_data))
-    test_config_file: str = f"{dir_tests_data}/{test_config_name}{s.EXT_YAML}"
-    assert os.path.isfile(test_config_file)
-    shutil.copy(test_config_file, s.DEFAULT_CONFIG_FILE)
-    assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
-    # Does this test have a test directory?
-    # If so, copy all files from that dir into the temporary testing dir.
-    # Use inspect to get the actual path.
-    # print("dir_tests_data:", dir_tests_data)
-    assert os.path.isdir(os.path.dirname(dir_tests_data))
-    dir_test_config_name: str = f"{dir_tests_data}/{test_config_name}"
-    # NOTE Next lines tested in: test_prep_config_copies_files()
-    if os.path.isdir(os.path.dirname(dir_test_config_name)):  # pragma: no branch
-        # print("is a dir:", dir_test_config_name)
-        for f in Path(dir_test_config_name).glob("*"):
-            if os.path.isfile(f):  # pragma: no branch
-                shutil.copy(f, ".")
-                # print("copying in:", f)
-    # else:
-    # print("not a dir:", dir_test_config_name)
 
 
 def test_prep_config_copies_files(runner: CliRunner) -> None:

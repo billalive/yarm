@@ -4,13 +4,14 @@
 # pylint: disable=invalid-name
 # pylint: disable=import-error
 
-import os
 import re
 
 import pytest
 from click.testing import CliRunner
 
-from tests.test_main import prep_test_config
+from tests.test_helpers import assert_files_exist
+from tests.test_helpers import assert_messages
+from tests.test_helpers import prep_test_config
 from yarm.__main__ import cli
 from yarm.settings import Settings
 
@@ -50,6 +51,7 @@ def test_validate_complete_config_valid(runner: CliRunner) -> None:
 
     - Update this test and its config file.
     - Update validate_config_schema()
+    - Update templates/yarm.yaml if this key appears there.
     """
     s = Settings()
     test: str = "test_validate_complete_config_valid"
@@ -67,22 +69,20 @@ def test_validate_complete_config_valid(runner: CliRunner) -> None:
     messages: list = [
         s.MSG_CONFIG_FILE_VALID,
         s.MSG_VALIDATING_KEY,
-        f"{s.MSG_VALIDATING_KEY}include",
-        f"{s.MSG_VALIDATING_KEY}tables_config",
-        f"{s.MSG_VALIDATING_KEY}table_from_spreadsheet",
-        f"{s.MSG_VALIDATING_KEY}table_from_csv",
-        f"{s.MSG_VALIDATING_KEY}table_from_multiple_sources",
-        f"{s.MSG_VALIDATING_KEY}create_tables",
-        f"{s.MSG_VALIDATING_KEY}import",
-        f"{s.MSG_VALIDATING_KEY}input",
-        f"{s.MSG_VALIDATING_KEY}output",
-        f"{s.MSG_VALIDATING_KEY}queries",
+        f"{s.MSG_VALIDATING_KEY}: include",
+        f"{s.MSG_VALIDATING_KEY}: tables_config",
+        f"{s.MSG_VALIDATING_KEY} table: table_from_spreadsheet",
+        f"{s.MSG_VALIDATING_KEY} table: table_from_csv",
+        f"{s.MSG_VALIDATING_KEY} table: table_from_multiple_sources",
+        f"{s.MSG_VALIDATING_KEY}: create_tables",
+        f"{s.MSG_VALIDATING_KEY}: import",
+        f"{s.MSG_VALIDATING_KEY}: input",
+        f"{s.MSG_VALIDATING_KEY}: output",
+        f"{s.MSG_VALIDATING_KEY}: queries",
     ]
     with runner.isolated_filesystem():
         prep_test_config(test)
         result = runner.invoke(cli, [s.CMD_RUN])
-        for f in files:
-            assert os.path.isfile(f)
-        for msg in messages:
-            assert re.search(msg, result.output)
+        assert_files_exist(files)
+        assert_messages(messages, result.output)
         assert result.exit_code == 0
