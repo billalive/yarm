@@ -27,6 +27,7 @@ from strictyaml import Optional as OptionalYAML
 from strictyaml import Seq
 from strictyaml import Str
 from strictyaml import load
+from strictyaml.exceptions import YAMLValidationError
 
 from yarm.helpers import abort
 from yarm.helpers import load_yaml_file
@@ -128,7 +129,7 @@ def msg_validating_key(key: str):
     # TODO Only show if verbose
 
 
-def validate_key_include(c: YAML):
+def validate_key_include(c: YAML, config_path: str):
     """Validate config key: include.
 
     Example Format:
@@ -143,15 +144,15 @@ def validate_key_include(c: YAML):
         check_is_file(c["include"].data, "path")
 
 
-def validate_key_tables_config(c: YAML):
+def validate_key_tables_config(c: YAML, config_path: str):
     """Validate config key: tables_config.
 
     Example Format:
 
     tables_config:
      TABLE_NAME_A:
-       - path: "SOURCE_A.xlsx"
-         sheet: "SHEET A.1"
+       - path: SOURCE_A.xlsx
+         sheet: SHEET A.1
          datetime:
            FIELD_1: NONE_OR_STR
            FIELD_2: NONE_OR_STR
@@ -160,7 +161,7 @@ def validate_key_tables_config(c: YAML):
            columns: FIELD_KEY
            values: FIELD_VALUE
      TABLE_NAME_B:
-       - path: "SOURCE_B.csv"
+       - path: SOURCE_B.csv
     """
     key: str = check_key("tables_config", c)
     if key:
@@ -201,7 +202,7 @@ def validate_key_tables_config(c: YAML):
                     )
 
 
-def validate_key_create_tables(c: YAML):
+def validate_key_create_tables(c: YAML, config_path: str):
     """Validate config key: create_tables.
 
     Example Format:
@@ -234,7 +235,7 @@ def check_key(key: str, c: YAML):
         return None
 
 
-def validate_key_import(c: YAML):
+def validate_key_import(c: YAML, config_path: str):
     """Validate config key: import.
 
     Example Format:
@@ -249,7 +250,7 @@ def validate_key_import(c: YAML):
         check_is_file(c[key].data, "path")
 
 
-def validate_key_input(c: YAML):
+def validate_key_input(c: YAML, config_path: str):
     """Validate config key: input.
 
     Example Format:
@@ -272,7 +273,7 @@ def validate_key_input(c: YAML):
         )
 
 
-def validate_key_output(c: YAML):
+def validate_key_output(c: YAML, config_path: str):
     """Validate config key: output.
 
     Example Format:
@@ -304,6 +305,61 @@ def validate_key_output(c: YAML):
         # FIXME Revalidate styles
 
 
+def validate_key_queries(c: YAML, config_path: str):
+    """Validate config key: queries.
+
+    Example Format:
+
+    queries:
+    - name: QUERY A
+      sql: |
+      SELECT
+      *
+      FROM
+      table_from_spreadsheet AS s
+      ;
+
+    - name: QUERY B
+      df_postprocess: postprocess_df
+      sql: |
+      SELECT
+      *
+      FROM
+      table_from_spreadsheet AS s
+      JOIN
+      table_from_csv AS c
+      ON
+      s.id = c.id
+      ;
+    """
+    key: str = check_key("queries", c)
+    if key:
+        for query in c[key]:
+            schema = Map(
+                {
+                    "name": StrNotEmpty(),
+                    "sql": StrNotEmpty(),
+                    OptionalYAML("df_postprocess"): StrNotEmpty(),
+                }
+            )
+            revalidate_yaml(query, schema, config_path)
+
+
+def revalidate_yaml(yaml: YAML, schema: Map | MapPattern, config_path: str):
+    """Revalidate yaml from config_path according to schema.
+
+    Args:
+        yaml (YAML): yaml to revalidate
+        schema (Map | MapPattern): schema to validate with
+        config_path (str): file in which this YAML was found.
+    """
+    s = Settings()
+    try:
+        yaml.revalidate(schema)
+    except YAMLValidationError as err:
+        abort(s.MSG_INVALID_YAML, err, file_path=config_path)
+
+
 def validate_config_schema(config_path: str) -> Any:
     """Return config file if it validates agaist schema.
 
@@ -327,18 +383,19 @@ def validate_config_schema(config_path: str) -> Any:
             OptionalYAML("import", drop_if_none=False): EmptyNone() | AnyYAML(),
             OptionalYAML("output", drop_if_none=False): EmptyNone() | AnyYAML(),
             OptionalYAML("input", drop_if_none=False): EmptyNone() | AnyYAML(),
-            OptionalYAML("queries", drop_if_none=False): EmptyNone() | AnyYAML(),
+            OptionalYAML("queries", drop_if_none=False): EmptyNone() | Seq(AnyYAML()),
         }
     )
 
     c = load_yaml_file(config_path, schema)
 
-    validate_key_include(c)
-    validate_key_tables_config(c)
-    validate_key_create_tables(c)
-    validate_key_import(c)
-    validate_key_input(c)
-    validate_key_output(c)
+    validate_key_include(c, config_path)
+    validate_key_tables_config(c, config_path)
+    validate_key_create_tables(c, config_path)
+    validate_key_import(c, config_path)
+    validate_key_input(c, config_path)
+    validate_key_output(c, config_path)
+    validate_key_queries(c, config_path)
 
     # If configuration validates, return config object.
     click.echo(s.MSG_CONFIG_FILE_VALID, nl=False)

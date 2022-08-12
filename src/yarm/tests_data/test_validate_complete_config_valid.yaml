@@ -3,11 +3,11 @@
 
 # If you want to add a df_postprocess function, see report.py
 import:
-  - path: "MODULE_A.py"
+  - path: MODULE_A.py
 
 include:
-  - path: "INCLUDE_A.yaml"
-  - path: "INCLUDE_B.yaml"
+  - path: INCLUDE_A.yaml
+  - path: INCLUDE_B.yaml
 
 output:
   dir: output
@@ -25,15 +25,15 @@ input:
 
 tables_config:
   table_from_spreadsheet:
-    - path: "SOURCE_A.xlsx"
-      sheet: "SHEET A.1"
+    - path: SOURCE_A.xlsx
+      sheet: SHEET A.1
   table_from_csv:
-    - path: "SOURCE_B.csv"
+    - path: SOURCE_B.csv
   table_from_multiple_sources:
-    - path: "SOURCE_C.xlsx"
-      sheet: "SHEET C.1"
-    - path: "SOURCE_C.xlsx"
-      sheet: "SHEET C.2"
+    - path: SOURCE_C.xlsx
+      sheet: SHEET C.1
+    - path: SOURCE_C.xlsx
+      sheet: SHEET C.2
       datetime:
         created:
         last_saved: "%Y-%m-%d"
@@ -41,9 +41,9 @@ tables_config:
         index: FIELD_ID
         columns: FIELD_KEY
         values: FIELD_VALUE
-    - path: "SOURCE_A.xlsx"
-      sheet: "SHEET A.2 "
-    - path: "SOURCE_D.csv"
+    - path: SOURCE_A.xlsx
+      sheet: SHEET A.2
+    - path: SOURCE_D.csv
 
 # Because we have create_tables, we must manually specify each table we want,
 # including the tables defined in tables_config. In this example, we
@@ -56,7 +56,7 @@ create_tables:
   - table_from_includes3
 
 queries:
-  - sheet: "QUERY A"
+  - iame: QUERY A
     sql: |
       SELECT
       *
@@ -64,7 +64,7 @@ queries:
       table_from_spreadsheet AS s
       ;
 
-  - sheet: "QUERY B"
+  - name: QUERY B
     df_postprocess: postprocess_df
     sql: |
       SELECT
