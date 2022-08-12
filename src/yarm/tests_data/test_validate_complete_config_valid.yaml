@@ -66,6 +66,12 @@ queries:
 
   - name: QUERY B
     df_postprocess: postprocess_df
+    replace:
+      FIELD_A:
+        MATCH A1: REPLACE A1
+        MATCH A2: REPLACE A2
+      FIELD_B:
+        'MATCH B1 W/"''COMPLEX''" #STRING': 'REPLACE B1 W/''"COMPLEX"'' #STRING'
     sql: |
       SELECT
       *

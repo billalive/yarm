@@ -16,12 +16,13 @@ import click
 from nob import Nob
 
 # from strictyaml import MapCombined
-# from strictyaml import Int
 # namespace collision: we're already using Any from typing.
 from strictyaml import YAML
 from strictyaml import Any as AnyYAML
 from strictyaml import Bool
 from strictyaml import EmptyNone
+from strictyaml import Enum
+from strictyaml import Int
 from strictyaml import Map
 from strictyaml import MapPattern
 from strictyaml import Optional as OptionalYAML
@@ -175,28 +176,30 @@ def validate_key_tables_config(c: YAML, config_path: str):
         schema = MapPattern(Str(), Seq(AnyYAML()))
         revalidate_yaml(c[key], schema, config_path)
         for table_name in c[key].data:
-            msg_validating_key(table_name, "table")
-            check_is_file(c[key][table_name].data, "path")
             table = c[key][table_name]
             schema = Seq(
                 Map(
                     {
                         "path": StrNotEmpty(),
                         OptionalYAML("sheet"): StrNotEmpty(),
-                        OptionalYAML("datetime", drop_if_none=False): EmptyNone()
-                        | AnyYAML(),
-                        OptionalYAML("pivot", drop_if_none=False): EmptyNone()
-                        | AnyYAML(),
+                        OptionalYAML("datetime"): EmptyNone() | AnyYAML(),
+                        OptionalYAML("pivot"): EmptyNone() | AnyYAML(),
                     }
                 )
             )
-            revalidate_yaml(table, schema, config_path)
+            revalidate_yaml(table, schema, config_path, table_name, "table")
+            check_is_file(c[key][table_name].data, "path")
             # datetime:
             for source in table:
-                if source["datetime"].data:
-                    schema = MapPattern(Str(), EmptyNone() | AnyYAML())
-                    revalidate_yaml(source["datetime"], schema, config_path)
-                if source["pivot"].data:
+                if "datetime" in source:
+                    schema = MapPattern(Str(), EmptyNone() | Str())
+                    revalidate_yaml(
+                        source["datetime"],
+                        schema,
+                        config_path,
+                        f"{table_name}: datetime",
+                    )
+                if "pivot" in source:
                     schema = Map(
                         {
                             "index": StrNotEmpty(),
@@ -204,7 +207,9 @@ def validate_key_tables_config(c: YAML, config_path: str):
                             "values": StrNotEmpty(),
                         }
                     )
-                    revalidate_yaml(source["pivot"], schema, config_path)
+                    revalidate_yaml(
+                        source["pivot"], schema, config_path, f"{table_name}: pivot"
+                    )
 
 
 def validate_key_create_tables(c: YAML, config_path: str):
@@ -233,7 +238,7 @@ def check_key(key: str, c: YAML):
     Returns:
        name of key (str) if present, None if not
     """
-    if c[key].data:
+    if key in c:
         msg_validating_key(key)
         return key
     else:
@@ -270,9 +275,9 @@ def validate_key_input(c: YAML, config_path: str):
     if key:
         schema = Map(
             {
-                "strip": Bool(),
-                "slugify_columns": Bool(),
-                "lowercase_columns": Bool(),
+                OptionalYAML("strip"): Bool(),
+                OptionalYAML("slugify_columns"): Bool(),
+                OptionalYAML("lowercase_columns"): Bool(),
             }
         )
         revalidate_yaml(c[key], schema, config_path)
@@ -296,17 +301,22 @@ def validate_key_output(c: YAML, config_path: str):
     if key:
         schema = Map(
             {
-                "dir": StrNotEmpty(),
                 "basename": StrNotEmpty(),
+                OptionalYAML("dir"): StrNotEmpty(),
                 OptionalYAML("prepend_date"): Bool(),
-                # FIXME Use a sequence of allowed choices: csv | xlsx
-                OptionalYAML("export_tables"): Str(),
-                OptionalYAML("export_queries"): Str(),
+                OptionalYAML("export_tables"): Enum(["csv", "xlsx"]),
+                OptionalYAML("export_queries"): Enum(["csv", "xlsx"]),
                 OptionalYAML("styles"): AnyYAML(),
             }
         )
         revalidate_yaml(c[key], schema, config_path)
-        # FIXME Revalidate styles
+        if c[key]["styles"].data:
+            schema = Map(
+                {
+                    "column_width": Int(),
+                }
+            )
+            revalidate_yaml(c[key]["styles"], schema, config_path, "output.styles")
 
 
 def validate_key_queries(c: YAML, config_path: str):
@@ -325,6 +335,12 @@ def validate_key_queries(c: YAML, config_path: str):
 
     - name: QUERY B
       df_postprocess: postprocess_df
+      replace:
+        FIELD_A:
+          MATCH A1: REPLACE A1
+          MATCH A2: REPLACE A2
+        FIELD_B:
+          MATCH B1: REPLACE B1
       sql: |
       SELECT
       *
@@ -344,21 +360,52 @@ def validate_key_queries(c: YAML, config_path: str):
                     "name": StrNotEmpty(),
                     "sql": StrNotEmpty(),
                     OptionalYAML("df_postprocess"): StrNotEmpty(),
+                    OptionalYAML("replace"): AnyYAML(),
                 }
             )
             revalidate_yaml(query, schema, config_path)
+            if "replace" in query:
+                schema = MapPattern(Str(), AnyYAML())
+                revalidate_yaml(
+                    query["replace"], schema, config_path, f"{query['name']}: replace"
+                )
+                for field in query["replace"]:
+                    schema = MapPattern(Str(), Str())
+                    revalidate_yaml(query["replace"][field], schema, config_path)
+                    # for match in query["replace"][field]:
+                    #     print(
+                    #         "field:",
+                    #         field,
+                    #         "match:",
+                    #         match,
+                    #         "replace with:",
+                    #         query["replace"][field][match].data,
+                    #     )
 
 
-def revalidate_yaml(yaml: YAML, schema: Union[Map, MapPattern], config_path: str):
+def revalidate_yaml(
+    yaml: YAML,
+    schema: Union[Map, MapPattern],
+    config_path: str,
+    msg_key: Union[str, None] = None,
+    msg_suffix: Union[str, None] = None,
+):
     """Revalidate yaml from config_path according to schema.
 
     Args:
         yaml (YAML): yaml to revalidate
         schema (Map | MapPattern): schema to validate with
         config_path (str): file in which this YAML was found.
+        msg_key (str): (optional) if provided, message that this key is validating.
+        msg_suffix (str): (optional) message suffix
     """
     s = Settings()
     try:
+        if msg_key:
+            if msg_suffix:
+                msg_validating_key(msg_key, msg_suffix)
+            else:
+                msg_validating_key(msg_key)
         yaml.revalidate(schema)
     except YAMLValidationError as err:
         abort(s.MSG_INVALID_YAML, err, file_path=config_path)
@@ -381,13 +428,13 @@ def validate_config_schema(config_path: str) -> Any:
     # all critical config items have been provided.
     schema = Map(
         {
-            OptionalYAML("include", drop_if_none=False): EmptyNone() | AnyYAML(),
-            OptionalYAML("tables_config", drop_if_none=False): EmptyNone() | AnyYAML(),
-            OptionalYAML("create_tables", drop_if_none=False): EmptyNone() | Seq(Str()),
-            OptionalYAML("import", drop_if_none=False): EmptyNone() | AnyYAML(),
-            OptionalYAML("output", drop_if_none=False): EmptyNone() | AnyYAML(),
-            OptionalYAML("input", drop_if_none=False): EmptyNone() | AnyYAML(),
-            OptionalYAML("queries", drop_if_none=False): EmptyNone() | Seq(AnyYAML()),
+            OptionalYAML("include"): EmptyNone() | AnyYAML(),
+            OptionalYAML("tables_config"): EmptyNone() | AnyYAML(),
+            OptionalYAML("create_tables"): EmptyNone() | Seq(Str()),
+            OptionalYAML("import"): EmptyNone() | AnyYAML(),
+            OptionalYAML("output"): EmptyNone() | AnyYAML(),
+            OptionalYAML("input"): EmptyNone() | AnyYAML(),
+            OptionalYAML("queries"): EmptyNone() | Seq(AnyYAML()),
         }
     )
 
