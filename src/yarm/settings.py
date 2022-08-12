@@ -34,10 +34,12 @@ class Settings:
 Please fix the error below and try again."""
     MSG_PATH_NOT_FOUND: str = "One or more paths in your config could not be found:"
     MSG_VALIDATING_KEY: str = "Validating"
-    MSG_CONFIG_FILE_VALID: str = "Configuration file validated: "
+    MSG_CONFIG_FILE_VALID: str = ">> Configuration file validated: "
 
-    MSG_INCLUDE_KEY: str = "Included from file: "
-    MSG_OVERIDE_KEY: str = "Overriden from file: "
+    MSG_BEGIN_VALIDATING_FILE: str = "<< Begin validating file"
+    MSG_INCLUDE_KEY: str = "Included from file"
+    MSG_OVERIDE_KEY: str = "Overriden from file"
+    MSG_INCLUDE_RETURN_PREV: str = "Returning to previous file"
 
     COLOR_ERROR: str = "red"
     COLOR_SUCCESS: str = "bright_green"

@@ -90,13 +90,43 @@ def test_validate_complete_config_valid(runner: CliRunner) -> None:
 
 
 def test_validate_include_hierarchy(runner: CliRunner) -> None:
-    """Multiple levels of include files are correctly combined."""
+    """Multiple levels of include files are correctly combined.
+
+    The basic rule for includes: the most recently included file
+    takes precedence.
+
+    Here, we test multiple levels of overrides.
+    """
     s = Settings()
     with runner.isolated_filesystem():
         prep_test_config("test_validate_include_hierarchy")
         result = runner.invoke(cli, [s.CMD_RUN])
         assert result.exit_code == 0
-        messages = [s.MSG_CONFIG_FILE_VALID, s.MSG_INCLUDE_KEY, s.MSG_OVERIDE_KEY]
+
+        includes = [
+            s.DEFAULT_CONFIG_FILE,
+            "include_level1A.yaml",
+            "include_level1A_level2A.yaml",
+            "include_level1B.yaml",
+            "include_level1B.yaml",
+        ]
+
+        # s.MSG_INCLUDE_KEY,
+        # s.MSG_OVERIDE_KEY,
+        messages = [
+            s.MSG_CONFIG_FILE_VALID,
+        ]
+
+        for include in includes:
+            for message in [
+                s.MSG_BEGIN_VALIDATING_FILE,
+            ]:
+                messages.append(f"{message}: {include}")
+
+        messages.append(f"{s.MSG_INCLUDE_RETURN_PREV}: {s.DEFAULT_CONFIG_FILE}")
+        messages.append(f"{s.MSG_INCLUDE_RETURN_PREV}: include_level1A.yaml")
+
+        print(messages)
         assert_messages(messages, result.output)
 
 

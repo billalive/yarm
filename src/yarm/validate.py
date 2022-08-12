@@ -33,6 +33,7 @@ from strictyaml.exceptions import YAMLValidationError
 
 from yarm.helpers import abort
 from yarm.helpers import load_yaml_file
+from yarm.helpers import msg_with_data
 
 # from yarm.helpers import warn
 from yarm.settings import Settings
@@ -130,9 +131,7 @@ def msg_validating_key(key: str, suffix: str = None):
     if suffix:
         msg += " "
         msg += suffix
-    msg += ": "
-    click.echo(msg, nl=False)
-    click.secho(key, fg=s.COLOR_DATA)
+    msg_with_data(msg, key)
     # TODO Only show if verbose
 
 
@@ -144,12 +143,19 @@ def validate_key_include(c: YAML, config_path: str):
     include:
      - path: INCLUDE_A.yaml
      - path: INCLUDE_B.yaml
+
+    Recurse over each path and validate it as config.
     """
+    s = Settings()
     key: str = check_key("include", c)
+    key_path: str = "path"
     if key:
-        schema = Seq(Map({"path": StrNotEmpty()}))
+        schema = Seq(Map({key_path: StrNotEmpty()}))
         revalidate_yaml(c[key], schema, config_path)
-        check_is_file(c[key].data, "path")
+        check_is_file(c[key].data, key_path)
+        for include in c[key]:
+            validate_config_schema(include[key_path].data)
+        msg_with_data(s.MSG_INCLUDE_RETURN_PREV, config_path)
 
 
 def validate_key_tables_config(c: YAML, config_path: str):
@@ -411,11 +417,12 @@ def revalidate_yaml(
         abort(s.MSG_INVALID_YAML, err, file_path=config_path)
 
 
-def validate_config_schema(config_path: str) -> Any:
-    """Return config file if it validates agaist schema.
+def validate_config_schema(config_path: str, prev_config: Optional[YAML] = None) -> Any:
+    """Return YAML for config file if it validates agaist schema.
 
     Args:
         config_path (str): Path to config file
+        prev_config (YAML): (optional) included config that may be overridden
 
     Returns:
         config (YAML): validated config as YAML
@@ -440,6 +447,8 @@ def validate_config_schema(config_path: str) -> Any:
 
     c = load_yaml_file(config_path, schema)
 
+    msg_with_data(s.MSG_BEGIN_VALIDATING_FILE, config_path)
+
     validate_key_include(c, config_path)
     validate_key_tables_config(c, config_path)
     validate_key_create_tables(c, config_path)
@@ -448,9 +457,10 @@ def validate_config_schema(config_path: str) -> Any:
     validate_key_output(c, config_path)
     validate_key_queries(c, config_path)
 
-    # If configuration validates, return config object.
     click.echo(s.MSG_CONFIG_FILE_VALID, nl=False)
     click.secho(config_path, fg=s.COLOR_DATA)
+
+    # If configuration validates, return config object.
     return c
 
 

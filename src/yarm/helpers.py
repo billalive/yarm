@@ -88,6 +88,14 @@ def load_yaml_file(input_file: str, schema: Any) -> YAML:
         abort(s.MSG_CONFIG_FILE_NOT_FOUND, file_path=input_file)
 
 
+def msg_with_data(msg: str, data: str):
+    """Show message with accompanying data."""
+    s = Settings()
+    msg += ": "
+    click.echo(msg, nl=False)
+    click.secho(data, fg=s.COLOR_DATA)
+
+
 def echo_verbose(msg: str, verbose_level: int = 1) -> bool:
     """Show message if args.verbose is >= than verbose_level."""
     # FIXME args_verbose should be actual argument.

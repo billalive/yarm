@@ -1,1 +1,3 @@
-# Test
+---
+output:
+  basename: include_path_01
