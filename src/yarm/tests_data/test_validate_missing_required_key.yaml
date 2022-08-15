@@ -1,0 +1,4 @@
+# This config file includes some valid keys, but not the minimum required keys.
+input:
+  slugify_columns: true
+  lowercase_columns: true

@@ -4,8 +4,6 @@
 # pylint: disable=invalid-name
 # pylint: disable=import-error
 
-import re
-
 import pytest
 from click.testing import CliRunner
 
@@ -32,6 +30,13 @@ def test_validate_config_mistakes(runner: CliRunner) -> None:
         (1, "test_validate_fails_check_is_file", s.MSG_VALIDATING_KEY),
         (1, "test_validate_fails_check_is_file", s.MSG_PATH_NOT_FOUND),
         (0, "test_validate_tables_config_valid_mwe", s.MSG_CONFIG_FILE_VALID),
+        (1, "test_validate_missing_required_key", s.MSG_MISSING_REQUIRED_KEY),
+        (
+            1,
+            "test_validate_need_export_tables_or_queries",
+            s.MSG_NEED_EXPORT_TABLES_OR_QUERIES,
+        ),
+        (0, "test_validate_export_tables_only", s.MSG_EXPORT_TABLES_ONLY),
     ]
     for test_tuple in test_config:
         exit_code: int = test_tuple[0]
@@ -41,7 +46,7 @@ def test_validate_config_mistakes(runner: CliRunner) -> None:
         with runner.isolated_filesystem():
             prep_test_config(test)
             result = runner.invoke(cli, [s.CMD_RUN])
-            assert re.search(msg, result.output)
+            assert result.output.find(msg)
             assert result.exit_code == exit_code
 
 

@@ -2,3 +2,14 @@
 tables_config:
   products:
     - path: "products.csv"
+
+output:
+  dir: output
+  basename: mwe
+
+queries:
+  - name: "Descriptions"
+    sql: |
+      SELECT description
+      FROM products
+      ;

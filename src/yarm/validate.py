@@ -7,6 +7,7 @@
 
 import importlib.resources as pkg_resources
 import os
+import re
 from typing import Any
 from typing import Dict
 from typing import Optional
@@ -52,16 +53,19 @@ def validate_config(config_path: str) -> YAML:
         config (YAML): validated config as YAML
 
     """
-    # Why no test whether file exists? click() handles this.
+    # Why no test for whether file exists? Because click() handles this.
 
     # DEBUG:
     # for key in config:
     #    print(key, config[key])
 
     config = validate_config_schema(config_path)
+
+    # Check whether config file has been edited.
     validate_config_edited(config)
 
-    # Check whether config options are valid.
+    # Check whether minimum required keys are present.
+    validate_minimum_required_keys(config)
 
     # If all tests pass, config file is validated.
     return config
@@ -80,6 +84,33 @@ def validate_config_edited(config: YAML) -> bool:
     output.basename is still set to the default: {default_config.output.basename}
     Please edit your config file, then try running this report again."""
             )
+
+
+def validate_minimum_required_keys(config: YAML) -> bool:
+    """Check whether config has minimum required keys."""
+    s = Settings()
+    c = Nob(config.data)
+    missing_keys = []
+    for key in [
+        "/tables_config",
+        "/output/basename",
+        "/output/dir",
+    ]:
+        if key not in c:
+            display_key: str = re.sub("^/", "", key)
+            display_key = re.sub("/", ": ", display_key)
+            missing_keys.append(display_key)
+    if len(missing_keys) > 0:
+        abort(
+            f"{s.MSG_MISSING_REQUIRED_KEY}{s.MSG_NL_TAB}{s.MSG_NL_TAB.join(missing_keys)}"
+        )
+
+    # To generate output, we need either queries: or export_tables:
+    if "/queries" not in c:
+        if "/output/export_tables" not in c:
+            abort(s.MSG_NEED_EXPORT_TABLES_OR_QUERIES)
+        else:
+            msg_with_data(s.MSG_EXPORT_TABLES_ONLY, c["/output/export_tables"])
 
 
 def check_is_file(list_of_paths, key: Optional[str]):

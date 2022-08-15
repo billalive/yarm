@@ -6,9 +6,8 @@
 class Settings:
     """Define global settings.
 
-    When you need a setting in a function, make an instance
-    of this class. These settings should NOT be changed; treat
-    them as constants.
+    When you need a setting in a function, make an instance of this class.
+    These settings should NOT be changed; treat them as constants.
     """
 
     PKG = "yarm"
@@ -53,3 +52,13 @@ Please fix the error below and try again."""
 
     MSG_TEST_KEY_NOT_IN_SCHEMA: str = "key not in schema"
     MSG_TEST_EXPECTED_LIST: str = "found a mapping"
+    MSG_MISSING_REQUIRED_KEY: str = "Missing required key(s):"
+    MSG_NL_TAB: str = "\n   "
+    MSG_NEED_EXPORT_TABLES_OR_QUERIES: str = """
+No queries found. We need something to output!
+    Please either:
+    - Define one or more queries under "queries:"
+    - Or set "output: export_tables" to "csv" or "xlsx"."""
+    MSG_EXPORT_TABLES_ONLY: str = (
+        "No queries found, but 'output: export_tables' is set. Will output tables to"
+    )
