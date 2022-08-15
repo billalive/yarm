@@ -57,8 +57,6 @@ def test_validate_complete_config_valid(runner: CliRunner) -> None:
     s = Settings()
     test: str = "test_validate_complete_config_valid"
     files: list = [
-        "INCLUDE_A.yaml",
-        "INCLUDE_B.yaml",
         "MODULE_A.py",
         "SOURCE_A.xlsx",
         "SOURCE_B.csv",
@@ -67,15 +65,14 @@ def test_validate_complete_config_valid(runner: CliRunner) -> None:
     ]
     # TODO Should this list of keys to check for be dynamically
     # generated? Or is hard-coding it (again) the point of a test?
+    # TODO Uncoment include and create_tables when we implement these options.
     messages: list = [
         s.MSG_CONFIG_FILE_VALID,
         s.MSG_VALIDATING_KEY,
-        f"{s.MSG_VALIDATING_KEY}: include",
         f"{s.MSG_VALIDATING_KEY}: tables_config",
         f"{s.MSG_VALIDATING_KEY} table: table_from_spreadsheet",
         f"{s.MSG_VALIDATING_KEY} table: table_from_csv",
         f"{s.MSG_VALIDATING_KEY} table: table_from_multiple_sources",
-        f"{s.MSG_VALIDATING_KEY}: create_tables",
         f"{s.MSG_VALIDATING_KEY}: import",
         f"{s.MSG_VALIDATING_KEY}: input",
         f"{s.MSG_VALIDATING_KEY}: output",
@@ -87,47 +84,6 @@ def test_validate_complete_config_valid(runner: CliRunner) -> None:
         assert_files_exist(files)
         assert_messages(messages, result.output)
         assert result.exit_code == 0
-
-
-def test_validate_include_hierarchy(runner: CliRunner) -> None:
-    """Multiple levels of include files are correctly combined.
-
-    The basic rule for includes: the most recently included file
-    takes precedence.
-
-    Here, we test multiple levels of overrides.
-    """
-    s = Settings()
-    with runner.isolated_filesystem():
-        prep_test_config("test_validate_include_hierarchy")
-        result = runner.invoke(cli, [s.CMD_RUN])
-        assert result.exit_code == 0
-
-        includes = [
-            s.DEFAULT_CONFIG_FILE,
-            "include_level1A.yaml",
-            "include_level1A_level2A.yaml",
-            "include_level1B.yaml",
-            "include_level1B.yaml",
-        ]
-
-        # s.MSG_INCLUDE_KEY,
-        # s.MSG_OVERIDE_KEY,
-        messages = [
-            s.MSG_CONFIG_FILE_VALID,
-        ]
-
-        for include in includes:
-            for message in [
-                s.MSG_BEGIN_VALIDATING_FILE,
-            ]:
-                messages.append(f"{message}: {include}")
-
-        messages.append(f"{s.MSG_INCLUDE_RETURN_PREV}: {s.DEFAULT_CONFIG_FILE}")
-        messages.append(f"{s.MSG_INCLUDE_RETURN_PREV}: include_level1A.yaml")
-
-        print(messages)
-        assert_messages(messages, result.output)
 
 
 def test_validate_invalid_config(runner: CliRunner) -> None:
@@ -156,20 +112,6 @@ import:
         ),
         (
             """
-include:
-  - path:
-""",
-            "path",
-        ),
-        (
-            """
-include:
-  - bad_key: MODULE_A.py
-""",
-            s.MSG_TEST_KEY_NOT_IN_SCHEMA,
-        ),
-        (
-            """
 output:
   bad_key:
 """,
@@ -191,14 +133,6 @@ tables_config:
   table_from_spreadsheet:
     path: SOURCE_A.xlsx
     sheet: SHEET A.1
-""",
-            s.MSG_TEST_EXPECTED_LIST,
-        ),
-        (
-            """
-create_tables:
-  table_from_spreadsheet:
-  table_from_csv:
 """,
             s.MSG_TEST_EXPECTED_LIST,
         ),

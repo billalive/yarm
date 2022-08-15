@@ -5,10 +5,6 @@
 import:
   - path: MODULE_A.py
 
-include:
-  - path: INCLUDE_A.yaml
-  - path: INCLUDE_B.yaml
-
 output:
   dir: output
   basename: BASENAME
@@ -44,16 +40,6 @@ tables_config:
     - path: SOURCE_A.xlsx
       sheet: SHEET A.2
     - path: SOURCE_D.csv
-
-# Because we have create_tables, we must manually specify each table we want,
-# including the tables defined in tables_config. In this example, we
-# do not create table_from_multiple_sources.
-create_tables:
-  - table_from_spreadsheet
-  - table_from_csv
-  - table_from_includes1
-  - table_from_includes2
-  - table_from_includes3
 
 queries:
   - name: QUERY A

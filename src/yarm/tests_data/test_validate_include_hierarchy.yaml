@@ -1,7 +1,0 @@
-include:
-  - path: include_level1A.yaml
-  - path: include_level1B.yaml
-
-output:
-  basename: TOP_LEVEL_BASENAME
-  dir: TOP_LEVEL_DIR

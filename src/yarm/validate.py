@@ -135,29 +135,6 @@ def msg_validating_key(key: str, suffix: str = None):
     # TODO Only show if verbose
 
 
-def validate_key_include(c: YAML, config_path: str):
-    """Validate config key: include.
-
-    Example Format:
-
-    include:
-     - path: INCLUDE_A.yaml
-     - path: INCLUDE_B.yaml
-
-    Recurse over each path and validate it as config.
-    """
-    s = Settings()
-    key: str = check_key("include", c)
-    key_path: str = "path"
-    if key:
-        schema = Seq(Map({key_path: StrNotEmpty()}))
-        revalidate_yaml(c[key], schema, config_path)
-        check_is_file(c[key].data, key_path)
-        for include in c[key]:
-            validate_config_schema(include[key_path].data)
-        msg_with_data(s.MSG_INCLUDE_RETURN_PREV, config_path)
-
-
 def validate_key_tables_config(c: YAML, config_path: str):
     """Validate config key: tables_config.
 
@@ -216,22 +193,6 @@ def validate_key_tables_config(c: YAML, config_path: str):
                     revalidate_yaml(
                         source["pivot"], schema, config_path, f"{table_name}: pivot"
                     )
-
-
-def validate_key_create_tables(c: YAML, config_path: str):
-    """Validate config key: create_tables.
-
-    Example Format:
-
-    create_tables:
-     - TABLE_NAME_A
-     - TABLE_NAME_B
-    """
-    key: str = check_key("create_tables", c)
-    if key:
-        for table in c[key].data:
-            print("creating table: ", table)
-        # TODO Check that tables exist in configuration object.
 
 
 def check_key(key: str, c: YAML):
@@ -417,12 +378,11 @@ def revalidate_yaml(
         abort(s.MSG_INVALID_YAML, err, file_path=config_path)
 
 
-def validate_config_schema(config_path: str, prev_config: Optional[YAML] = None) -> Any:
+def validate_config_schema(config_path: str) -> Any:
     """Return YAML for config file if it validates agaist schema.
 
     Args:
         config_path (str): Path to config file
-        prev_config (YAML): (optional) included config that may be overridden
 
     Returns:
         config (YAML): validated config as YAML
@@ -433,11 +393,13 @@ def validate_config_schema(config_path: str, prev_config: Optional[YAML] = None)
     # may be spread across multiple included files.
     # Once we have processed all config files, we will check separately that
     # all critical config items have been provided.
+    #
+    # TODO Uncoment include and create_tables when we implement these options.
     schema = Map(
         {
-            OptionalYAML("include"): EmptyNone() | AnyYAML(),
+            # OptionalYAML("include"): EmptyNone() | AnyYAML(),
             OptionalYAML("tables_config"): EmptyNone() | AnyYAML(),
-            OptionalYAML("create_tables"): EmptyNone() | Seq(StrNotEmpty()),
+            # OptionalYAML("create_tables"): EmptyNone() | Seq(StrNotEmpty()),
             OptionalYAML("import"): EmptyNone() | AnyYAML(),
             OptionalYAML("output"): EmptyNone() | AnyYAML(),
             OptionalYAML("input"): EmptyNone() | AnyYAML(),
@@ -449,9 +411,10 @@ def validate_config_schema(config_path: str, prev_config: Optional[YAML] = None)
 
     msg_with_data(s.MSG_BEGIN_VALIDATING_FILE, config_path)
 
-    validate_key_include(c, config_path)
+    # TODO Uncoment include and create_tables when we implement these options.
+    # validate_key_include(c, config_path)
     validate_key_tables_config(c, config_path)
-    validate_key_create_tables(c, config_path)
+    # validate_key_create_tables(c, config_path)
     validate_key_import(c, config_path)
     validate_key_input(c, config_path)
     validate_key_output(c, config_path)

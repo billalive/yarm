@@ -1,5 +1,0 @@
-include:
-  - path: include_level1A_level2A.yaml
-
-output:
-  basename: level1A
