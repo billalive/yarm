@@ -42,6 +42,23 @@ from yarm.settings import Settings
 # from typing import List
 
 
+def default_config() -> YAML:
+    """Define default configuration options.
+
+    These options can be overridden by config file(s).
+
+    Returns:
+        config (YAML): default config as YAML.
+    """
+    config: YAML = load(
+        """
+    output:
+      dir: output
+    """
+    )
+    return config
+
+
 def validate_config(config_path: str) -> YAML:
     """Validate config file before running report.
 
@@ -58,7 +75,8 @@ def validate_config(config_path: str) -> YAML:
     # for key in config:
     #    print(key, config[key])
 
-    config = validate_config_schema(config_path)
+    prev = default_config()
+    config = validate_config_schema(config_path, prev)
     validate_config_edited(config)
 
     # Check whether config options are valid.
@@ -135,7 +153,7 @@ def msg_validating_key(key: str, suffix: str = None):
     # TODO Only show if verbose
 
 
-def validate_key_include(c: YAML, config_path: str):
+def validate_key_include(c: YAML, config_path: str, prev: YAML):
     """Validate config key: include.
 
     Example Format:
@@ -145,20 +163,34 @@ def validate_key_include(c: YAML, config_path: str):
      - path: INCLUDE_B.yaml
 
     Recurse over each path and validate it as config.
+
+    Args:
+        c (YAML): new config to validate
+        config_path (str): path to config file to include.
+        prev (YAML): previous config that has already been validated
+
+    Returns:
+        updated_config (YAML): updated config
     """
     s = Settings()
     key: str = check_key("include", c)
     key_path: str = "path"
+    updated_config = YAML("")
     if key:
         schema = Seq(Map({key_path: StrNotEmpty()}))
         revalidate_yaml(c[key], schema, config_path)
         check_is_file(c[key].data, key_path)
         for include in c[key]:
-            validate_config_schema(include[key_path].data)
+            # FIXME How do I update prev (previous config) on each recursive call of
+            # validate_config_schema? Simply updating update_config is not enough.
+            updated_config = validate_config_schema(include[key_path].data, prev)
         msg_with_data(s.MSG_INCLUDE_RETURN_PREV, config_path)
+    else:
+        updated_config = c
+    return updated_config
 
 
-def validate_key_tables_config(c: YAML, config_path: str):
+def validate_key_tables_config(c: YAML, config_path: str, prev: YAML):
     """Validate config key: tables_config.
 
     Example Format:
@@ -218,7 +250,7 @@ def validate_key_tables_config(c: YAML, config_path: str):
                     )
 
 
-def validate_key_create_tables(c: YAML, config_path: str):
+def validate_key_create_tables(c: YAML, config_path: str, prev: YAML):
     """Validate config key: create_tables.
 
     Example Format:
@@ -251,7 +283,7 @@ def check_key(key: str, c: YAML):
         return None
 
 
-def validate_key_import(c: YAML, config_path: str):
+def validate_key_import(c: YAML, config_path: str, prev: YAML):
     """Validate config key: import.
 
     Example Format:
@@ -267,7 +299,7 @@ def validate_key_import(c: YAML, config_path: str):
         check_is_file(c[key].data, "path")
 
 
-def validate_key_input(c: YAML, config_path: str):
+def validate_key_input(c: YAML, config_path: str, prev: YAML):
     """Validate config key: input.
 
     Example Format:
@@ -289,7 +321,7 @@ def validate_key_input(c: YAML, config_path: str):
         revalidate_yaml(c[key], schema, config_path)
 
 
-def validate_key_output(c: YAML, config_path: str):
+def validate_key_output(c: YAML, config_path: str, prev: YAML):
     """Validate config key: output.
 
     Example Format:
@@ -325,7 +357,7 @@ def validate_key_output(c: YAML, config_path: str):
             revalidate_yaml(c[key]["styles"], schema, config_path, "output.styles")
 
 
-def validate_key_queries(c: YAML, config_path: str):
+def validate_key_queries(c: YAML, config_path: str, prev: YAML):
     """Validate config key: queries.
 
     Example Format:
@@ -417,12 +449,12 @@ def revalidate_yaml(
         abort(s.MSG_INVALID_YAML, err, file_path=config_path)
 
 
-def validate_config_schema(config_path: str, prev_config: Optional[YAML] = None) -> Any:
+def validate_config_schema(config_path: str, prev: YAML) -> Any:
     """Return YAML for config file if it validates agaist schema.
 
     Args:
         config_path (str): Path to config file
-        prev_config (YAML): (optional) included config that may be overridden
+        prev (YAML): previous config that may be overridden
 
     Returns:
         config (YAML): validated config as YAML
@@ -445,23 +477,27 @@ def validate_config_schema(config_path: str, prev_config: Optional[YAML] = None)
         }
     )
 
-    c = load_yaml_file(config_path, schema)
+    new_config = load_yaml_file(config_path, schema)
 
     msg_with_data(s.MSG_BEGIN_VALIDATING_FILE, config_path)
 
-    validate_key_include(c, config_path)
-    validate_key_tables_config(c, config_path)
-    validate_key_create_tables(c, config_path)
-    validate_key_import(c, config_path)
-    validate_key_input(c, config_path)
-    validate_key_output(c, config_path)
-    validate_key_queries(c, config_path)
+    for func in [
+        # NOTE Validate include FIRST, so later functions can override included config.
+        "validate_key_include",
+        "validate_key_tables_config",
+        "validate_key_create_tables",
+        "validate_key_import",
+        "validate_key_input",
+        "validate_key_output",
+        "validate_key_queries",
+    ]:
+        updated_config = globals()[func](new_config, config_path, prev)
 
     click.echo(s.MSG_CONFIG_FILE_VALID, nl=False)
     click.secho(config_path, fg=s.COLOR_DATA)
 
     # If configuration validates, return config object.
-    return c
+    return updated_config
 
 
 def get_default_config() -> Nob:

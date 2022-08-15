@@ -111,22 +111,22 @@ def test_validate_include_hierarchy(runner: CliRunner) -> None:
             "include_level1B.yaml",
         ]
 
-        # s.MSG_INCLUDE_KEY,
-        # s.MSG_OVERIDE_KEY,
         messages = [
-            s.MSG_CONFIG_FILE_VALID,
+            s.MSG_INCLUDE_KEY,
+            s.MSG_OVERIDE_KEY,
         ]
 
         for include in includes:
             for message in [
                 s.MSG_BEGIN_VALIDATING_FILE,
+                s.MSG_CONFIG_FILE_VALID,
             ]:
                 messages.append(f"{message}: {include}")
 
+        # Only files with their own includes get returned to.
         messages.append(f"{s.MSG_INCLUDE_RETURN_PREV}: {s.DEFAULT_CONFIG_FILE}")
         messages.append(f"{s.MSG_INCLUDE_RETURN_PREV}: include_level1A.yaml")
 
-        print(messages)
         assert_messages(messages, result.output)
 
 
