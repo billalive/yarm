@@ -107,9 +107,6 @@ def test_verbose_levels(runner: CliRunner) -> None:
 def test_directory_error(runner: CliRunner) -> None:
     """A directory instead of a file raises the correct error."""
     s = Settings()
-    # TODO This dot is a shortcut to current working directory on Linux,
-    # but will it break this test on Windows?
-    directory: str = "."
-    result = runner.invoke(cli, [s.CMD_RUN, "-c", directory])
+    result = runner.invoke(cli, [s.CMD_RUN, "-c", os.getcwd()])
     assert result.exit_code == 1
     assert s.MSG_DIRECTORY_ERROR in result.output
