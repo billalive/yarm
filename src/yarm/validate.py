@@ -158,12 +158,14 @@ class StrNotEmpty(Str):
 def msg_validating_key(key: str, suffix: str = None):
     """Show a message that a key is being validated."""
     s = Settings()
-    msg = s.MSG_VALIDATING_KEY
-    if suffix:
-        msg += " "
-        msg += suffix
-    msg_with_data(msg, key)
-    # TODO Only show if verbose
+    ctx = click.get_current_context()
+    verbose_level: int = 1
+    if ctx.params[s.ARG_VERBOSE] >= verbose_level:
+        msg = s.MSG_VALIDATING_KEY
+        if suffix:
+            msg += " "
+            msg += suffix
+        msg_with_data(msg, key, verbose_level)
 
 
 def validate_key_tables_config(c: YAML, config_path: str):
@@ -420,6 +422,7 @@ def validate_config_schema(config_path: str) -> Any:
 
     """
     s = Settings()
+
     # During initial validation, all fields are Optional because they
     # may be spread across multiple included files.
     # Once we have processed all config files, we will check separately that
@@ -440,7 +443,7 @@ def validate_config_schema(config_path: str) -> Any:
 
     c = load_yaml_file(config_path, schema)
 
-    msg_with_data(s.MSG_BEGIN_VALIDATING_FILE, config_path)
+    msg_with_data(s.MSG_BEGIN_VALIDATING_FILE, config_path, 2)
 
     # TODO Uncoment include and create_tables when we implement these options.
     # validate_key_include(c, config_path)
@@ -451,8 +454,7 @@ def validate_config_schema(config_path: str) -> Any:
     validate_key_output(c, config_path)
     validate_key_queries(c, config_path)
 
-    click.echo(s.MSG_CONFIG_FILE_VALID, nl=False)
-    click.secho(config_path, fg=s.COLOR_DATA)
+    msg_with_data(s.MSG_CONFIG_FILE_VALID, config_path, 2)
 
     # If configuration validates, return config object.
     return c

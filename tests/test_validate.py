@@ -85,7 +85,7 @@ def test_validate_complete_config_valid(runner: CliRunner) -> None:
     ]
     with runner.isolated_filesystem():
         prep_test_config(test)
-        result = runner.invoke(cli, [s.CMD_RUN])
+        result = runner.invoke(cli, [s.CMD_RUN, "-vv"])
         assert_files_exist(files)
         assert_messages(messages, result.output)
         assert result.exit_code == 0

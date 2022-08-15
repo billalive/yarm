@@ -90,7 +90,17 @@ def test_verbose_levels(runner: CliRunner) -> None:
     test_config_name: str = "test_verbose_levels"
     with runner.isolated_filesystem():
         prep_test_config(test_config_name)
+        result = runner.invoke(cli, [s.CMD_RUN])
+        assert s.MSG_VALIDATING_KEY not in result.output
+        assert s.MSG_CONFIG_FILE_VALID not in result.output
+        assert result.exit_code == 0
+        result = runner.invoke(cli, [s.CMD_RUN, "-v"])
+        assert s.MSG_VALIDATING_KEY in result.output
+        assert s.MSG_CONFIG_FILE_VALID not in result.output
+        assert result.exit_code == 0
         result = runner.invoke(cli, [s.CMD_RUN, "-vv"])
+        assert s.MSG_VALIDATING_KEY in result.output
+        assert s.MSG_CONFIG_FILE_VALID in result.output
         assert result.exit_code == 0
 
 
@@ -102,4 +112,4 @@ def test_directory_error(runner: CliRunner) -> None:
     directory: str = "."
     result = runner.invoke(cli, [s.CMD_RUN, "-c", directory])
     assert result.exit_code == 1
-    assert result.output.find(s.MSG_DIRECTORY_ERROR)
+    assert s.MSG_DIRECTORY_ERROR in result.output

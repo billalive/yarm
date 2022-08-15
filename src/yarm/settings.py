@@ -15,6 +15,8 @@ class Settings:
     DIR_TEMPLATES: str = "templates"
     DIR_TESTS_DATA: str = "tests_data"
 
+    ARG_VERBOSE: str = "verbose"
+
     EXT_YAML: str = ".yaml"
 
     TEST_CONFIG_BAD_YAML: str = "test_config_bad_yaml"

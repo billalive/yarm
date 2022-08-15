@@ -90,18 +90,18 @@ def load_yaml_file(input_file: str, schema: Any) -> YAML:
         abort(f"{s.MSG_DIRECTORY_ERROR} {input_file}")
 
 
-def msg_with_data(msg: str, data: str):
-    """Show message with accompanying data."""
+def msg_with_data(msg: str, data: str, verbose_level: int = 1):
+    """Show message with accompanying data.
+
+    Args:
+        msg (str): message to display
+        data (str): data to display after message
+        verbose_level (int): (optional) verbosity level required to show this message.
+
+    """
     s = Settings()
-    msg += ": "
-    click.echo(msg, nl=False)
-    click.secho(data, fg=s.COLOR_DATA)
-
-
-def echo_verbose(msg: str, verbose_level: int = 1) -> bool:
-    """Show message if args.verbose is >= than verbose_level."""
-    # FIXME args_verbose should be actual argument.
-    args_verbose: int = 1  # pragma: no cover
-    if args_verbose >= verbose_level:  # pragma: no cover
-        print(msg)  # pragma: no cover
-    return True  # pragma: no cover
+    ctx = click.get_current_context()
+    if ctx.params[s.ARG_VERBOSE] >= verbose_level:
+        msg += ": "
+        click.echo(msg, nl=False)
+        click.secho(data, fg=s.COLOR_DATA)

@@ -14,6 +14,7 @@ from typing import Optional
 import click
 
 from yarm.helpers import abort
+from yarm.helpers import msg_with_data
 from yarm.helpers import success
 from yarm.helpers import warn
 from yarm.settings import Settings
@@ -47,6 +48,10 @@ For more options:
 
 
 @cli.command()
+@click.pass_context
+@click.option(
+    "-v", "--verbose", "verbose", count=True, default=0, help="Verbosity level."
+)
 @click.option(
     "--config",
     "-c",
@@ -54,11 +59,15 @@ For more options:
     help="Config file for this project.",
     type=click.Path(exists=True),
 )
-def run(config_path: Optional[str]) -> None:
+def run(
+    ctx: Optional[click.Context], config_path: Optional[str], verbose: Optional[int]
+) -> None:
     """Run the report(s)."""
     s = Settings()
     if config_path is None:  # pragma: no branch
         config_path = s.DEFAULT_CONFIG_FILE  # type: ignore[unreachable]
+    if verbose > 1:
+        msg_with_data("Verbosity level", verbose)
     validate_config(config_path)
     sys.exit()
 
