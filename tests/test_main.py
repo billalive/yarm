@@ -82,3 +82,24 @@ def test_prep_config_copies_files(runner: CliRunner) -> None:
         assert os.path.isfile("file1.txt")
         assert os.path.isfile("file2.txt")
         assert not os.path.isfile("does_not_exist.txt")
+
+
+def test_verbose_levels(runner: CliRunner) -> None:
+    """Different messages show at different levels of verbose."""
+    s = Settings()
+    test_config_name: str = "test_verbose_levels"
+    with runner.isolated_filesystem():
+        prep_test_config(test_config_name)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vv"])
+        assert result.exit_code == 0
+
+
+def test_directory_error(runner: CliRunner) -> None:
+    """A directory instead of a file raises the correct error."""
+    s = Settings()
+    # TODO This dot is a shortcut to current working directory on Linux,
+    # but will it break this test on Windows?
+    directory: str = "."
+    result = runner.invoke(cli, [s.CMD_RUN, "-c", directory])
+    assert result.exit_code == 1
+    assert result.output.find(s.MSG_DIRECTORY_ERROR)

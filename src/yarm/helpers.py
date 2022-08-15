@@ -86,6 +86,8 @@ def load_yaml_file(input_file: str, schema: Any) -> YAML:
         abort(s.MSG_INVALID_YAML, error=error, file_path=input_file)
     except FileNotFoundError:
         abort(s.MSG_CONFIG_FILE_NOT_FOUND, file_path=input_file)
+    except IsADirectoryError:
+        abort(f"{s.MSG_DIRECTORY_ERROR} {input_file}")
 
 
 def msg_with_data(msg: str, data: str):

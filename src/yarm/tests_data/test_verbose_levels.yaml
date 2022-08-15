@@ -1,0 +1,10 @@
+---
+tables_config:
+  orders:
+    - path: orders.xlsx
+      sheet: Jan
+
+output:
+  dir: output
+  basename: test_verbose_levels
+  export_tables: csv
