@@ -84,6 +84,7 @@ def validate_config_edited(config: YAML) -> bool:
     output.basename is still set to the default: {default_config.output.basename}
     Please edit your config file, then try running this report again."""
             )
+    return True
 
 
 def validate_minimum_required_keys(config: YAML) -> bool:
@@ -111,6 +112,7 @@ def validate_minimum_required_keys(config: YAML) -> bool:
             abort(s.MSG_NEED_EXPORT_TABLES_OR_QUERIES)
         else:
             msg_with_data(s.MSG_EXPORT_TABLES_ONLY, c["/output/export_tables"])
+    return True
 
 
 def check_is_file(list_of_paths, key: Optional[str]):
@@ -148,7 +150,7 @@ class StrNotEmpty(Str):
     """A string that must not be empty."""
 
     @staticmethod
-    def validate_scalar(chunk: str) -> str:
+    def validate_scalar(chunk: Str) -> str:
         """Invalidate if string is empty."""
         if any([chunk.contents == ""]):
             chunk.expecting_but_found("when expecting a string that is not empty")

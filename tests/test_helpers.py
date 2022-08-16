@@ -3,6 +3,7 @@ import inspect
 import os
 import re
 import shutil
+from typing import List
 
 from path import Path
 
@@ -10,16 +11,18 @@ from yarm import tests_data
 from yarm.settings import Settings
 
 
-def assert_files_exist(files: list):
+def assert_files_exist(files: List[str]) -> bool:
     """Assert that each file in files exists."""
     for f in files:
         assert os.path.isfile(f)
+    return True
 
 
-def assert_messages(messages: list, output: str):
+def assert_messages(messages: List[str], output: str) -> bool:
     """Assert that each message in messages appears in output."""
     for msg in messages:
         assert re.search(msg, output)
+    return True
 
 
 def prep_test_config(test_config_name: str, skip_config_file: bool = False) -> None:
@@ -82,7 +85,7 @@ def prep_test_config(test_config_name: str, skip_config_file: bool = False) -> N
     # print("not a dir:", dir_test_config_name)
 
 
-def string_as_config(config: str):
+def string_as_config(config: str) -> bool:
     """Write a multiline string as the config file for a test.
 
     Intended for use within a temporary directory.
@@ -94,3 +97,4 @@ def string_as_config(config: str):
     with open(s.DEFAULT_CONFIG_FILE, "w") as f:
         f.write(config)
     assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
+    return True

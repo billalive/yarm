@@ -50,9 +50,6 @@ def abort(msg: str, error: str = None, file_path: str = None):
     if error is not None:
         click.echo("Error: ", nl=False)
         click.secho(error, fg=s.COLOR_ERROR)
-    # FIXME sys.exit(1) appears to break coverage, resulting in many lines
-    # that are tested showing up as not tested. But this may be a bug in coverage:
-    # https://github.com/nedbat/coveragepy/issues/1433
     sys.exit(1)
 
 

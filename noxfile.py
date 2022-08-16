@@ -152,7 +152,7 @@ def mypy(session: Session) -> None:
     """Type-check using mypy."""
     args = session.posargs or ["src", "tests", "docs/conf.py"]
     session.install(".")
-    session.install("mypy", "pytest", "types-PyYAML")
+    session.install("mypy", "pytest", "types-PyYAML", "types-setuptools")
     session.run("mypy", "--install-types")
     session.run("mypy", *args)
     if not session.posargs:
