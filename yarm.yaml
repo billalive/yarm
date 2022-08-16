@@ -4,4 +4,6 @@
 # For (many) more options, see: yarm.readthedocs.io
 ---
 import:
-  - bad_key:
+  - path:
+      - key1: test
+      - key2: test

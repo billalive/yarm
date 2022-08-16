@@ -7,10 +7,10 @@
 import pytest
 from click.testing import CliRunner
 
-from tests.test_helpers import assert_files_exist
-from tests.test_helpers import assert_messages
-from tests.test_helpers import prep_test_config
-from tests.test_helpers import string_as_config
+from tests.helpers import assert_files_exist
+from tests.helpers import assert_messages
+from tests.helpers import prep_test_config
+from tests.helpers import string_as_config
 from yarm.__main__ import cli
 from yarm.settings import Settings
 
@@ -174,3 +174,7 @@ output:
             # If we can get result.output consistently working again, uncomment below.
             #
             # assert_messages(messages, result.output)
+
+
+def test_check_is_file(runner: CliRunner) -> None:
+    """Test check_is_file() permutations."""

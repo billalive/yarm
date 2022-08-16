@@ -35,6 +35,9 @@ class Settings:
     )
     MSG_INVALID_YAML: str = """This config file has invalid YAML or a misconfiguration.
 Please fix the error below and try again."""
+    MSG_INVALID_YAML_SCANNER: str = """This config file has invalid YAML.
+Please fix the error below and try again. If there is a colon in your value,
+try surrounding the entire value with single or double quote marks."""
     MSG_PATH_NOT_FOUND: str = "One or more paths in your config could not be found:"
     MSG_VALIDATING_KEY: str = "Validating"
     MSG_CONFIG_FILE_VALID: str = ">> Configuration file validated: "

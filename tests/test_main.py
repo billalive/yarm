@@ -11,7 +11,7 @@ from typing import Any
 import pytest
 from click.testing import CliRunner
 
-from tests.test_helpers import prep_test_config
+from tests.helpers import prep_test_config
 from yarm import __main__
 from yarm.__main__ import cli
 from yarm.settings import Settings

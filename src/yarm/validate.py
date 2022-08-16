@@ -8,8 +8,9 @@
 import importlib.resources as pkg_resources
 import os
 import re
+
+# from typing import Dict
 from typing import Any
-from typing import Dict
 from typing import Optional
 from typing import Union
 
@@ -128,15 +129,21 @@ def check_is_file(list_of_paths, key: Optional[str]):
     missing: list = []
     for item in list_of_paths:
         path: str = ""
+        # NOTE These abort() calls can only be triggered by incorrectly calling this
+        # function, not by config, so we don't need to test them with coverage.
         if isinstance(item, str):
-            path = item
+            path = item  # pragma: no cover
         elif isinstance(item, dict):
             if key is None:
-                abort("List of paths is a dict, but no key (e.g. 'path') is provided.")
+                abort(
+                    "List of paths is a dict, but no key (e.g. 'path') is provided."
+                )  # pragma: no cover
             else:
                 path = item[key]
         else:
-            abort("List of paths must contain either strings or dictionaries.")
+            abort(
+                "List of paths must contain either strings or dictionaries."
+            )  # pragma: no cover
 
         result = True
         if not os.path.exists(path):
@@ -473,8 +480,3 @@ def get_default_config() -> Nob:
             ),
         ).data
     )
-
-
-def get_first_dict_key(dict_to_extract: Dict[Any, Any]) -> Any:
-    """Return the first key in a dictionary."""
-    return list(dict_to_extract.items())[0][0]
