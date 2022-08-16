@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - master
 
 jobs:
   labeler:
@@ -17,3 +16,4 @@ jobs:
         uses: crazy-max/ghaction-github-labeler@v4.0.0
         with:
           skip-delete: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
