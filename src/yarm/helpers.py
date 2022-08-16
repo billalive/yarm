@@ -15,6 +15,7 @@ from path import Path
 from strictyaml import YAMLError
 from strictyaml import load
 from strictyaml.representation import YAML
+from strictyaml.ruamel.scanner import ScannerError
 
 from yarm.settings import Settings
 
@@ -80,11 +81,14 @@ def load_yaml_file(input_file: str, schema: Any) -> YAML:
     try:
         return load(Path(input_file).read_text(), schema)
     except YAMLError as error:
-        abort(s.MSG_INVALID_YAML, error=error, file_path=input_file)
+        abort(s.MSG_INVALID_YAML, error=str(error), file_path=input_file)
     except FileNotFoundError:
         abort(s.MSG_CONFIG_FILE_NOT_FOUND, file_path=input_file)
     except IsADirectoryError:
         abort(f"{s.MSG_DIRECTORY_ERROR} {input_file}")
+    except ScannerError as error:
+        # https://github.com/crdoconnor/strictyaml/issues/22
+        abort(s.MSG_INVALID_YAML, error=str(error), file_path=input_file)
 
 
 def msg_with_data(msg: str, data: str, verbose_level: int = 1):

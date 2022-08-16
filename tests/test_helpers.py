@@ -1,7 +1,6 @@
 """Helper functions for tests."""
 import inspect
 import os
-import re
 import shutil
 from typing import List
 
@@ -21,7 +20,7 @@ def assert_files_exist(files: List[str]) -> bool:
 def assert_messages(messages: List[str], output: str) -> bool:
     """Assert that each message in messages appears in output."""
     for msg in messages:
-        assert re.search(msg, output)
+        assert msg in output
     return True
 
 

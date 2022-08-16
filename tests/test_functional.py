@@ -152,7 +152,7 @@ def test_report_aborts_no_config_file(runner: CliRunner) -> None:
         assert not os.path.isfile(s.DEFAULT_CONFIG_FILE)
         # Try to run report, with default config file.
         result = runner.invoke(cli, [s.CMD_RUN])
-        assert re.search(s.MSG_CONFIG_FILE_NOT_FOUND, result.output)
+        assert s.MSG_CONFIG_FILE_NOT_FOUND in result.output
         assert result.exit_code == 1
 
 
@@ -174,7 +174,7 @@ def test_report_aborts_invalid_config_no_edits(runner: CliRunner) -> None:
         # Try to run report without any edits.
         result = runner.invoke(cli, [s.CMD_RUN])
         assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
-        assert re.search(s.MSG_INVALID_CONFIG_NO_EDITS, result.output)
+        assert s.MSG_INVALID_CONFIG_NO_EDITS in result.output
         assert result.exit_code == 1
 
 
@@ -185,7 +185,7 @@ def test_report_aborts_invalid_config_bad_yaml(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         prep_test_config(s.TEST_CONFIG_BAD_YAML)
         result = runner.invoke(cli, [s.CMD_RUN])
-        assert re.search(s.MSG_INVALID_YAML, result.output)
+        assert s.MSG_INVALID_YAML in result.output
         assert result.exit_code == 1
 
 
@@ -197,7 +197,7 @@ def test_report_aborts_invalid_config_bad_options(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         prep_test_config(s.TEST_CONFIG_BAD_OPTIONS)
         result = runner.invoke(cli, [s.CMD_RUN])
-        assert re.search(s.MSG_INVALID_YAML, result.output)
+        assert s.MSG_INVALID_YAML in result.output
         assert result.exit_code == 1
 
 

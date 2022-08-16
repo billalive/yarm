@@ -31,6 +31,7 @@ from strictyaml import Seq
 from strictyaml import Str
 from strictyaml import load
 from strictyaml.exceptions import YAMLValidationError
+from strictyaml.yamllocation import YAMLChunk
 
 from yarm.helpers import abort
 from yarm.helpers import load_yaml_file
@@ -111,7 +112,7 @@ def validate_minimum_required_keys(config: YAML) -> bool:
         if "/output/export_tables" not in c:
             abort(s.MSG_NEED_EXPORT_TABLES_OR_QUERIES)
         else:
-            msg_with_data(s.MSG_EXPORT_TABLES_ONLY, c["/output/export_tables"])
+            msg_with_data(s.MSG_EXPORT_TABLES_ONLY, c["/output/export_tables"][:])
     return True
 
 
@@ -150,7 +151,7 @@ class StrNotEmpty(Str):
     """A string that must not be empty."""
 
     @staticmethod
-    def validate_scalar(chunk: Str) -> str:
+    def validate_scalar(chunk: YAMLChunk) -> str:
         """Invalidate if string is empty."""
         if any([chunk.contents == ""]):
             chunk.expecting_but_found("when expecting a string that is not empty")
@@ -253,8 +254,8 @@ def validate_key_import(c: YAML, config_path: str):
     Example Format:
 
     import:
-     - path: "MODULE_A.py"
-     - path: "MODULE_B.py"
+     - path: MODULE_A.py
+     - path: MODULE_B.py
     """
     key: str = check_key("import", c)
     if key:
@@ -387,7 +388,7 @@ def validate_key_queries(c: YAML, config_path: str):
 
 def revalidate_yaml(
     yaml: YAML,
-    schema: Union[Map, MapPattern],
+    schema: Union[Map, MapPattern, Seq],
     config_path: str,
     msg_key: Union[str, None] = None,
     msg_suffix: Union[str, None] = None,

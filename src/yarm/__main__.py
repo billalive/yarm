@@ -62,7 +62,7 @@ For more options:
 def run(
     ctx: Optional[click.Context], config_path: Optional[str], verbose: Optional[int]
 ) -> None:
-    """Run the report(s)."""
+    """Run the report."""
     s = Settings()
     if config_path is None:  # pragma: no branch
         config_path = s.DEFAULT_CONFIG_FILE  # type: ignore[unreachable]
@@ -97,10 +97,10 @@ def run(
     type=click.Path(exists=False),
 )
 def new(edit: Any, force: Any, custom_config_path: str) -> None:
-    """Initialize a new yarm project.
+    """Initialize a new yarm report.
 
     This will create a new config file and, by default,
-    open the new file in your default editor.
+    open this file in your default editor.
     """
     s = Settings()
     config_file: str = s.DEFAULT_CONFIG_FILE
