@@ -5,6 +5,7 @@
 
 
 import importlib.resources as pkg_resources
+import inspect
 import os
 from typing import Any
 
@@ -13,6 +14,7 @@ from click.testing import CliRunner
 
 from tests.test_helpers import prep_test_config
 from yarm import __main__
+from yarm import tests_data
 from yarm.__main__ import cli
 from yarm.settings import Settings
 
@@ -107,6 +109,9 @@ def test_verbose_levels(runner: CliRunner) -> None:
 def test_directory_error(runner: CliRunner) -> None:
     """A directory instead of a file raises the correct error."""
     s = Settings()
-    result = runner.invoke(cli, [s.CMD_RUN, "-c", os.getcwd()])
+    # Try passing tests_data dir as config file.
+    # This test took some finessing to get working on Windows.
+    dir_tests_data: str = os.path.dirname(inspect.getfile(tests_data))
+    result = runner.invoke(cli, [s.CMD_RUN, "-c", dir_tests_data])
     assert result.exit_code == 1
     assert s.MSG_DIRECTORY_ERROR in result.output
