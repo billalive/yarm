@@ -16,7 +16,7 @@ classifiers = [
 Changelog = "https://github.com/billalive/yarm/releases"
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.7,<4.0"
 click = ">=8.0.1"
 PyYAML = "^6.0"
 strictyaml = "^1.6.1"
@@ -28,7 +28,10 @@ Pygments = ">=2.10.0"
 black = ">=21.10b0"
 coverage = {extras = ["toml"], version = ">=6.2"}
 darglint = ">=1.8.1"
-flake8 = ">=4.0.1"
+# Pin flake8, see:
+# https://github.com/ratt-ru/codex-africanus/pull/272
+# https://github.com/tholo/pytest-flake8/issues/87
+flake8 = ">=4.0.1,<5.0.0"
 flake8-bandit = ">=2.1.2"
 flake8-bugbear = ">=21.9.2"
 flake8-docstrings = ">=1.6.0"
