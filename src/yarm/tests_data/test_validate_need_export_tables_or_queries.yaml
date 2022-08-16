@@ -1,0 +1,8 @@
+---
+tables_config:
+  products:
+    - path: "products.csv"
+
+output:
+  dir: output
+  basename: mwe

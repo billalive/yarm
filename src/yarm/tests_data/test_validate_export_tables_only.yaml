@@ -1,0 +1,16 @@
+# Take three sheets from a spreadsheet that all have the same columns,
+# combine them into one table, and export them as one CSV.
+---
+tables_config:
+  orders:
+    - path: orders.xlsx
+      sheet: Jan
+    - path: orders.xlsx
+      sheet: Feb
+    - path: orders.xlsx
+      sheet: Mar
+
+output:
+  dir: output
+  basename: orders_Q1
+  export_tables: csv

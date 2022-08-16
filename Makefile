@@ -31,3 +31,18 @@ lock:
 coverage:
 	coverage html
 	xdg-open htmlcov/index.html
+
+3.10:
+	pyenv local 3.10.5
+	poetry env use 3.10.5
+
+3.9:
+	pyenv local 3.9.12
+	poetry env use 3.9.12
+
+3.7:
+	pyenv local 3.7.13
+	poetry env use 3.7.13
+
+jupyter:
+	poetry run jupyter notebook

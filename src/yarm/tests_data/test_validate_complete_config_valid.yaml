@@ -1,0 +1,70 @@
+# Stub YAML to begin your report.
+# See examples/ for more options.
+
+# If you want to add a df_postprocess function, see report.py
+import:
+  - path: MODULE_A.py
+
+output:
+  dir: output
+  basename: BASENAME
+  prepend_date: true
+  export_tables: csv
+  export_queries: csv
+  styles:
+    column_width: 15
+
+input:
+  strip: true
+  slugify_columns: true
+  lowercase_columns: true
+
+tables_config:
+  table_from_spreadsheet:
+    - path: SOURCE_A.xlsx
+      sheet: SHEET A.1
+  table_from_csv:
+    - path: SOURCE_B.csv
+  table_from_multiple_sources:
+    - path: SOURCE_C.xlsx
+      sheet: SHEET C.1
+    - path: SOURCE_C.xlsx
+      sheet: SHEET C.2
+      datetime:
+        created:
+        last_saved: "%Y-%m-%d"
+      pivot:
+        index: FIELD_ID
+        columns: FIELD_KEY
+        values: FIELD_VALUE
+    - path: SOURCE_A.xlsx
+      sheet: SHEET A.2
+    - path: SOURCE_D.csv
+
+queries:
+  - name: QUERY A
+    sql: |
+      SELECT
+      *
+      FROM
+      table_from_spreadsheet AS s
+      ;
+
+  - name: QUERY B
+    df_postprocess: postprocess_df
+    replace:
+      FIELD_A:
+        MATCH A1: REPLACE A1
+        MATCH A2: REPLACE A2
+      FIELD_B:
+        'MATCH B1 W/"''COMPLEX''" #STRING': 'REPLACE B1 W/''"COMPLEX"'' #STRING'
+    sql: |
+      SELECT
+      *
+      FROM
+      table_from_spreadsheet AS s
+      JOIN
+      table_from_csv AS c
+      ON
+      s.id = c.id
+      ;

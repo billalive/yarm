@@ -56,6 +56,34 @@ Please see the [Command-line Reference] for details.
 
 Full documentation is at [yarm.readthedocs.io][read the docs]
 
+## Roadmap: Future Features
+
+These features are not yet implemented, but they're on the roadmap.
+
+### `include`
+
+The `include` key will let you include other config files. For example, if you have a set of tables that you often want to create in different reports, `include` will let you define them once, in one file.
+
+This feature will be powerful, but for now, it's on the roadmap, because the recursion is complex.
+
+It will also require careful thought to ensure that the overrides are intuitive.
+
+For instance, what happens if a table with the same name is defined differently in `tables_config:` in two separate included files? I think that the most recent definition should _completely_ override any previous definitions, because it's quite possible that, without realizing it, you're using the same table name to describe different data.
+
+On the other hand, I would like to be able to override `input:` and `output:` on a key by key basis. For example, I almost always want to set `input.slugify_columns` and `input.lowercase_columns` to `true`, but if I have a report where I need to override `input.lowercase_columns` to `false`, I'd like to be able to do this without also losing my included setting of `input.slugify_columns` as `true`.
+
+So this feature will need some nuance.
+
+### `create_tables`
+
+If you want to include a configuration file that defines more tables than you want for a particular report, you will be able to use `create_tables` to limit the tables for _this_ report to a particular subset.
+
+### (Basic) Visualizations?
+
+Since we're already loading all the data into [pandas], we might as well add [matplotlib] and let you generate some charts, right?
+
+I'm not sure. I can see the use cases, but by the time you start needing charts, it might be time to upgrade to [Jupyter Lab].
+
 ## Contributing
 
 Contributions are very welcome.
@@ -80,6 +108,9 @@ This project was generated from [@cjolowicz]'s [Hypermodern Python Cookiecutter]
 [hypermodern python cookiecutter]: https://github.com/cjolowicz/cookiecutter-hypermodern-python
 [file an issue]: https://github.com/billalive/yarm/issues
 [pip]: https://pip.pypa.io/
+[matplotlib]: https://matplotlib.org/
+[pandas]: https://pandas.pydata.org/
+[jupyter lab]: https://jupyter.org/try
 
 <!-- github-only -->
 

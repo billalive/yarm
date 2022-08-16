@@ -1,0 +1,6 @@
+# test_report_aborts_invalid_config_bad_options
+# Rebort should abort because config file has options that do not match schema.
+
+---
+non_existent_option_level_1:
+  dir: output

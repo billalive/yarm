@@ -21,6 +21,7 @@ repos:
         entry: check-yaml
         language: system
         types: [yaml]
+        exclude: ^src/yarm/tests_data/test_config_bad_yaml.yaml$
       - id: darglint
         name: darglint
         entry: darglint
@@ -64,3 +65,4 @@ repos:
     rev: v2.6.0
     hooks:
       - id: prettier
+        exclude: ^src/yarm/tests_data/test_config_bad_yaml.yaml$

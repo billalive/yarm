@@ -152,7 +152,12 @@ def mypy(session: Session) -> None:
     """Type-check using mypy."""
     args = session.posargs or ["src", "tests", "docs/conf.py"]
     session.install(".")
-    session.install("mypy", "pytest")
+    session.install("mypy", "pytest", "types-PyYAML", "types-setuptools")
+    # NOTE mypy --install-types fails on Github automated tests.
+    # Instead, manually add type packages to session.install line above,
+    # or if they don't exist for a module, add stanza to ignore this module
+    # in mypy.ini.
+    # session.run("mypy", "--install-types")
     session.run("mypy", *args)
     if not session.posargs:
         session.run("mypy", f"--python-executable={sys.executable}", "noxfile.py")

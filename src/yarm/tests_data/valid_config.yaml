@@ -1,0 +1,5 @@
+# This config should validate.
+# Other test config files may include it.
+tables_config:
+  orders:
+    - path: "orders.csv"

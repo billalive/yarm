@@ -1,0 +1,9 @@
+# Stub YAML to begin your report.
+# Change values in ALL CAPS to your desired values.
+#
+# For (many) more options, see: yarm.readthedocs.io
+---
+import:
+  - path:
+      - key1: test
+      - key2: test
