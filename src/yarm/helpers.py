@@ -86,6 +86,8 @@ def load_yaml_file(input_file: str, schema: Any) -> YAML:
         abort(s.MSG_CONFIG_FILE_NOT_FOUND, file_path=input_file)
     except IsADirectoryError:
         abort(f"{s.MSG_DIRECTORY_ERROR} {input_file}")
+    except PermissionError:
+        abort(f"{s.MSG_PERMISSION_ERROR} (Are you sure this is a file?)\n{input_file}")
     except ScannerError as error:
         # https://github.com/crdoconnor/strictyaml/issues/22
         abort(s.MSG_INVALID_YAML, error=str(error), file_path=input_file)

@@ -66,8 +66,8 @@ def run(
     s = Settings()
     if config_path is None:  # pragma: no branch
         config_path = s.DEFAULT_CONFIG_FILE  # type: ignore[unreachable]
-    if verbose is None:
-        verbose = 0
+    if verbose is None:  # pragma: no branch
+        verbose = 0  # type: ignore[unreachable]  # pragma: no cover
     if verbose > 1:
         msg_with_data("Verbosity level", str(verbose))
     validate_config(config_path)

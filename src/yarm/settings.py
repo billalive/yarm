@@ -29,6 +29,7 @@ class Settings:
 
     MSG_CONFIG_FILE_NOT_FOUND: str = "Could not find config file:"
     MSG_DIRECTORY_ERROR: str = "Expected a file, but this is a directory:"
+    MSG_PERMISSION_ERROR: str = "Permission denied."
     MSG_INVALID_CONFIG_NO_EDITS: str = (
         "This config file does not appear to have been edited."
     )
