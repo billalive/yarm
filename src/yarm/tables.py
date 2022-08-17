@@ -5,6 +5,7 @@ from typing import Union
 
 import pandas as pd
 from nob.nob import NobView
+from slugify import slugify
 
 from yarm.helpers import abort
 from yarm.helpers import msg
@@ -71,7 +72,7 @@ def import_csv(conn, config, table_name, exists_mode, input_file):
     df = pd.read_csv(input_file)
     show_df(df, table_name)
     # TODO
-    # df = process_df_import_config(df, config)
+    df = df_input_options(df, config)
     # df = process_df_import_file_options(df, config, table, input_file)
     # index = include_index(config, table, input_file)
     index = False
@@ -90,7 +91,22 @@ def import_xlsx_sheet(conn, config, table_name, exists_mode, input_file, input_s
     with open(input_file, "rb") as f:
         try:
             df = pd.read_excel(f, sheet_name=input_sheet)
+            df = df_input_options(df, config)
+            # TODO
+            # df = process_df_import_file_options(df, config, table, input_file)
+            # index = include_index(config, table, input_file)
+            index = False
             show_df(df, f"{table_name}: {input_sheet}")
+            try:
+                df.to_sql(table_name, conn, if_exists=exists_mode, index=index)
+            except pd.io.sql.DatabaseError as error:
+                conn.close()
+                abort(
+                    s.MSG_CREATE_TABLE_DATABASE_ERROR,
+                    error=error,
+                    data=table_name,
+                    file_path=input_file,
+                )
         except ValueError as error:
             conn.close()
             abort(
@@ -99,18 +115,48 @@ def import_xlsx_sheet(conn, config, table_name, exists_mode, input_file, input_s
                 data=table_name,
                 file_path=input_file,
             )
-        # TODO
-        # df = process_df_import_config(df, config)
-        # df = process_df_import_file_options(df, config, table, input_file)
-        # index = include_index(config, table, input_file)
-        index = False
-        try:
-            df.to_sql(table_name, conn, if_exists=exists_mode, index=index)
-        except pd.io.sql.DatabaseError as error:
-            conn.close()
-            abort(
-                s.MSG_CREATE_TABLE_DATABASE_ERROR,
-                error=error,
-                data=table_name,
-                file_path=input_file,
-            )
+
+
+def df_input_options(df, c):
+    """Process input data using the options in input: key.
+
+    These options are applied to /every/ input file.
+
+    If you modify these options, you must also modify validate_key_input()
+
+    For per-file input options, see df_table_options.
+    """
+    s = Settings()
+    if s.KEY_INPUT in c:
+        # Strip whitespace at start and end of string.
+        # https://stackoverflow.com/a/53089888
+        # input:
+        #   strip: true
+        if s.KEY_INPUT__STRIP in c and c[s.KEY_INPUT__STRIP][:]:
+            msg("Stripping whitespace at start and end of all strings...")
+            df = df.applymap(lambda x: x.strip() if type(x) == str else x)
+
+        # input:
+        #   slugify_columns: true
+        if s.KEY_INPUT__SLUGIFY_COLUMNS in c and c[s.KEY_INPUT__SLUGIFY_COLUMNS][:]:
+            df.columns = [
+                slugify(col, lowercase=False, separator="_") for col in df.columns
+            ]
+
+        # input:
+        #   lowercase_columns: true
+        if s.KEY_INPUT__LOWERCASE_COLUMNS in c and c[s.KEY_INPUT__LOWERCASE_COLUMNS][:]:
+            df.columns = [col.lower() for col in df.columns]
+
+        # input:
+        #   uppercase_rows: true
+        # Note: The uppercase transformation happens BEFORE running query, replace
+        # This matters for case-sensitive queries and regexes.
+        if s.KEY_INPUT__UPPERCASE_ROWS in c and c[s.KEY_INPUT__UPPERCASE_ROWS][:]:
+            df = df.applymap(lambda s: s.upper() if type(s) == str else s)
+
+        # TODO Implement option to remove stopwords from column names with slugify?
+
+        # index: not processed here, see include_index
+
+    return df

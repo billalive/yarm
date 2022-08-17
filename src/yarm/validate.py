@@ -278,6 +278,7 @@ def validate_key_input(c: YAML, config_path: str):
         strip: true
         slugify_columns: true
         lowercase_columns: true
+        uppercase_rows: true
     """
     key: str = check_key("input", c)
     if key:
@@ -286,6 +287,7 @@ def validate_key_input(c: YAML, config_path: str):
                 OptionalYAML("strip"): Bool(),
                 OptionalYAML("slugify_columns"): Bool(),
                 OptionalYAML("lowercase_columns"): Bool(),
+                OptionalYAML("uppercase_rows"): Bool(),
             }
         )
         revalidate_yaml(c[key], schema, config_path)
