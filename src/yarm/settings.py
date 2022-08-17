@@ -61,6 +61,7 @@ try surrounding the entire value with single or double quote marks."""
     MSG_TEST_EXPECTED_LIST: str = "found a mapping"
     MSG_MISSING_REQUIRED_KEY: str = "Missing required key(s):"
     MSG_NL_TAB: str = "\n   "
+    MSG_TAB: str = "   "
     MSG_NEED_EXPORT_TABLES_OR_QUERIES: str = """
 No queries found. We need something to output!
     Please either:
@@ -74,6 +75,7 @@ No queries found. We need something to output!
     MSG_SQLITE_ERROR: str = "There was a problem with sqlite:"
 
     MSG_CREATING_TABLE: str = "Creating table"
+    MSG_CREATED_TABLE: str = "Table created"
     MSG_IMPORTING_DATA: str = "Importing data from"
     MSG_IMPORTING_SHEET: str = "Importing sheet"
     MSG_NO_SHEET_PROVIDED: str = "No 'sheet' key provided, importing first sheet from"

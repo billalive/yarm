@@ -165,11 +165,10 @@ class StrNotEmpty(Str):
         return chunk.contents
 
 
-def msg_validating_key(key: str, suffix: str = None):
+def msg_validating_key(key: str, suffix: str = None, verbose: int = 1):
     """Show a message that a key is being validated."""
     s = Settings()
     ctx = click.get_current_context()
-    verbose: int = 1
     if ctx.params[s.ARG_VERBOSE] >= verbose:
         msg = s.MSG_VALIDATING_KEY
         if suffix:
@@ -413,9 +412,9 @@ def revalidate_yaml(
     try:
         if msg_key:
             if msg_suffix:
-                msg_validating_key(msg_key, msg_suffix)
+                msg_validating_key(msg_key, msg_suffix, verbose=2)
             else:
-                msg_validating_key(msg_key)
+                msg_validating_key(msg_key, verbose=2)
         yaml.revalidate(schema)
     except YAMLValidationError as err:
         abort(s.MSG_INVALID_YAML, err, file_path=config_path)
@@ -453,7 +452,7 @@ def validate_config_schema(config_path: str) -> Any:
 
     c = load_yaml_file(config_path, schema)
 
-    msg_with_data(s.MSG_BEGIN_VALIDATING_FILE, config_path, 2)
+    msg_with_data(s.MSG_BEGIN_VALIDATING_FILE, config_path, verbose=2)
 
     # TODO Uncoment include and create_tables when we implement these options.
     # validate_key_include(c, config_path)
@@ -464,7 +463,7 @@ def validate_config_schema(config_path: str) -> Any:
     validate_key_output(c, config_path)
     validate_key_queries(c, config_path)
 
-    msg_with_data(s.MSG_CONFIG_FILE_VALID, config_path, 2)
+    msg_with_data(s.MSG_CONFIG_FILE_VALID, config_path, verbose=2)
 
     # If configuration validates, return config object.
     return c

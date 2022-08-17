@@ -23,4 +23,5 @@ def test_create_tables(runner: CliRunner) -> None:
         prep_test_config(test_config_name)
         result = runner.invoke(cli, [s.CMD_RUN, "-vv"])
         assert s.MSG_CREATING_TABLE in result.output
+        assert s.MSG_CREATED_TABLE in result.output
         assert result.exit_code == 0

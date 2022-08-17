@@ -115,7 +115,7 @@ def msg(msg: str, verbose_level: int = 0):
         click.echo(msg, nl=False)
 
 
-def msg_with_data(msg: str, data: str, verbose: int = 1):
+def msg_with_data(msg: str, data: str, verbose: int = 1, indent: int = 0):
     """Show message with accompanying data.
 
     By default, requires at least one -v flag.
@@ -124,11 +124,12 @@ def msg_with_data(msg: str, data: str, verbose: int = 1):
         msg (str): message to display
         data (str): data to display after message
         verbose (int): (optional) verbosity level required to show this message.
-
+        indent (int): (optional) number of indents before message
     """
     s = Settings()
     ctx = click.get_current_context()
     if ctx.params[s.ARG_VERBOSE] >= verbose:
+        msg = (s.MSG_TAB * indent) + msg
         msg += ": "
         click.echo(msg, nl=False)
         click.secho(data, fg=s.COLOR_DATA)
