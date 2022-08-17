@@ -22,14 +22,18 @@ input:
 tables_config:
   table_from_spreadsheet:
     - path: SOURCE_A.xlsx
-      sheet: SHEET A.1
+      sheet: A.1
   table_from_csv:
     - path: SOURCE_B.csv
   table_from_multiple_sources:
     - path: SOURCE_C.xlsx
-      sheet: SHEET C.1
+      sheet: C.1
+    - path: SOURCE_A.xlsx
+      sheet: A.2
+    - path: SOURCE_D.csv
+  table_pivot:
     - path: SOURCE_C.xlsx
-      sheet: SHEET C.2
+      sheet: C.PIVOT
       datetime:
         created:
         last_saved: "%Y-%m-%d"
@@ -37,9 +41,6 @@ tables_config:
         index: FIELD_ID
         columns: FIELD_KEY
         values: FIELD_VALUE
-    - path: SOURCE_A.xlsx
-      sheet: SHEET A.2
-    - path: SOURCE_D.csv
 
 queries:
   - name: QUERY A

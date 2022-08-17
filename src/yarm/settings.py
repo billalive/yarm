@@ -71,9 +71,15 @@ No queries found. We need something to output!
     )
 
     MSG_CONNECTION_DATABASE_FAILED: str = "Failed to connect to database."
+    MSG_SQLITE_ERROR: str = "There was a problem with sqlite:"
 
     MSG_CREATING_TABLE: str = "Creating table"
     MSG_IMPORTING_DATA: str = "Importing data from"
+    MSG_IMPORTING_SHEET: str = "Importing sheet"
+    MSG_NO_SHEET_PROVIDED: str = "No 'sheet' key provided, importing first sheet from"
+    MSG_BAD_FILE_EXT: str = "Bad file extension in"
+    MSG_CREATE_TABLE_DATABASE_ERROR: str = "Database Error: Could not create table"
+    MSG_CREATE_TABLE_VALUE_ERROR: str = "Value Error: Could not create table"
 
     # NOTE These KEYs are for use with Nob objects, not for validating YAML schema.
     KEY_TABLES_CONFIG = "/tables_config"

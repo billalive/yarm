@@ -169,13 +169,13 @@ def msg_validating_key(key: str, suffix: str = None):
     """Show a message that a key is being validated."""
     s = Settings()
     ctx = click.get_current_context()
-    verbose_level: int = 1
-    if ctx.params[s.ARG_VERBOSE] >= verbose_level:
+    verbose: int = 1
+    if ctx.params[s.ARG_VERBOSE] >= verbose:
         msg = s.MSG_VALIDATING_KEY
         if suffix:
             msg += " "
             msg += suffix
-        msg_with_data(msg, key, verbose_level)
+        msg_with_data(msg, key, verbose=verbose)
 
 
 def validate_key_tables_config(c: YAML, config_path: str):

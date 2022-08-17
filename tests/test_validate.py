@@ -42,7 +42,7 @@ def test_validate_config_mistakes(runner: CliRunner) -> None:
         exit_code: int = test_tuple[0]
         test: str = test_tuple[1]
         msg: str = test_tuple[2]
-        print("test:", test, "msg:", msg)
+        print("test:", test, f"{s.MSG_NL_TAB}msg:", msg)
         with runner.isolated_filesystem():
             prep_test_config(test)
             result = runner.invoke(cli, [s.CMD_RUN])

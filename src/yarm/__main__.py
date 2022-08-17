@@ -72,7 +72,6 @@ def run(
         msg_with_data("Verbosity level", str(verbose))
 
     config: Nob = Nob(validate_config(config_path).data)
-    print(config)
 
     # Create a temporary sqlite database
     try:
@@ -81,7 +80,7 @@ def run(
         create_tables(conn, config)
 
     except sqlite3.Error as error:
-        abort(s.MSG_CONNECTION_DATABASE_FAILED, error)
+        abort(s.MSG_SQLITE_ERROR, error=error)
     finally:
         conn.close()
 

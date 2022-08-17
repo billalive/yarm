@@ -16,12 +16,16 @@ classifiers = [
 Changelog = "https://github.com/billalive/yarm/releases"
 
 [tool.poetry.dependencies]
-python = ">=3.7,<4.0"
+# pandas requires 3.8 minimum.
+python = ">=3.8,<4.0"
 click = ">=8.0.1"
 PyYAML = "^6.0"
 strictyaml = "^1.6.1"
 path = "^16.4.0"
 nob = "^0.8.2"
+pandas = "^1.4.3"
+matplotlib = "^3.5.3"
+openpyxl = "^3.0.10"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"

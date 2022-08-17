@@ -32,19 +32,25 @@ def warn(msg: str) -> None:
     return
 
 
-def abort(msg: str, error: str = None, file_path: str = None):
+def abort(msg: str, error: str = None, file_path: str = None, data: str = None):
     """Abort with error message and status 1.
 
     Args:
         msg: (str)  message
         error: (str, optional)  error
-        file_path: (str, optional)  file with this error
+        file_path: (str, optional)  file with this error, display on separate line
+        data: (str, optional) data to display after msg
     """
     s = Settings()
     # TODO Use err=True to print to stderr?
     click.secho(s.MSG_ABORT, fg=s.COLOR_ERROR, nl=False, bold=True)
     click.echo(" ", nl=False)
-    click.echo(msg)
+    if data is not None:
+        click.echo(msg, nl=False)
+        click.echo(": ", nl=False)
+        click.secho(data, fg=s.COLOR_DATA, bold=True)
+    else:
+        click.echo(msg)
     if file_path is not None:
         click.secho("In file: ", nl=False)
         click.secho(file_path, fg=s.COLOR_DATA, bold=True)
@@ -109,7 +115,7 @@ def msg(msg: str, verbose_level: int = 0):
         click.echo(msg, nl=False)
 
 
-def msg_with_data(msg: str, data: str, verbose_level: int = 1):
+def msg_with_data(msg: str, data: str, verbose: int = 1):
     """Show message with accompanying data.
 
     By default, requires at least one -v flag.
@@ -117,12 +123,12 @@ def msg_with_data(msg: str, data: str, verbose_level: int = 1):
     Args:
         msg (str): message to display
         data (str): data to display after message
-        verbose_level (int): (optional) verbosity level required to show this message.
+        verbose (int): (optional) verbosity level required to show this message.
 
     """
     s = Settings()
     ctx = click.get_current_context()
-    if ctx.params[s.ARG_VERBOSE] >= verbose_level:
+    if ctx.params[s.ARG_VERBOSE] >= verbose:
         msg += ": "
         click.echo(msg, nl=False)
         click.secho(data, fg=s.COLOR_DATA)
