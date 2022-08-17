@@ -7,11 +7,8 @@ import sys
 from typing import Any
 from typing import Optional
 
-# Dependencies
-#
-# If your distribution does not include openpyxl with pandas, you may need
-# to install python-openpyxl separately.
 import click
+from nob import Nob
 
 from yarm.helpers import abort
 from yarm.helpers import msg_with_data
@@ -70,7 +67,10 @@ def run(
         verbose = 0  # type: ignore[unreachable]  # pragma: no cover
     if verbose > 1:
         msg_with_data("Verbosity level", str(verbose))
-    validate_config(config_path)
+
+    config: Nob = Nob(validate_config(config_path).data)
+    print(config)
+
     sys.exit()
 
 
