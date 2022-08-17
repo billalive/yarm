@@ -35,7 +35,7 @@ def create_tables(conn, config):
             msg_with_data(s.MSG_IMPORTING_DATA, filename, verbose=2, indent=1)
 
             if re.findall("csv", file_ext):
-                import_csv(conn, config, table_name, mode, filename)
+                input_csv(conn, config, table_name, mode, filename)
             elif re.findall("xlsx", file_ext):
                 sheet = Union[int, str]
                 if "sheet" in table[i]:
@@ -47,7 +47,7 @@ def create_tables(conn, config):
                     # pd.read_excel() will do this if sheet_name = None
                     sheet = 0
                     msg_with_data(s.MSG_NO_SHEET_PROVIDED, filename, indent=2)
-                import_xlsx_sheet(conn, config, table_name, mode, filename, sheet)
+                input_xlsx_sheet(conn, config, table_name, mode, filename, sheet)
             else:
                 abort(s.MSG_BAD_FILE_EXT, file_path=filename)
             # If there are any more paths for this table, we will want to append.
@@ -66,14 +66,14 @@ def show_df(df, data: str, verbose: int = 3):
         print(s.MSG_LINE)
 
 
-def import_csv(conn, config, table_name, exists_mode, input_file):
-    """Import a CSV file into the database."""
+def input_csv(conn, config, table_name, exists_mode, input_file):
+    """Input a CSV file into the database."""
     s = Settings()
     df = pd.read_csv(input_file)
     show_df(df, table_name)
-    # TODO
     df = df_input_options(df, config)
-    # df = process_df_import_file_options(df, config, table, input_file)
+    # FIXME
+    # df = df_input_file_options(df, config, table, input_file)
     # index = include_index(config, table, input_file)
     index = False
     try:
@@ -85,15 +85,15 @@ def import_csv(conn, config, table_name, exists_mode, input_file):
         )
 
 
-def import_xlsx_sheet(conn, config, table_name, exists_mode, input_file, input_sheet):
-    """Import an XLSX sheet into the database."""
+def input_xlsx_sheet(conn, config, table_name, exists_mode, input_file, input_sheet):
+    """Input an XLSX sheet into the database."""
     s = Settings()
     with open(input_file, "rb") as f:
         try:
             df = pd.read_excel(f, sheet_name=input_sheet)
             df = df_input_options(df, config)
-            # TODO
-            # df = process_df_import_file_options(df, config, table, input_file)
+            # FIXME
+            # df = df_input_file_options(df, config, table, input_file)
             # index = include_index(config, table, input_file)
             index = False
             show_df(df, f"{table_name}: {input_sheet}")

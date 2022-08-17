@@ -24,7 +24,9 @@ def assert_messages(messages: List[str], output: str) -> bool:
     return True
 
 
-def prep_test_config(test_config_name: str, skip_config_file: bool = False) -> None:
+def prep_test_config(
+    test_config_name: str, skip_config_file: bool = False, append_config: str = ""
+) -> None:
     """Prepare test config file for a particular test.
 
     Several tests need a particular file in place as the config file
@@ -52,6 +54,7 @@ def prep_test_config(test_config_name: str, skip_config_file: bool = False) -> N
     Args:
         test_config_name (str): basename of config file, without ".yaml"
         skip_config_file (bool): (optional) do not create config file.
+        append_config (str): (optional) append this string as config
     """
     s = Settings()
     # Make sure we have a default config file location.
@@ -63,10 +66,20 @@ def prep_test_config(test_config_name: str, skip_config_file: bool = False) -> N
         # NOTE We use inspect() rather than importlib() to get this path, because
         # importlib has changed much more since 3.7, esp in how it handles dirs
         # within other dirs. Using inspect() to get the paths seems simpler.
+        # TODO Since pandas requires 3.8, would 3.8 support importlib()?
         test_config_file: str = f"{dir_tests_data}/{test_config_name}{s.EXT_YAML}"
         assert os.path.isfile(test_config_file)
         shutil.copy(test_config_file, s.DEFAULT_CONFIG_FILE)
+        if append_config:
+            print("Appending config:", append_config)
+            print(s.MSG_LINE)
+            with open(s.DEFAULT_CONFIG_FILE, "a") as f:
+                f.write(append_config)
         assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
+    if skip_config_file and append_config:
+        print("Error: Can't use both 'skip_config' and 'append_config' in same test.")
+        assert 1 == 0
+
     # Does this test have a test directory?
     # If so, copy all files from that dir into the temporary testing dir.
     # Use inspect to get the actual path.
