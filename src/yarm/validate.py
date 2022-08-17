@@ -14,7 +14,6 @@ from typing import Any
 from typing import Optional
 from typing import Union
 
-import click
 from nob import Nob
 
 # from strictyaml import MapCombined
@@ -37,6 +36,7 @@ from strictyaml.yamllocation import YAMLChunk
 from yarm.helpers import abort
 from yarm.helpers import load_yaml_file
 from yarm.helpers import msg_with_data
+from yarm.helpers import verbose_ge
 
 # from yarm.helpers import warn
 from yarm.settings import Settings
@@ -168,8 +168,7 @@ class StrNotEmpty(Str):
 def msg_validating_key(key: str, suffix: str = None, verbose: int = 1):
     """Show a message that a key is being validated."""
     s = Settings()
-    ctx = click.get_current_context()
-    if ctx.params[s.ARG_VERBOSE] >= verbose:
+    if verbose_ge(verbose):
         msg = s.MSG_VALIDATING_KEY
         if suffix:
             msg += " "

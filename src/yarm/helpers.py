@@ -99,20 +99,18 @@ def load_yaml_file(input_file: str, schema: Any) -> YAML:
         abort(s.MSG_INVALID_YAML_SCANNER, error=str(error), file_path=input_file)
 
 
-def msg(msg: str, verbose_level: int = 0):
+def msg(msg: str, verbose: int = 0):
     """Show message.
 
     By default, does not require -v flag.
 
     Args:
         msg (str): message to display
-        verbose_level (int): (optional) verbosity level required to show this message.
+        verbose (int): (optional) verbosity level required to show this message.
 
     """
-    s = Settings()
-    ctx = click.get_current_context()
-    if ctx.params[s.ARG_VERBOSE] >= verbose_level:
-        click.echo(msg, nl=False)
+    if verbose_ge(verbose):
+        click.echo(msg)
 
 
 def msg_with_data(msg: str, data: str, verbose: int = 1, indent: int = 0):
@@ -127,9 +125,18 @@ def msg_with_data(msg: str, data: str, verbose: int = 1, indent: int = 0):
         indent (int): (optional) number of indents before message
     """
     s = Settings()
-    ctx = click.get_current_context()
-    if ctx.params[s.ARG_VERBOSE] >= verbose:
+    if verbose_ge(verbose):
         msg = (s.MSG_TAB * indent) + msg
         msg += ": "
         click.echo(msg, nl=False)
         click.secho(data, fg=s.COLOR_DATA)
+
+
+def verbose_ge(verbose: int) -> bool:
+    """Return True if verbosity >= verbose."""
+    s = Settings()
+    ctx = click.get_current_context()
+    if ctx.params[s.ARG_VERBOSE] >= verbose:
+        return True
+    else:
+        return False
