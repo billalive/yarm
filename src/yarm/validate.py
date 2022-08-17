@@ -79,8 +79,8 @@ def validate_config_edited(config: YAML) -> bool:
     s = Settings()
     default_config = get_default_config()
     c = Nob(config.data)
-    if "/output/basename" in c:
-        if c.output.basename == default_config.output.basename:
+    if s.KEY_OUTPUT__BASENAME in c:
+        if c[s.KEY_OUTPUT__BASENAME] == default_config[s.KEY_OUTPUT__BASENAME]:
             abort(
                 f"""{s.MSG_INVALID_CONFIG_NO_EDITS}
     output.basename is still set to the default: {default_config.output.basename}
@@ -95,9 +95,9 @@ def validate_minimum_required_keys(config: YAML) -> bool:
     c = Nob(config.data)
     missing_keys = []
     for key in [
-        "/tables_config",
-        "/output/basename",
-        "/output/dir",
+        s.KEY_TABLES_CONFIG,
+        s.KEY_OUTPUT__BASENAME,
+        s.KEY_OUTPUT__DIR,
     ]:
         if key not in c:
             display_key: str = re.sub("^/", "", key)
@@ -109,11 +109,11 @@ def validate_minimum_required_keys(config: YAML) -> bool:
         )
 
     # To generate output, we need either queries: or export_tables:
-    if "/queries" not in c:
-        if "/output/export_tables" not in c:
+    if s.KEY_QUERIES not in c:
+        if s.KEY_OUTPUT__EXPORT_TABLES not in c:
             abort(s.MSG_NEED_EXPORT_TABLES_OR_QUERIES)
         else:
-            msg_with_data(s.MSG_EXPORT_TABLES_ONLY, c["/output/export_tables"][:])
+            msg_with_data(s.MSG_EXPORT_TABLES_ONLY, c[s.KEY_OUTPUT__EXPORT_TABLES][:])
     return True
 
 

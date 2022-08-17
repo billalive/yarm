@@ -69,3 +69,15 @@ No queries found. We need something to output!
     MSG_EXPORT_TABLES_ONLY: str = (
         "No queries found, but 'output: export_tables' is set. Will output tables to"
     )
+
+    MSG_CONNECTION_DATABASE_FAILED: str = "Failed to connect to database."
+
+    MSG_CREATING_TABLE: str = "Creating table"
+    MSG_IMPORTING_DATA: str = "Importing data from"
+
+    # NOTE These KEYs are for use with Nob objects, not for validating YAML schema.
+    KEY_TABLES_CONFIG = "/tables_config"
+    KEY_OUTPUT__BASENAME = "/output/basename"
+    KEY_OUTPUT__DIR = "/output/dir"
+    KEY_OUTPUT__EXPORT_TABLES = "/output/export_tables"
+    KEY_QUERIES = "/queries"

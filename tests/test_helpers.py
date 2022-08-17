@@ -1,8 +1,5 @@
 """Test cases for helpers.py."""
 # pylint: disable=redefined-outer-name
-# pylint: disable=invalid-name
-# pylint: disable=import-error
-
 
 import pytest
 from click.testing import CliRunner

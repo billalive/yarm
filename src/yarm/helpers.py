@@ -93,8 +93,26 @@ def load_yaml_file(input_file: str, schema: Any) -> YAML:
         abort(s.MSG_INVALID_YAML_SCANNER, error=str(error), file_path=input_file)
 
 
+def msg(msg: str, verbose_level: int = 0):
+    """Show message.
+
+    By default, does not require -v flag.
+
+    Args:
+        msg (str): message to display
+        verbose_level (int): (optional) verbosity level required to show this message.
+
+    """
+    s = Settings()
+    ctx = click.get_current_context()
+    if ctx.params[s.ARG_VERBOSE] >= verbose_level:
+        click.echo(msg, nl=False)
+
+
 def msg_with_data(msg: str, data: str, verbose_level: int = 1):
     """Show message with accompanying data.
+
+    By default, requires at least one -v flag.
 
     Args:
         msg (str): message to display

@@ -1,0 +1,15 @@
+---
+tables_config:
+  products:
+    - path: "products.csv"
+
+output:
+  dir: output
+  basename: test_create_tables
+
+queries:
+  - name: "Descriptions"
+    sql: |
+      SELECT description
+      FROM products
+      ;

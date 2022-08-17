@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test cases for the __validate__ module."""
+"""Test cases for validate.py."""
 # pylint: disable=redefined-outer-name
 # pylint: disable=invalid-name
 # pylint: disable=import-error

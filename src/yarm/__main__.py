@@ -3,6 +3,7 @@
 
 import importlib.resources as pkg_resources
 import os
+import sqlite3
 import sys
 from typing import Any
 from typing import Optional
@@ -15,6 +16,7 @@ from yarm.helpers import msg_with_data
 from yarm.helpers import success
 from yarm.helpers import warn
 from yarm.settings import Settings
+from yarm.tables import create_tables
 from yarm.validate import validate_config
 
 
@@ -61,6 +63,7 @@ def run(
 ) -> None:
     """Run the report."""
     s = Settings()
+
     if config_path is None:  # pragma: no branch
         config_path = s.DEFAULT_CONFIG_FILE  # type: ignore[unreachable]
     if verbose is None:  # pragma: no branch
@@ -70,6 +73,17 @@ def run(
 
     config: Nob = Nob(validate_config(config_path).data)
     print(config)
+
+    # Create a temporary sqlite database
+    try:
+        conn = sqlite3.connect(":memory:")
+
+        create_tables(conn, config)
+
+    except sqlite3.Error as error:
+        abort(s.MSG_CONNECTION_DATABASE_FAILED, error)
+    finally:
+        conn.close()
 
     sys.exit()
 
