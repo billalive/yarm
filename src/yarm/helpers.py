@@ -32,7 +32,9 @@ def warn(msg: str) -> None:
     return
 
 
-def abort(msg: str, error: str = None, file_path: str = None, data: str = None):
+def abort(
+    msg: str, error: str = None, file_path: str = None, data: str = None, ps: str = None
+):
     """Abort with error message and status 1.
 
     Args:
@@ -40,23 +42,26 @@ def abort(msg: str, error: str = None, file_path: str = None, data: str = None):
         error: (str, optional)  error
         file_path: (str, optional)  file with this error, display on separate line
         data: (str, optional) data to display after msg
+        ps: (str, optional) final postscript to add at end of message.
     """
     s = Settings()
     # TODO Use err=True to print to stderr?
     click.secho(s.MSG_ABORT, fg=s.COLOR_ERROR, nl=False, bold=True)
     click.echo(" ", nl=False)
-    if data is not None:
+    if data:
         click.echo(msg, nl=False)
         click.echo(": ", nl=False)
         click.secho(data, fg=s.COLOR_DATA, bold=True)
     else:
         click.echo(msg)
-    if file_path is not None:
+    if file_path:
         click.secho("In file: ", nl=False)
         click.secho(file_path, fg=s.COLOR_DATA, bold=True)
-    if error is not None:
+    if error:
         click.echo("Error: ", nl=False)
         click.secho(error, fg=s.COLOR_ERROR)
+    if ps:
+        click.echo(ps)
     sys.exit(1)
 
 

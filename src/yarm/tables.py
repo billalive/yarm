@@ -4,7 +4,9 @@ from pathlib import Path
 from typing import Union
 
 import pandas as pd
+from nob.nob import Nob
 from nob.nob import NobView
+from pandas.core.frame import DataFrame
 from slugify import slugify
 
 from yarm.helpers import abort
@@ -28,6 +30,7 @@ def create_tables(conn, config):
         exists_mode: str = "replace"
 
         table: NobView = tables[table_name]
+        table_df = None
 
         for i, _val in enumerate(table):
             filename = table[i]["path"][:]
@@ -36,32 +39,36 @@ def create_tables(conn, config):
 
             path_config: NobView = table[i]
 
-            if re.findall("csv", file_ext):
-                input_csv(
+            if re.findall(s.CSV, file_ext):
+                table_df = input_path(
+                    input_format=s.CSV,
                     conn=conn,
                     config=config,
                     path_config=path_config,
                     table_name=table_name,
-                    exists_mode=exists_mode,
+                    table_df=table_df,
                     input_file=filename,
+                    input_sheet=None,
                 )
-            elif re.findall("xlsx", file_ext):
+            elif re.findall(s.XLSX, file_ext):
                 sheet = Union[int, str]
-                if "sheet" in table[i]:
-                    sheet = table[i]["sheet"][:]
+                if s.KEY_SHEET in table[i]:
+                    sheet = table[i][s.KEY_SHEET][:]
                     msg_with_data(s.MSG_IMPORTING_SHEET, sheet, verbose=2, indent=2)
                 else:
                     # If no sheet is provided, use the first sheet.
                     # TODO Implement option to import *all* sheets?
                     # pd.read_excel() will do this if sheet_name = None
+                    # TODO Implement option to pass a sheet number instead of name?
                     sheet = 0
                     msg_with_data(s.MSG_NO_SHEET_PROVIDED, filename, indent=2)
-                input_xlsx_sheet(
+                table_df = input_path(
+                    input_format=s.XLSX,
                     conn=conn,
                     config=config,
                     path_config=path_config,
                     table_name=table_name,
-                    exists_mode=exists_mode,
+                    table_df=table_df,
                     input_file=filename,
                     input_sheet=sheet,
                 )
@@ -70,10 +77,30 @@ def create_tables(conn, config):
             # If there are any more paths for this table, we will want to append.
             exists_mode = "append"
 
-        msg_with_data(s.MSG_CREATED_TABLE, table_name)
+        try:
+            # FIXME Does this merge correctly? If it only merges with the index,
+            # then fail if table already exists and index is false.
+            # index = include_index(config, table, input_file)
+            index = False
+            table_df.to_sql(table_name, conn, if_exists=exists_mode, index=index)
+            msg_with_data(s.MSG_CREATED_TABLE, table_name)
+        except pd.io.sql.DatabaseError as error:
+            conn.close()
+            abort(
+                s.MSG_CREATE_TABLE_DATABASE_ERROR,
+                error=error,
+                data=table_name,
+            )
+        except ValueError as error:
+            conn.close()
+            abort(
+                s.MSG_CREATE_TABLE_VALUE_ERROR,
+                error=error,
+                data=table_name,
+            )
 
 
-def show_df(df, data: str, verbose: int = 3):
+def show_df(df: DataFrame, data: str, verbose: int = 3):
     """Display a dataframe."""
     s = Settings()
     if verbose_ge(verbose):
@@ -83,66 +110,66 @@ def show_df(df, data: str, verbose: int = 3):
         print(s.MSG_LINE)
 
 
-def input_csv(conn, config, table_name, path_config, exists_mode, input_file):
-    """Input a CSV file into the database."""
+def input_path(
+    input_format: str,
+    conn,
+    config: Nob,
+    path_config: Nob,
+    table_name: str,
+    table_df: Union[DataFrame, None],
+    input_file: str,
+    input_sheet: str,
+) -> DataFrame:
+    """Input a path into a table DataFrame.
+
+    If we have already imported at least one path into this table,
+    pass this table as table_df, and merge in this new path.
+
+    If this is the first path for this table, table_df should be None.
+    """
     s = Settings()
-    df = pd.read_csv(input_file)
+
+    msg_show_df: str = table_name
+
+    if input_format == s.CSV:
+        df: DataFrame = pd.read_csv(input_file)
+    elif input_format == s.XLSX:
+        msg_show_df += f": {input_sheet}"
+        with open(input_file, "rb") as f:
+            df = pd.read_excel(f, sheet_name=input_sheet)
+    else:
+        abort("Unknown input mode", data=input_format)
+
     # Show data before any options (only at high verbosity)
-    show_df(df, table_name, 4)
+    show_df(df, msg_show_df, 4)
+
     df = df_input_options(df, config)
     df = df_tables_config_options(df, path_config, table_name, input_file)
-    # FIXME
-    # index = include_index(config, table, input_file)
-    index = False
-    try:
-        # FIXME Does this merge correctly? If it only merges with the index,
-        # then fail if table already exists and index is false.
-        df.to_sql(table_name, conn, if_exists=exists_mode, index=index)
-        show_df(df, table_name)
-    except pd.io.sql.DatabaseError as error:
-        conn.close()
-        abort(
-            s.MSG_CREATE_TABLE_ERROR, error=error, data=table_name, file_path=input_file
-        )
 
-
-def input_xlsx_sheet(
-    conn, config, table_name, path_config, exists_mode, input_file, input_sheet
-):
-    """Input an XLSX sheet into the database."""
-    s = Settings()
-    with open(input_file, "rb") as f:
+    # After all transformations, merge to existing table_df.
+    msg_with_data(s.MSG_MERGING_PATH, data=input_file, indent=1)
+    if isinstance(table_df, DataFrame):
         try:
-            df = pd.read_excel(f, sheet_name=input_sheet)
-            # Show data before any options (only at high verbosity)
-            show_df(df, f"{table_name}: {input_sheet}", 4)
-            df = df_input_options(df, config)
-            df = df_tables_config_options(df, path_config, table_name, input_file)
-            # FIXME
-            # index = include_index(config, table, input_file)
-            index = False
-            show_df(df, f"{table_name}: {input_sheet}")
-            try:
-                df.to_sql(table_name, conn, if_exists=exists_mode, index=index)
-            except pd.io.sql.DatabaseError as error:
-                conn.close()
-                abort(
-                    s.MSG_CREATE_TABLE_DATABASE_ERROR,
-                    error=error,
-                    data=table_name,
-                    file_path=input_file,
-                )
-        except ValueError as error:
-            conn.close()
+            df = pd.merge(left=table_df, right=df, how="outer")
+        except pd.errors.MergeError:
             abort(
-                s.MSG_CREATE_TABLE_VALUE_ERROR,
+                s.MSG_MERGE_ERROR,
+                data=table_name,
+                file_path=input_file,
+                ps=s.MSG_MERGE_ERROR_PS,
+            )
+        except TypeError as error:
+            abort(
+                s.MSG_MERGE_TYPE_ERROR,
                 error=error,
                 data=table_name,
                 file_path=input_file,
             )
+    show_df(df, table_name)
+    return df
 
 
-def df_input_options(df, c):
+def df_input_options(df: DataFrame, c):
     """Process input data using the options in input: key.
 
     These options are applied to /every/ input file.
@@ -253,7 +280,7 @@ def df_tables_config_options(df, path_config: NobView, table_name: str, input_fi
     return df
 
 
-def back_up_column(df, col):
+def back_up_column(df: DataFrame, col):
     """Save a backup copy of a column."""
     # Make backup copy of this column at column_raw
     col_raw_name: str = f"{col}_raw"

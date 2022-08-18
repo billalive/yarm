@@ -88,6 +88,12 @@ No queries found. We need something to output!
     MSG_LOWERCASE_COLUMNS: str = "Lowercasing all columns..."
     MSG_UPPERCASE_ROWS: str = "Uppercasing all rows..."
     MSG_APPLYING_PIVOT: str = "Applying pivot"
+    MSG_MERGING_PATH: str = "Merging path"
+    MSG_MERGE_ERROR: str = "Merge error: No common column to merge on with table"
+    MSG_MERGE_ERROR_PS: str = """Remember: merge column names are...
+    - case-sensitive (unless you set lowercase_columns = true)
+    - must be spelled the same in every path."""
+    MSG_MERGE_TYPE_ERROR: str = "Type error while merging table"
     MSG_CONVERTING_DATETIME: str = "Converting field(s) to datetime:"
 
     MSG_SHOW_DF: str = "Dataframe"
@@ -109,6 +115,7 @@ No queries found. We need something to output!
     KEY_INPUT__UPPERCASE_ROWS = "/input/uppercase_rows"
     KEY_OUTPUT__EXPORT_TABLES = "/output/export_tables"
     KEY_QUERIES = "/queries"
+    KEY_SHEET = "sheet"
 
     # tables_config keys. They are deep in the path, so do not use /.
     KEY_PIVOT = "pivot"
@@ -118,3 +125,6 @@ No queries found. We need something to output!
     KEY_PIVOT_VALUES = "values"
 
     KEY_DATETIME = "datetime"
+
+    CSV = "csv"
+    XLSX = "xlsx"

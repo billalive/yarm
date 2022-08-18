@@ -175,3 +175,6 @@ def test_df_tables_config_options(runner: CliRunner) -> None:
     # TODO test merging paths with same columns
     # TODO test merging paths when a later path adds columns
     # TODO test merging paths when a later path has fewer columns
+    # TODO test merging paths when field with same name doesn't match: ValueError
+    # TODO test merging paths when no columns in common: MergeError
+    # TODO test columns have different case, but you lowercase all, should work

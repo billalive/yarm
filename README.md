@@ -78,11 +78,13 @@ So this feature will need some nuance.
 
 If you want to include a configuration file that defines more tables than you want for a particular report, you will be able to use `create_tables` to limit the tables for _this_ report to a particular subset.
 
-### (Basic) Visualizations?
+### Visualizations?
 
 Since we're already loading all the data into [pandas], we might as well add [matplotlib] and let you generate some charts, right?
 
 I'm not sure. I can see the use cases, but by the time you start needing charts, it might be time to upgrade to [Jupyter Lab].
+
+### Import/Export JSON? Other file formats?
 
 ## Contributing
 
