@@ -105,7 +105,7 @@ def load_yaml_file(input_file: str, schema: Any) -> YAML:
         abort(s.MSG_INVALID_YAML_SCANNER, error=str(error), file_path=input_file)
 
 
-def msg(msg: str, verbose: int = 0):
+def msg(msg: str, verbose: int = 0, indent: int = 0):
     """Show message.
 
     By default, does not require -v flag.
@@ -113,9 +113,11 @@ def msg(msg: str, verbose: int = 0):
     Args:
         msg (str): message to display
         verbose (int): (optional) verbosity level required to show this message.
-
+        indent (int): (optional) number of indents before message
     """
+    s = Settings()
     if verbose_ge(verbose):
+        msg = (s.MSG_TAB * indent) + msg
         click.echo(msg)
 
 

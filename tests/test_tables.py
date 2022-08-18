@@ -178,3 +178,10 @@ def test_df_tables_config_options(runner: CliRunner) -> None:
     # TODO test merging paths when field with same name doesn't match: ValueError
     # TODO test merging paths when no columns in common: MergeError
     # TODO test columns have different case, but you lowercase all, should work
+
+    # TODO test each of:
+    # MSG_INCLUDE_INDEX_ALL_TRUE
+    # MSG_INCLUDE_INDEX_ALL_FALSE
+    # MSG_INCLUDE_INDEX_TABLE_TRUE
+    # MSG_INCLUDE_INDEX_TABLE_FALSE
+    # MSG_INCLUDE_INDEX_TABLE_CONFLICT: >1 path has include_index, even if same.

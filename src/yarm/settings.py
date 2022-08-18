@@ -90,6 +90,23 @@ No queries found. We need something to output!
     MSG_LOWERCASE_COLUMNS: str = "Lowercasing all columns..."
     MSG_UPPERCASE_ROWS: str = "Uppercasing all rows..."
     MSG_APPLYING_PIVOT: str = "Applying pivot"
+    MSG_INCLUDE_INDEX_ALL_TRUE: str = (
+        "include_index: Index column included for all tables (unless overridden)."
+    )
+    MSG_INCLUDE_INDEX_ALL_FALSE: str = (
+        "include_index: Index column omitted for all tables (unless overridden)."
+    )
+    MSG_INCLUDE_INDEX_TABLE_TRUE: str = "include_index: Index column included for table"
+    MSG_INCLUDE_INDEX_TABLE_FALSE: str = "include_index: Index column omitted for table"
+    MSG_INCLUDE_INDEX_TABLE_PIVOT: str = (
+        "include_index: Index column automatically included for pivot table"
+    )
+    MSG_INCLUDE_INDEX_TABLE_CONFLICT: str = (
+        "More than one 'include_index' defined for this table"
+    )
+    MSG_INCLUDE_INDEX_TABLE_CONFLICT_PS: str = (
+        "Please define 'include_index' for only one path, at most, in each table."
+    )
     MSG_MERGING_PATH: str = "Merging path"
     MSG_MERGE_ERROR: str = "Merge error: No common column to merge on with table"
     MSG_MERGE_ERROR_PS: str = """Remember: merge column names are...
@@ -115,6 +132,7 @@ No queries found. We need something to output!
     KEY_INPUT__SLUGIFY_COLUMNS = "/input/slugify_columns"
     KEY_INPUT__LOWERCASE_COLUMNS = "/input/lowercase_columns"
     KEY_INPUT__UPPERCASE_ROWS = "/input/uppercase_rows"
+    KEY_INPUT__INCLUDE_INDEX = "/input/include_index"
     KEY_OUTPUT__EXPORT_TABLES = "/output/export_tables"
     KEY_QUERIES = "/queries"
     KEY_SHEET = "sheet"
@@ -127,6 +145,8 @@ No queries found. We need something to output!
     KEY_PIVOT_VALUES = "values"
 
     KEY_DATETIME = "datetime"
+    # Individual paths can override the include_index.
+    KEY_INCLUDE_INDEX = "include_index"
 
     CSV = "csv"
     XLSX = "xlsx"

@@ -16,6 +16,8 @@ input:
   strip: true
   slugify_columns: true
   lowercase_columns: false
+  uppercase_rows: false
+  include_index: false
 
 tables_config:
   TABLE_FROM_SPREADSHEET:
@@ -30,6 +32,7 @@ tables_config:
   TABLE_PIVOT:
     - path: SOURCE_C.xlsx
       sheet: C.PIVOT
+      # pivot key sets include_index to true
       pivot:
         index: ID
         columns: KEY
@@ -37,6 +40,7 @@ tables_config:
   TABLE_DATETIME:
     - path: SOURCE_A.xlsx
       sheet: A.DATETIME
+      include_index: true
       datetime:
         CREATED:
         MODIFIED: "%b %d, %Y"

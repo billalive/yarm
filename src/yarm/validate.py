@@ -192,9 +192,11 @@ def validate_key_tables_config(c: YAML, config_path: str):
            index: FIELD_ID
            columns: FIELD_KEY
            values: FIELD_VALUE
+         include_index: false
      TABLE_NAME_B:
        - path: SOURCE_B.csv
     """
+    s = Settings()
     key: str = check_key("tables_config", c)
     if key:
         schema = MapPattern(Str(), Seq(AnyYAML()))
@@ -208,12 +210,14 @@ def validate_key_tables_config(c: YAML, config_path: str):
                         OptionalYAML("sheet"): StrNotEmpty(),
                         OptionalYAML("datetime"): EmptyNone() | AnyYAML(),
                         OptionalYAML("pivot"): EmptyNone() | AnyYAML(),
+                        OptionalYAML("include_index"): Bool(),
                     }
                 )
             )
             revalidate_yaml(table, schema, config_path, table_name, "table")
             check_is_file(c[key][table_name].data, "path")
-            # datetime:
+
+            include_index_defined: bool = False
             for source in table:
                 if "datetime" in source:
                     schema = MapPattern(Str(), EmptyNone() | Str())
@@ -234,6 +238,17 @@ def validate_key_tables_config(c: YAML, config_path: str):
                     revalidate_yaml(
                         source["pivot"], schema, config_path, f"{table_name}: pivot"
                     )
+                if "include_index" in source:
+                    # Because a table is a list of paths, it is possible for more
+                    # than one path to define include_index, which is unfortunate.
+                    if not include_index_defined:
+                        include_index_defined = True
+                    else:
+                        abort(
+                            s.MSG_INCLUDE_INDEX_TABLE_CONFLICT,
+                            data=table_name,
+                            ps=s.MSG_INCLUDE_INDEX_TABLE_CONFLICT_PS,
+                        )
 
 
 def check_key(key: str, c: YAML):
@@ -279,6 +294,7 @@ def validate_key_input(c: YAML, config_path: str):
         slugify_columns: true
         lowercase_columns: true
         uppercase_rows: true
+        include_index: true
     """
     key: str = check_key("input", c)
     if key:
@@ -288,6 +304,7 @@ def validate_key_input(c: YAML, config_path: str):
                 OptionalYAML("slugify_columns"): Bool(),
                 OptionalYAML("lowercase_columns"): Bool(),
                 OptionalYAML("uppercase_rows"): Bool(),
+                OptionalYAML("include_index"): Bool(),
             }
         )
         revalidate_yaml(c[key], schema, config_path)

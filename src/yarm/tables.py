@@ -22,6 +22,8 @@ def create_tables(conn, config):
 
     tables: NobView = config[s.KEY_TABLES_CONFIG]
 
+    include_index_all: bool = get_include_index_all(config)
+
     for table_name in tables.keys():
         msg(s.MSG_LINE_DOUBLE, verbose=2)
         msg_with_data(s.MSG_CREATING_TABLE, table_name, verbose=2)
@@ -31,6 +33,10 @@ def create_tables(conn, config):
 
         table: NobView = tables[table_name]
         table_df = None
+
+        include_index_table: bool = get_include_index_table(
+            table, table_name, include_index_all
+        )
 
         for i, _val in enumerate(table):
             filename = table[i]["path"][:]
@@ -78,11 +84,9 @@ def create_tables(conn, config):
             exists_mode = "append"
 
         try:
-            # FIXME Does this merge correctly? If it only merges with the index,
-            # then fail if table already exists and index is false.
-            # index = include_index(config, table, input_file)
-            index = False
-            table_df.to_sql(table_name, conn, if_exists=exists_mode, index=index)
+            table_df.to_sql(
+                table_name, conn, if_exists=exists_mode, index=include_index_table
+            )
             msg_with_data(s.MSG_CREATED_TABLE, table_name)
         except pd.io.sql.DatabaseError as error:
             conn.close()
@@ -98,6 +102,49 @@ def create_tables(conn, config):
                 error=error,
                 data=table_name,
             )
+
+
+def get_include_index_all(config: Nob) -> bool:
+    """Set input:include_index for all inputs."""
+    s = Settings()
+    include_index_all: bool = False
+    if s.KEY_INPUT__INCLUDE_INDEX in config:
+        include_index_all = s.KEY_INPUT__INCLUDE_INDEX[:]
+    if include_index_all:
+        msg(s.MSG_INCLUDE_INDEX_ALL_TRUE, verbose=2)
+    else:
+        msg(s.MSG_INCLUDE_INDEX_ALL_FALSE, verbose=2)
+    return include_index_all
+
+
+def get_include_index_table(
+    table: NobView, table_name: str, include_index_all: bool
+) -> bool:
+    """Set include_index for a particular table."""
+    s = Settings()
+    include_index_table: bool = include_index_all
+
+    msg: Union[str, None] = None
+
+    # Special case: by default, a pivot table loses its index, which is
+    # confusing. Set this to true now, so that user can override below.
+    if s.KEY_PIVOT in table:
+        include_index_table = True
+        msg = s.MSG_INCLUDE_INDEX_TABLE_PIVOT
+
+    # NOTE We have already confirmed that only one include_index, at most,
+    # is in this table. See validate_key_tables_config()
+    if s.KEY_INCLUDE_INDEX in table:
+        include_index_table = table[s.KEY_INCLUDE_INDEX][:]
+        if table[s.KEY_INCLUDE_INDEX][:]:
+            msg = s.MSG_INCLUDE_INDEX_TABLE_TRUE
+        else:
+            msg = s.MSG_INCLUDE_INDEX_TABLE_FALSE
+
+    if msg:
+        msg_with_data(msg, data=table_name, verbose=2, indent=1)
+
+    return include_index_table
 
 
 def show_df(df: DataFrame, data: str, verbose: int = 3):
@@ -212,7 +259,7 @@ def df_input_options(df: DataFrame, c):
 
         # TODO Implement option to remove stopwords from column names with slugify?
 
-        # index: not processed here, see include_index
+        # include_index: not processed here, see create_tables()
 
     return df
 
@@ -255,7 +302,7 @@ def df_tables_config_options(df, path_config: NobView, table_name: str, input_fi
         except KeyError as error:
             abort(s.MSG_PIVOT_FAILED_KEY_ERROR, data=error, file_path=input_file)
     if s.KEY_DATETIME in pc:
-        msg(s.MSG_CONVERTING_DATETIME)
+        msg(s.MSG_CONVERTING_DATETIME, indent=1)
         for key in pc[s.KEY_DATETIME][:]:
             if key in df.columns:
                 df = back_up_column(df, key)
@@ -268,10 +315,10 @@ def df_tables_config_options(df, path_config: NobView, table_name: str, input_fi
                     # TODO Test for bad format? strictyaml makes this a str,
                     # so it may not be possible to trigger an error.
                     datetime_format: str = pc[s.KEY_DATETIME][key][:]
-                    msg_with_data(f"{s.MSG_TAB}{key}", datetime_format)
+                    msg_with_data(key, data=datetime_format, indent=2)
                     df[key] = df[key].dt.strftime(f"{datetime_format}")
                 else:
-                    msg_with_data(f"{s.MSG_TAB}{key}", "(default format)")
+                    msg_with_data(key, data="(default format)", indent=2)
 
             else:
                 abort(s.MSG_MISSING_DATETIME, data=key, file_path=input_file)
