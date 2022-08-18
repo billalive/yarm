@@ -81,13 +81,24 @@ No queries found. We need something to output!
     MSG_CREATED_TABLE: str = "Table created"
     MSG_IMPORTING_DATA: str = "Importing data from"
     MSG_IMPORTING_SHEET: str = "Importing sheet"
+    MSG_STRIP_WHITESPACE: str = (
+        "Stripping whitespace at start and end of all strings..."
+    )
+    MSG_SLUGIFY_COLUMNS: str = "Slugifying all columns..."
+    MSG_LOWERCASE_COLUMNS: str = "Lowercasing all columns..."
+    MSG_UPPERCASE_ROWS: str = "Uppercasing all rows..."
+    MSG_APPLYING_PIVOT: str = "Applying pivot"
+    MSG_CONVERTING_DATETIME: str = "Converting field(s) to datetime:"
+
     MSG_SHOW_DF: str = "Dataframe"
     MSG_NO_SHEET_PROVIDED: str = "No 'sheet' key provided, importing first sheet from"
     MSG_BAD_FILE_EXT: str = "Bad file extension in"
     MSG_CREATE_TABLE_DATABASE_ERROR: str = "Database Error: Could not create table"
     MSG_CREATE_TABLE_VALUE_ERROR: str = "Value Error: Could not create table"
+    MSG_MISSING_DATETIME: str = "Column under 'datetime:' not found"
+    MSG_PIVOT_FAILED_KEY_ERROR: str = "Pivot failed, because this column is missing"
 
-    # NOTE These KEYs are for use with Nob objects, not for validating YAML schema.
+    # NOTE These keys are for use with Nob objects, not for validating YAML schemas.
     KEY_TABLES_CONFIG = "/tables_config"
     KEY_OUTPUT__BASENAME = "/output/basename"
     KEY_OUTPUT__DIR = "/output/dir"
@@ -98,3 +109,12 @@ No queries found. We need something to output!
     KEY_INPUT__UPPERCASE_ROWS = "/input/uppercase_rows"
     KEY_OUTPUT__EXPORT_TABLES = "/output/export_tables"
     KEY_QUERIES = "/queries"
+
+    # tables_config keys. They are deep in the path, so do not use /.
+    KEY_PIVOT = "pivot"
+    # The schema ensures that each pivot key has one of each of these:
+    KEY_PIVOT_INDEX = "index"
+    KEY_PIVOT_COLUMNS = "columns"
+    KEY_PIVOT_VALUES = "values"
+
+    KEY_DATETIME = "datetime"

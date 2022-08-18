@@ -24,9 +24,9 @@ def test_create_tables(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         prep_test_config(test_config_name)
         result = runner.invoke(cli, [s.CMD_RUN, "-vv"])
+        assert result.exit_code == 0
         assert s.MSG_CREATING_TABLE in result.output
         assert s.MSG_CREATED_TABLE in result.output
-        assert result.exit_code == 0
 
 
 def test_df_input_options(runner: CliRunner) -> None:
@@ -37,10 +37,10 @@ def test_df_input_options(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         prep_test_config(test_config_name)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 0
         assert "Venkman " in result.output
         assert "First Name" in result.output
         assert s.MSG_NO_SHEET_PROVIDED in result.output
-        assert result.exit_code == 0
     with runner.isolated_filesystem():
         append_config = """
 input:
@@ -48,9 +48,13 @@ input:
 """
         prep_test_config(test_config_name, append_config=append_config)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 0
         assert "Venkman " not in result.output
         assert "Venkman" in result.output
-        assert result.exit_code == 0
+        assert s.MSG_STRIP_WHITESPACE in result.output
+        assert s.MSG_SLUGIFY_COLUMNS not in result.output
+        assert s.MSG_LOWERCASE_COLUMNS not in result.output
+        assert s.MSG_UPPERCASE_ROWS not in result.output
     with runner.isolated_filesystem():
         append_config = """
 input:
@@ -58,10 +62,14 @@ input:
 """
         prep_test_config(test_config_name, append_config=append_config)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 0
         assert "First Name" not in result.output
         assert "first_name" not in result.output
         assert "first name" in result.output
-        assert result.exit_code == 0
+        assert s.MSG_STRIP_WHITESPACE not in result.output
+        assert s.MSG_SLUGIFY_COLUMNS not in result.output
+        assert s.MSG_LOWERCASE_COLUMNS in result.output
+        assert s.MSG_UPPERCASE_ROWS not in result.output
     with runner.isolated_filesystem():
         append_config = """
 input:
@@ -70,11 +78,15 @@ input:
 """
         prep_test_config(test_config_name, append_config=append_config)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 0
         assert "First Name" not in result.output
         assert "First_Name" not in result.output
         assert "first name" not in result.output
         assert "first_name" in result.output
-        assert result.exit_code == 0
+        assert s.MSG_STRIP_WHITESPACE not in result.output
+        assert s.MSG_SLUGIFY_COLUMNS in result.output
+        assert s.MSG_LOWERCASE_COLUMNS in result.output
+        assert s.MSG_UPPERCASE_ROWS not in result.output
     with runner.isolated_filesystem():
         append_config = """
 input:
@@ -82,7 +94,46 @@ input:
 """
         prep_test_config(test_config_name, append_config=append_config)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 0
         assert "    Peter" not in result.output
         assert "Peter" not in result.output
         assert "PETER" in result.output
+        assert s.MSG_STRIP_WHITESPACE not in result.output
+        assert s.MSG_SLUGIFY_COLUMNS not in result.output
+        assert s.MSG_LOWERCASE_COLUMNS not in result.output
+        assert s.MSG_UPPERCASE_ROWS in result.output
+
+
+def test_df_tables_config_options(runner: CliRunner) -> None:
+    """Table options in tables_config: are successfully applied."""
+    s = Settings()
+    test_config_name: str = "test_df_tables_config_options"
+    append_config: str = ""
+    with runner.isolated_filesystem():
+        prep_test_config(test_config_name)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert s.MSG_APPLYING_PIVOT not in result.output
         assert result.exit_code == 0
+    with runner.isolated_filesystem():
+        append_config = """
+      pivot:
+        index: id
+        columns: key
+        values: value
+"""
+        prep_test_config(test_config_name, append_config=append_config)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 0
+        assert s.MSG_APPLYING_PIVOT in result.output
+    # TODO Test creating different tables, with different options, from the same path
+    # - path 1: pivot columns into new renamed columns.
+    # - path 2: data starts out with those renamed columns.
+
+    # TODO test s.MSG_PIVOT_FAILED_KEY_ERROR
+    # TODO test s.MSG_MISSING_DATETIME
+    # TODO test missing datetime field
+    # TODO test bad datetime format in line 240
+
+    # TODO test merging paths with same columns
+    # TODO test merging paths when a later path adds columns
+    # TODO test merging paths when a later path has fewer columns

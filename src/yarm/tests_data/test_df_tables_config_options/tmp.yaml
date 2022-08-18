@@ -1,0 +1,18 @@
+output:
+  dir: output
+  basename: test
+  export_tables: csv
+
+tables_config:
+  products:
+    - path: products.csv
+      pivot:
+        index: id
+        columns: key
+        values: value
+  orders:
+    - path: orders.xlsx
+      sheet: Orders
+      datetime:
+        ordered:
+        shipped: "%b %d, %Y"

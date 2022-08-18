@@ -58,6 +58,10 @@ def test_validate_complete_config_valid(runner: CliRunner) -> None:
     - Update this test and its config file.
     - Update validate_config_schema()
     - Update templates/yarm.yaml if this key appears there.
+    - Update function that actually implements option.
+
+    This test only tests initial validation. For testing the results
+    of options (e.g. pivot), see other tests.
     """
     s = Settings()
     test: str = "test_validate_complete_config_valid"
@@ -75,9 +79,11 @@ def test_validate_complete_config_valid(runner: CliRunner) -> None:
         s.MSG_CONFIG_FILE_VALID,
         s.MSG_VALIDATING_KEY,
         f"{s.MSG_VALIDATING_KEY}: tables_config",
-        f"{s.MSG_VALIDATING_KEY} table: table_from_spreadsheet",
-        f"{s.MSG_VALIDATING_KEY} table: table_from_csv",
-        f"{s.MSG_VALIDATING_KEY} table: table_from_multiple_sources",
+        f"{s.MSG_VALIDATING_KEY} table: TABLE_FROM_SPREADSHEET",
+        f"{s.MSG_VALIDATING_KEY} table: TABLE_FROM_CSV",
+        f"{s.MSG_VALIDATING_KEY} table: TABLE_FROM_MULTIPLE_SOURCES",
+        f"{s.MSG_VALIDATING_KEY} table: TABLE_PIVOT",
+        f"{s.MSG_VALIDATING_KEY} table: TABLE_DATETIME",
         f"{s.MSG_VALIDATING_KEY}: import",
         f"{s.MSG_VALIDATING_KEY}: input",
         f"{s.MSG_VALIDATING_KEY}: output",

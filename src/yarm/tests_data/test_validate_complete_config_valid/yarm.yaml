@@ -1,12 +1,10 @@
-# Stub YAML to begin your report.
-# See examples/ for more options.
-
-# If you want to add a df_postprocess function, see report.py
+# In this file, UPPERCASE is used for keys and values that you can edit.
+# But normally, you don't have to use uppercase.
 import:
   - path: MODULE_A.py
 
 output:
-  dir: output
+  dir: OUTPUT
   basename: BASENAME
   prepend_date: true
   export_tables: csv
@@ -17,30 +15,32 @@ output:
 input:
   strip: true
   slugify_columns: true
-  lowercase_columns: true
+  lowercase_columns: false
 
 tables_config:
-  table_from_spreadsheet:
+  TABLE_FROM_SPREADSHEET:
     - path: SOURCE_A.xlsx
       sheet: A.1
-  table_from_csv:
+  TABLE_FROM_CSV:
     - path: SOURCE_B.csv
-  table_from_multiple_sources:
+  TABLE_FROM_MULTIPLE_SOURCES:
     - path: SOURCE_C.xlsx
       sheet: C.1
-    - path: SOURCE_A.xlsx
-      sheet: A.2
     - path: SOURCE_D.csv
-  table_pivot:
+  TABLE_PIVOT:
     - path: SOURCE_C.xlsx
       sheet: C.PIVOT
-      datetime:
-        created:
-        last_saved: "%Y-%m-%d"
       pivot:
-        index: FIELD_ID
-        columns: FIELD_KEY
-        values: FIELD_VALUE
+        index: ID
+        columns: KEY
+        values: VALUE
+  TABLE_DATETIME:
+    - path: SOURCE_A.xlsx
+      sheet: A.DATETIME
+      datetime:
+        CREATED:
+        MODIFIED: "%b %d, %Y"
+        TOUCHED: "%Y-%m-%d"
 
 queries:
   - name: QUERY A
