@@ -238,6 +238,8 @@ def df_tables_config_options(df, path_config: NobView, table_name: str, input_fi
 
                 if pc[s.KEY_DATETIME][key][:] is not None:
                     # If value present, use as datetime format.
+                    # TODO Test for bad format? strictyaml makes this a str,
+                    # so it may not be possible to trigger an error.
                     datetime_format: str = pc[s.KEY_DATETIME][key][:]
                     msg_with_data(f"{s.MSG_TAB}{key}", datetime_format)
                     df[key] = df[key].dt.strftime(f"{datetime_format}")

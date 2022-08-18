@@ -112,8 +112,9 @@ def test_df_tables_config_options(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         prep_test_config(test_config_name)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
-        assert s.MSG_APPLYING_PIVOT not in result.output
         assert result.exit_code == 0
+        assert s.MSG_APPLYING_PIVOT not in result.output
+        assert s.MSG_CONVERTING_DATETIME not in result.output
     with runner.isolated_filesystem():
         append_config = """
       pivot:
@@ -125,14 +126,51 @@ def test_df_tables_config_options(runner: CliRunner) -> None:
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert result.exit_code == 0
         assert s.MSG_APPLYING_PIVOT in result.output
+        assert s.MSG_CONVERTING_DATETIME not in result.output
+        assert "key discount                          name" in result.output
+    with runner.isolated_filesystem():
+        append_config = """
+      pivot:
+        index: id_missing
+        columns: key
+        values: value
+"""
+        prep_test_config(test_config_name, append_config=append_config)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 1
+        assert s.MSG_PIVOT_FAILED_KEY_ERROR in result.output
+    with runner.isolated_filesystem():
+        append_config = """
+  orders:
+    - path: orders.xlsx
+      sheet: Orders
+      datetime:
+        ordered:
+        shipped: "%b, %d, %Y"
+"""
+        prep_test_config(test_config_name, append_config=append_config)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 0
+        assert s.MSG_APPLYING_PIVOT not in result.output
+        assert s.MSG_CONVERTING_DATETIME in result.output
+        assert "2004-10-01" in result.output
+        assert "Oct, 15, 2004" in result.output
+    with runner.isolated_filesystem():
+        append_config = """
+  orders:
+    - path: orders.xlsx
+      sheet: Orders
+      datetime:
+        missing:
+"""
+        prep_test_config(test_config_name, append_config=append_config)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 1
+        assert s.MSG_MISSING_DATETIME in result.output
+
     # TODO Test creating different tables, with different options, from the same path
     # - path 1: pivot columns into new renamed columns.
     # - path 2: data starts out with those renamed columns.
-
-    # TODO test s.MSG_PIVOT_FAILED_KEY_ERROR
-    # TODO test s.MSG_MISSING_DATETIME
-    # TODO test missing datetime field
-    # TODO test bad datetime format in line 240
 
     # TODO test merging paths with same columns
     # TODO test merging paths when a later path adds columns
