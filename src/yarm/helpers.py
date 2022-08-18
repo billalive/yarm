@@ -2,6 +2,7 @@
 
 """Helper functions."""
 
+import os
 import sys
 from typing import Any
 
@@ -145,3 +146,22 @@ def verbose_ge(verbose: int) -> bool:
         return True
     else:
         return False
+
+
+def overwrite_file(path: str, force: bool = False):
+    """Overwrite a file if it exists.
+
+    (Technically, this function only removes the file.)
+    """
+    # TODO Should this test whether we are in output/dir?
+    # And only overwrite files in that directory?
+    s = Settings()
+    if os.path.isfile(path):
+        if not force:
+            msg: str = f"{s.MSG_ASK_OVERWRITE_FILE} {path}?"
+            if click.confirm(msg, default=True, abort=True):
+                if verbose_ge(2):
+                    msg_with_data(s.MSG_REMOVING_FILE, path)
+                os.remove(path)
+            else:
+                abort(s.MSG_OVERWRITE_FILE_ABORT, data=path)

@@ -16,11 +16,13 @@ class Settings:
     DIR_TESTS_DATA: str = "tests_data"
 
     ARG_VERBOSE: str = "verbose"
+    ARG_EXPORT_DATABASE: str = "database"
 
     EXT_YAML: str = ".yaml"
 
     TEST_CONFIG_BAD_YAML: str = "test_config_bad_yaml"
     TEST_CONFIG_BAD_OPTIONS: str = "test_config_bad_options"
+    DEFAULT_TEST: str = "test_validate_complete_config_valid"
 
     MSG_ABORT: str = "Failed."
     MSG_SUCCESS: str = "Success!"
@@ -128,3 +130,15 @@ No queries found. We need something to output!
 
     CSV = "csv"
     XLSX = "xlsx"
+
+    # export.py
+    MSG_ASK_OVERWRITE_FILE: str = "Overwrite file"
+    MSG_REMOVING_FILE: str = "Removing file"
+    MSG_CREATING_DATABASE: str = "Creating database"
+    MSG_DATABASE_EXPORTED: str = "Database exported to"
+    MSG_OVERWRITE_FILE_ABORT: str = "Cannot proceed without overwriting"
+
+    MSG_OUTPUT_DIR_EXISTS: str = "Output directory already exists"
+    MSG_CREATING_OUTPUT_DIR: str = "Creating output directory"
+    MSG_OUTPUT_DIR: str = "Output directory"
+    MSG_CANT_CREATE_OUTPUT_DIR: str = "Cannot create output dir at"

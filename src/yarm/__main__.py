@@ -11,6 +11,7 @@ from typing import Optional
 import click
 from nob import Nob
 
+from yarm.export import export_database
 from yarm.helpers import abort
 from yarm.helpers import msg_with_data
 from yarm.helpers import success
@@ -49,6 +50,13 @@ For more options:
 @cli.command()
 @click.pass_context
 @click.option(
+    "--database/--no-database",
+    "-d/-D",
+    default=False,
+    show_default=True,
+    help="Export your tables and queries to an sqlite3 database.",
+)
+@click.option(
     "-v", "--verbose", "verbose", count=True, default=0, help="Verbosity level."
 )
 @click.option(
@@ -59,7 +67,10 @@ For more options:
     type=click.Path(exists=True),
 )
 def run(
-    ctx: Optional[click.Context], config_path: Optional[str], verbose: Optional[int]
+    ctx: Optional[click.Context],
+    config_path: Optional[str],
+    verbose: Optional[int],
+    database: Optional[bool],
 ) -> None:
     """Run the report."""
     s = Settings()
@@ -78,6 +89,8 @@ def run(
         conn = sqlite3.connect(":memory:")
 
         create_tables(conn, config)
+
+        export_database(conn, config)
 
     except sqlite3.Error as error:
         abort(s.MSG_SQLITE_ERROR, error=error)
