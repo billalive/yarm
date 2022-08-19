@@ -24,7 +24,9 @@ def assert_messages(messages: List[str], output: str) -> bool:
     return True
 
 
-def prep_test_config(test_config_name: str, append_config: str = "") -> None:
+def prep_test_config(
+    test_dir: str, append_config: str = "", config_file_override: str = ""
+) -> None:
     """Prepare test config file for a particular test.
 
     Several tests need a particular file in place as the config file
@@ -34,19 +36,17 @@ def prep_test_config(test_config_name: str, append_config: str = "") -> None:
 
     To prepare a new test:
 
-    - Create a directory in tests_data/ with the same name as test_config_name.
-      When this function is called with test_config_name, every file in this dir
-      will also be copied into the temporary dir for this test. Note that when
-      the test is run, these files will be in the *same* dir as the config file,
-      so set the path accordingly in the config file.
+    - Create test_dir as directory in tests_data/.
+      Every file in this dir will be copied into the temporary dir for this test.
 
-    - In this directory, create a config file with the name
-      defined in s.DEFAULT_TEST_CONFIG_FILE
+    - In this directory, create a config file with name defined in s.DEFAULT_CONFIG_FILE
 
     - If needed, add any supporting files.
 
     Args:
-        test_config_name (str): basename of config file, without ".yaml"
+        test_dir (str): directory with files for this test.
+        config_file_override (str): (optional) use this config file
+            File path must be relative to directory of test_dir.
         append_config (str): (optional) append this string as config
 
     """
@@ -63,22 +63,30 @@ def prep_test_config(test_config_name: str, append_config: str = "") -> None:
     # Use inspect to get the actual path.
     # print("dir_tests_data:", dir_tests_data)
     assert os.path.isdir(os.path.dirname(dir_tests_data)), "Test directory not found."
-    dir_test_config_name: str = f"{dir_tests_data}/{test_config_name}"
+    test_dir = f"{dir_tests_data}/{test_dir}/"
     # NOTE Next lines tested in: test_prep_config_copies_files()
-    if os.path.isdir(os.path.dirname(dir_test_config_name)):  # pragma: no branch
-        # print("is a dir:", dir_test_config_name)
-        for f in Path(dir_test_config_name).glob("*"):
+    if os.path.isdir(os.path.dirname(test_dir)):  # pragma: no branch
+        # print("is a dir:", dir_test_dir)
+        for f in Path(test_dir).glob("*"):
             if os.path.isfile(f):  # pragma: no branch
                 shutil.copy(f, ".")
                 # print("copying in:", f)
     # else:
-    # print("not a dir:", dir_test_config_name)
+    # print("not a dir:", dir_test_dir)
 
     # Make sure we have a default config file location.
     assert isinstance(s.DEFAULT_CONFIG_FILE, str)
-    test_config_file: str = (
-        f"{dir_tests_data}/{test_config_name}/{s.DEFAULT_CONFIG_FILE}"
-    )
+    test_config_file: str = test_dir
+    if config_file_override:
+        print("Config file override:", config_file_override)
+        test_config_file += config_file_override
+        if not os.path.isfile(test_config_file):
+            print("Error: override config file not found at:", test_config_file)
+            assert 1 == 0
+        # Copy in this override file as the default config file.
+        shutil.copy(test_config_file, s.DEFAULT_CONFIG_FILE)
+    else:
+        test_config_file += s.DEFAULT_CONFIG_FILE
     if not os.path.isfile(test_config_file):
         print("Warning: no config file found for this test at", test_config_file)
     if append_config:

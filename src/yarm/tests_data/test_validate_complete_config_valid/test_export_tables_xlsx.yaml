@@ -1,0 +1,75 @@
+# In this file, UPPERCASE is used for keys and values that you can edit.
+# But normally, you don't have to use uppercase.
+import:
+  - path: MODULE_A.py
+
+output:
+  dir: OUTPUT
+  basename: BASENAME
+  prepend_date: true
+  export_tables: xlsx
+  export_queries: xlsx
+  styles:
+    column_width: 15
+
+input:
+  strip: true
+  slugify_columns: true
+  lowercase_columns: false
+  uppercase_rows: false
+  include_index: false
+
+tables_config:
+  TABLE_FROM_SPREADSHEET:
+    - path: SOURCE_A.xlsx
+      sheet: A.1
+  TABLE_FROM_CSV:
+    - path: SOURCE_B.csv
+  TABLE_FROM_MULTIPLE_SOURCES:
+    - path: SOURCE_C.xlsx
+      sheet: C.1
+    - path: SOURCE_D.csv
+  TABLE_PIVOT:
+    - path: SOURCE_C.xlsx
+      sheet: C.PIVOT
+      # pivot key sets include_index to true
+      pivot:
+        index: ID
+        columns: KEY
+        values: VALUE
+  TABLE_DATETIME:
+    - path: SOURCE_A.xlsx
+      sheet: A.DATETIME
+      include_index: true
+      datetime:
+        CREATED:
+        MODIFIED: "%b %d, %Y"
+        TOUCHED: "%Y-%m-%d"
+
+queries:
+  - name: QUERY A
+    sql: |
+      SELECT
+      *
+      FROM
+      table_from_spreadsheet AS s
+      ;
+
+  - name: QUERY B
+    df_postprocess: postprocess_df
+    replace:
+      FIELD_A:
+        MATCH A1: REPLACE A1
+        MATCH A2: REPLACE A2
+      FIELD_B:
+        'MATCH B1 W/"''COMPLEX''" #STRING': 'REPLACE B1 W/''"COMPLEX"'' #STRING'
+    sql: |
+      SELECT
+      *
+      FROM
+      table_from_spreadsheet AS s
+      JOIN
+      table_from_csv AS c
+      ON
+      s.id = c.id
+      ;

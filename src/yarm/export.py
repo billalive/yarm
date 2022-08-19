@@ -95,7 +95,6 @@ def export_tables(
                 for table in df_tables:
                     table_name: str = table[0]
                     df: DataFrame = table[1]
-                    # Save the table to output_filename
                     filename: str = get_output_dir_path(config, f"{table_name}.{ext}")
                     overwrite_file(filename)
                     df.to_csv(filename, index=False)
@@ -105,6 +104,15 @@ def export_tables(
                         indent=indent,
                         verbose=verbose,
                     )
+            elif ext == "xlsx":
+                filename: str = f"{s.FILE_EXPORT_TABLES_BASENAME}.{ext}"
+                filename = get_output_dir_path(config, filename)
+                overwrite_file(filename)
+                with pd.ExcelWriter(filename) as writer:
+                    for table in df_tables:
+                        table_name: str = table[0]
+                        df: DataFrame = table[1]
+                        df.to_excel(writer, sheet_name=table_name)
         else:
             abort(s.MSG_EXPORT_FORMAT_UNRECOGNIZED, data=ext)
 
@@ -114,8 +122,3 @@ def export_tables(
             indent=0,
             verbose=1,
         )
-    # TODO Implement output: export_tables: xlsx
-    # Output tables.xlsx, with each table a separate sheet.
-    # with pd.ExcelWriter('output.xlsx') as writer:
-    #    df1.to_excel(writer, sheet_name='Sheet_name_1')
-    #    df2.to_excel(writer, sheet_name='Sheet_name_2')
