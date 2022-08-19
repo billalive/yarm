@@ -2,10 +2,14 @@
 
 """Helper functions."""
 
+import os
 import sys
 from typing import Any
+from typing import List
+from typing import Tuple
 
 import click
+from nob.nob import Nob
 from path import Path
 
 # from strictyaml import Int
@@ -32,25 +36,36 @@ def warn(msg: str) -> None:
     return
 
 
-def abort(msg: str, error: str = None, file_path: str = None):
+def abort(
+    msg: str, error: str = None, file_path: str = None, data: str = None, ps: str = None
+):
     """Abort with error message and status 1.
 
     Args:
         msg: (str)  message
         error: (str, optional)  error
-        file_path: (str, optional)  file with this error
+        file_path: (str, optional)  file with this error, display on separate line
+        data: (str, optional) data to display after msg
+        ps: (str, optional) final postscript to add at end of message.
     """
     s = Settings()
     # TODO Use err=True to print to stderr?
     click.secho(s.MSG_ABORT, fg=s.COLOR_ERROR, nl=False, bold=True)
     click.echo(" ", nl=False)
-    click.echo(msg)
-    if file_path is not None:
+    if data:
+        click.echo(msg, nl=False)
+        click.echo(": ", nl=False)
+        click.secho(data, fg=s.COLOR_DATA, bold=True)
+    else:
+        click.echo(msg)
+    if file_path:
         click.secho("In file: ", nl=False)
         click.secho(file_path, fg=s.COLOR_DATA, bold=True)
-    if error is not None:
+    if error:
         click.echo("Error: ", nl=False)
         click.secho(error, fg=s.COLOR_ERROR)
+    if ps:
+        click.echo(ps)
     sys.exit(1)
 
 
@@ -93,18 +108,107 @@ def load_yaml_file(input_file: str, schema: Any) -> YAML:
         abort(s.MSG_INVALID_YAML_SCANNER, error=str(error), file_path=input_file)
 
 
-def msg_with_data(msg: str, data: str, verbose_level: int = 1):
+def msg(msg: str, verbose: int = 0, indent: int = 0):
+    """Show message.
+
+    By default, does not require -v flag.
+
+    Args:
+        msg (str): message to display
+        verbose (int): (optional) verbosity level required to show this message.
+        indent (int): (optional) number of indents before message
+    """
+    s = Settings()
+    if verbose_ge(verbose):
+        msg = (s.MSG_TAB * indent) + msg
+        click.echo(msg)
+
+
+def msg_with_data(msg: str, data: str, verbose: int = 1, indent: int = 0):
     """Show message with accompanying data.
+
+    By default, requires at least one -v flag.
 
     Args:
         msg (str): message to display
         data (str): data to display after message
-        verbose_level (int): (optional) verbosity level required to show this message.
-
+        verbose (int): (optional) verbosity level required to show this message.
+        indent (int): (optional) number of indents before message
     """
     s = Settings()
-    ctx = click.get_current_context()
-    if ctx.params[s.ARG_VERBOSE] >= verbose_level:
+    if verbose_ge(verbose):
+        msg = (s.MSG_TAB * indent) + msg
         msg += ": "
         click.echo(msg, nl=False)
         click.secho(data, fg=s.COLOR_DATA)
+
+
+def verbose_ge(verbose: int) -> bool:
+    """Return True if verbosity >= verbose."""
+    s = Settings()
+    ctx = click.get_current_context()
+    if ctx.params[s.ARG_VERBOSE] >= verbose:
+        return True
+    else:
+        return False
+
+
+def overwrite_file(path: str, indent: int = 1) -> bool:
+    """Overwrite a file if it exists.
+
+    (Technically, this function only removes the file.)
+
+    Args:
+        path (str): file to overwrite
+        indent (int): (optional) indent for "removed file" message.
+            Prompt question is not indented.
+
+    Returns:
+        (bool) True if file existed and was removed, False otherwise.
+    """
+    # TODO Should this test whether we are in output/dir?
+    # And only overwrite files in that directory?
+    s = Settings()
+
+    ctx = click.get_current_context()
+
+    msg_removed: str = s.MSG_REMOVED_FILE
+
+    remove: bool = False
+    if os.path.isfile(path):
+        if ctx.params[s.ARG_FORCE]:
+            remove = True
+            msg_removed = s.MSG_REMOVED_FILE_FORCE
+        else:
+            msg: str = f"{s.MSG_PROMPT}{s.MSG_ASK_OVERWRITE_FILE} {path}?"
+            if click.confirm(msg, default=True, abort=False):
+                remove = True
+            else:
+                abort(s.MSG_OVERWRITE_FILE_ABORT, data=path)  # pragma: no cover
+
+        if remove:  # pragma: no cover
+            # TODO Why doesn't coverage detect test_overwrite_file()?
+            if verbose_ge(2):
+                msg_with_data(msg_removed, data=path, indent=indent)
+            os.remove(path)
+    return remove
+
+
+def key_show_message(key_msg: List[Tuple[str, str]], config: Nob, verbose: int = 1):
+    """For each key, if that key is in config, show message.
+
+    key_msg must be a list of tuples.
+
+    Example:
+    key_msg: list = [
+        (s.KEY_INPUT__STRIP, s.MSG_STRIP_WHITESPACE),
+        (s.KEY_INPUT__SLUGIFY_COLUMNS, s.MSG_SLUGIFY_COLUMNS),
+        (s.KEY_INPUT__LOWERCASE_COLUMNS, s.MSG_LOWERCASE_COLUMNS),
+        (s.KEY_INPUT__UPPERCASE_ROWS, s.MSG_UPPERCASE_ROWS),
+    ]
+    key_show_message(key_msg, config, verbose=1)
+
+    """
+    for key, msg_str in key_msg:
+        if key in config and config[key][:]:
+            msg(msg_str, verbose=verbose)

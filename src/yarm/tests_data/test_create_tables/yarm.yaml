@@ -1,0 +1,21 @@
+---
+tables_config:
+  products:
+    - path: products.csv
+  orders:
+    - path: orders.xlsx
+      sheet: Orders
+  order_details:
+    - path: orders.xlsx
+      sheet: Order Details
+
+output:
+  dir: output
+  basename: test_create_tables
+
+queries:
+  - name: Descriptions
+    sql: |
+      SELECT description
+      FROM products
+      ;

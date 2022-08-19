@@ -14,8 +14,8 @@ from typing import Any
 from typing import Optional
 from typing import Union
 
-import click
 from nob import Nob
+from slugify import slugify
 
 # from strictyaml import MapCombined
 # namespace collision: we're already using Any from typing.
@@ -28,6 +28,7 @@ from strictyaml import Int
 from strictyaml import Map
 from strictyaml import MapPattern
 from strictyaml import Optional as OptionalYAML
+from strictyaml import ScalarValidator
 from strictyaml import Seq
 from strictyaml import Str
 from strictyaml import load
@@ -37,12 +38,24 @@ from strictyaml.yamllocation import YAMLChunk
 from yarm.helpers import abort
 from yarm.helpers import load_yaml_file
 from yarm.helpers import msg_with_data
+from yarm.helpers import verbose_ge
 
 # from yarm.helpers import warn
 from yarm.settings import Settings
 
 
-# from typing import List
+class Slug(ScalarValidator):
+    """Class to use slugify to make spelling consistent."""
+
+    def validate_scalar(self, chunk):
+        """Use slugify to make spelling consistent.
+
+        Use _ rather than - for separator; it's more Pythonic.
+
+        Also, Ansible config files seem to favor underscores, see:
+        https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html
+        """
+        return slugify(chunk.contents, separator="_")
 
 
 def validate_config(config_path: str) -> YAML:
@@ -79,8 +92,8 @@ def validate_config_edited(config: YAML) -> bool:
     s = Settings()
     default_config = get_default_config()
     c = Nob(config.data)
-    if "/output/basename" in c:
-        if c.output.basename == default_config.output.basename:
+    if s.KEY_OUTPUT__BASENAME in c:
+        if c[s.KEY_OUTPUT__BASENAME] == default_config[s.KEY_OUTPUT__BASENAME]:
             abort(
                 f"""{s.MSG_INVALID_CONFIG_NO_EDITS}
     output.basename is still set to the default: {default_config.output.basename}
@@ -95,9 +108,9 @@ def validate_minimum_required_keys(config: YAML) -> bool:
     c = Nob(config.data)
     missing_keys = []
     for key in [
-        "/tables_config",
-        "/output/basename",
-        "/output/dir",
+        s.KEY_TABLES_CONFIG,
+        s.KEY_OUTPUT__BASENAME,
+        s.KEY_OUTPUT__DIR,
     ]:
         if key not in c:
             display_key: str = re.sub("^/", "", key)
@@ -109,11 +122,11 @@ def validate_minimum_required_keys(config: YAML) -> bool:
         )
 
     # To generate output, we need either queries: or export_tables:
-    if "/queries" not in c:
-        if "/output/export_tables" not in c:
+    if s.KEY_QUERIES not in c:
+        if s.KEY_OUTPUT__EXPORT_TABLES not in c:
             abort(s.MSG_NEED_EXPORT_TABLES_OR_QUERIES)
         else:
-            msg_with_data(s.MSG_EXPORT_TABLES_ONLY, c["/output/export_tables"][:])
+            msg_with_data(s.MSG_EXPORT_TABLES_ONLY, c[s.KEY_OUTPUT__EXPORT_TABLES][:])
     return True
 
 
@@ -165,17 +178,15 @@ class StrNotEmpty(Str):
         return chunk.contents
 
 
-def msg_validating_key(key: str, suffix: str = None):
+def msg_validating_key(key: str, suffix: str = None, verbose: int = 1):
     """Show a message that a key is being validated."""
     s = Settings()
-    ctx = click.get_current_context()
-    verbose_level: int = 1
-    if ctx.params[s.ARG_VERBOSE] >= verbose_level:
+    if verbose_ge(verbose):
         msg = s.MSG_VALIDATING_KEY
         if suffix:
             msg += " "
             msg += suffix
-        msg_with_data(msg, key, verbose_level)
+        msg_with_data(msg, key, verbose=verbose)
 
 
 def validate_key_tables_config(c: YAML, config_path: str):
@@ -194,11 +205,15 @@ def validate_key_tables_config(c: YAML, config_path: str):
            index: FIELD_ID
            columns: FIELD_KEY
            values: FIELD_VALUE
+         include_index: false
      TABLE_NAME_B:
        - path: SOURCE_B.csv
     """
+    s = Settings()
     key: str = check_key("tables_config", c)
     if key:
+        # Do not use Slug() on table names, because user will expect to use
+        # their table names in their queries.
         schema = MapPattern(Str(), Seq(AnyYAML()))
         revalidate_yaml(c[key], schema, config_path)
         for table_name in c[key].data:
@@ -210,12 +225,15 @@ def validate_key_tables_config(c: YAML, config_path: str):
                         OptionalYAML("sheet"): StrNotEmpty(),
                         OptionalYAML("datetime"): EmptyNone() | AnyYAML(),
                         OptionalYAML("pivot"): EmptyNone() | AnyYAML(),
-                    }
+                        OptionalYAML("include_index"): Bool(),
+                    },
+                    key_validator=Slug(),
                 )
             )
             revalidate_yaml(table, schema, config_path, table_name, "table")
             check_is_file(c[key][table_name].data, "path")
-            # datetime:
+
+            include_index_defined: bool = False
             for source in table:
                 if "datetime" in source:
                     schema = MapPattern(Str(), EmptyNone() | Str())
@@ -231,11 +249,23 @@ def validate_key_tables_config(c: YAML, config_path: str):
                             "index": StrNotEmpty(),
                             "columns": StrNotEmpty(),
                             "values": StrNotEmpty(),
-                        }
+                        },
+                        key_validator=Slug(),
                     )
                     revalidate_yaml(
                         source["pivot"], schema, config_path, f"{table_name}: pivot"
                     )
+                if "include_index" in source:
+                    # Because a table is a list of paths, it is possible for more
+                    # than one path to define include_index, which is unfortunate.
+                    if not include_index_defined:
+                        include_index_defined = True
+                    else:
+                        abort(
+                            s.MSG_INCLUDE_INDEX_TABLE_CONFLICT,
+                            data=table_name,
+                            ps=s.MSG_INCLUDE_INDEX_TABLE_CONFLICT_PS,
+                        )
 
 
 def check_key(key: str, c: YAML):
@@ -266,7 +296,7 @@ def validate_key_import(c: YAML, config_path: str):
     """
     key: str = check_key("import", c)
     if key:
-        schema = Seq(Map({"path": StrNotEmpty()}))
+        schema = Seq(Map({"path": StrNotEmpty()}, key_validator=Slug()))
         revalidate_yaml(c[key], schema, config_path)
         check_is_file(c[key].data, "path")
 
@@ -280,6 +310,8 @@ def validate_key_input(c: YAML, config_path: str):
         strip: true
         slugify_columns: true
         lowercase_columns: true
+        uppercase_rows: true
+        include_index: true
     """
     key: str = check_key("input", c)
     if key:
@@ -288,7 +320,10 @@ def validate_key_input(c: YAML, config_path: str):
                 OptionalYAML("strip"): Bool(),
                 OptionalYAML("slugify_columns"): Bool(),
                 OptionalYAML("lowercase_columns"): Bool(),
-            }
+                OptionalYAML("uppercase_rows"): Bool(),
+                OptionalYAML("include_index"): Bool(),
+            },
+            key_validator=Slug(),
         )
         revalidate_yaml(c[key], schema, config_path)
 
@@ -307,6 +342,7 @@ def validate_key_output(c: YAML, config_path: str):
         styles:
             column_width: 15
     """
+    s = Settings()
     key: str = check_key("output", c)
     if key:
         schema = Map(
@@ -314,19 +350,38 @@ def validate_key_output(c: YAML, config_path: str):
                 "basename": StrNotEmpty(),
                 OptionalYAML("dir"): StrNotEmpty(),
                 OptionalYAML("prepend_date"): Bool(),
-                OptionalYAML("export_tables"): Enum(["csv", "xlsx"]),
-                OptionalYAML("export_queries"): Enum(["csv", "xlsx"]),
+                OptionalYAML("export_tables"): Enum(s.SCHEMA_EXPORT_FORMATS),
+                OptionalYAML("export_queries"): Enum(s.SCHEMA_EXPORT_FORMATS),
                 OptionalYAML("styles"): AnyYAML(),
-            }
+            },
+            key_validator=Slug(),
         )
         revalidate_yaml(c[key], schema, config_path)
         if "styles" in c[key]:
             schema = Map(
                 {
                     "column_width": Int(),
-                }
+                },
+                key_validator=Slug(),
             )
             revalidate_yaml(c[key]["styles"], schema, config_path, "output.styles")
+        validate_key_output_dir(c)
+
+
+def validate_key_output_dir(c: YAML):
+    """Prepare output directory."""
+    s = Settings()
+    config: Nob = Nob(c.data)
+    output_dir = os.fspath(config[s.KEY_OUTPUT__DIR][:])
+    if not os.path.isdir(output_dir):
+        if os.path.exists(output_dir):
+            abort(s.MSG_CANT_CREATE_OUTPUT_DIR, data=output_dir)
+        else:
+            msg_with_data(s.MSG_CREATING_OUTPUT_DIR, data=output_dir)
+            os.makedirs(output_dir)
+    else:
+        msg_with_data(s.MSG_OUTPUT_DIR_EXISTS, data=output_dir, verbose=2)
+    msg_with_data(s.MSG_OUTPUT_DIR, data=output_dir)
 
 
 def validate_key_queries(c: YAML, config_path: str):
@@ -371,7 +426,8 @@ def validate_key_queries(c: YAML, config_path: str):
                     "sql": StrNotEmpty(),
                     OptionalYAML("df_postprocess"): StrNotEmpty(),
                     OptionalYAML("replace"): AnyYAML(),
-                }
+                },
+                key_validator=Slug(),
             )
             revalidate_yaml(query, schema, config_path)
             if "replace" in query:
@@ -413,9 +469,9 @@ def revalidate_yaml(
     try:
         if msg_key:
             if msg_suffix:
-                msg_validating_key(msg_key, msg_suffix)
+                msg_validating_key(msg_key, msg_suffix, verbose=2)
             else:
-                msg_validating_key(msg_key)
+                msg_validating_key(msg_key, verbose=2)
         yaml.revalidate(schema)
     except YAMLValidationError as err:
         abort(s.MSG_INVALID_YAML, err, file_path=config_path)
@@ -448,12 +504,13 @@ def validate_config_schema(config_path: str) -> Any:
             OptionalYAML("output"): EmptyNone() | AnyYAML(),
             OptionalYAML("input"): EmptyNone() | AnyYAML(),
             OptionalYAML("queries"): EmptyNone() | Seq(AnyYAML()),
-        }
+        },
+        key_validator=Slug(),
     )
 
     c = load_yaml_file(config_path, schema)
 
-    msg_with_data(s.MSG_BEGIN_VALIDATING_FILE, config_path, 2)
+    msg_with_data(s.MSG_BEGIN_VALIDATING_FILE, config_path, verbose=2)
 
     # TODO Uncoment include and create_tables when we implement these options.
     # validate_key_include(c, config_path)
@@ -464,7 +521,7 @@ def validate_config_schema(config_path: str) -> Any:
     validate_key_output(c, config_path)
     validate_key_queries(c, config_path)
 
-    msg_with_data(s.MSG_CONFIG_FILE_VALID, config_path, 2)
+    msg_with_data(s.MSG_CONFIG_FILE_VALID, config_path, verbose=2)
 
     # If configuration validates, return config object.
     return c

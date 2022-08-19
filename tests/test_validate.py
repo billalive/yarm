@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test cases for the __validate__ module."""
+"""Test cases for validate.py."""
 # pylint: disable=redefined-outer-name
 # pylint: disable=invalid-name
 # pylint: disable=import-error
@@ -42,7 +42,7 @@ def test_validate_config_mistakes(runner: CliRunner) -> None:
         exit_code: int = test_tuple[0]
         test: str = test_tuple[1]
         msg: str = test_tuple[2]
-        print("test:", test, "msg:", msg)
+        print("test:", test, f"{s.MSG_NL_TAB}msg:", msg)
         with runner.isolated_filesystem():
             prep_test_config(test)
             result = runner.invoke(cli, [s.CMD_RUN])
@@ -58,6 +58,10 @@ def test_validate_complete_config_valid(runner: CliRunner) -> None:
     - Update this test and its config file.
     - Update validate_config_schema()
     - Update templates/yarm.yaml if this key appears there.
+    - Update function that actually implements option.
+
+    This test only tests initial validation. For testing the results
+    of options (e.g. pivot), see other tests.
     """
     s = Settings()
     test: str = "test_validate_complete_config_valid"
@@ -75,9 +79,11 @@ def test_validate_complete_config_valid(runner: CliRunner) -> None:
         s.MSG_CONFIG_FILE_VALID,
         s.MSG_VALIDATING_KEY,
         f"{s.MSG_VALIDATING_KEY}: tables_config",
-        f"{s.MSG_VALIDATING_KEY} table: table_from_spreadsheet",
-        f"{s.MSG_VALIDATING_KEY} table: table_from_csv",
-        f"{s.MSG_VALIDATING_KEY} table: table_from_multiple_sources",
+        f"{s.MSG_VALIDATING_KEY} table: TABLE_FROM_SPREADSHEET",
+        f"{s.MSG_VALIDATING_KEY} table: TABLE_FROM_CSV",
+        f"{s.MSG_VALIDATING_KEY} table: TABLE_FROM_MULTIPLE_SOURCES",
+        f"{s.MSG_VALIDATING_KEY} table: TABLE_PIVOT",
+        f"{s.MSG_VALIDATING_KEY} table: TABLE_DATETIME",
         f"{s.MSG_VALIDATING_KEY}: import",
         f"{s.MSG_VALIDATING_KEY}: input",
         f"{s.MSG_VALIDATING_KEY}: output",
@@ -178,3 +184,15 @@ output:
 
 def test_check_is_file(runner: CliRunner) -> None:
     """Test check_is_file() permutations."""
+    # TODO
+    pass
+
+
+def test_validate_slugify(runner: CliRunner) -> None:
+    """Slugify correctly formats keys."""
+    s = Settings()
+    test_dir: str = "test_validate_slugify"
+    with runner.isolated_filesystem():
+        prep_test_config(test_dir)
+        result = runner.invoke(cli, [s.CMD_RUN])
+        assert result.exit_code == 0

@@ -75,10 +75,10 @@ def test_new_edit_succeeds(
 
 
 def test_prep_config_copies_files(runner: CliRunner) -> None:
-    """Copy test_config_name/ files into testing environment."""
+    """Copy test_dir/ files into testing environment."""
     with runner.isolated_filesystem():
-        test_config_name: str = "test_prep_config_copies_files"
-        prep_test_config(test_config_name)
+        test_dir: str = "test_prep_config_copies_files"
+        prep_test_config(test_dir)
         assert os.path.isfile("file1.txt")
         assert os.path.isfile("file2.txt")
         assert not os.path.isfile("does_not_exist.txt")
@@ -87,9 +87,9 @@ def test_prep_config_copies_files(runner: CliRunner) -> None:
 def test_verbose_levels(runner: CliRunner) -> None:
     """Different messages show at different levels of verbose."""
     s = Settings()
-    test_config_name: str = "test_verbose_levels"
+    test_dir: str = "test_verbose_levels"
     with runner.isolated_filesystem():
-        prep_test_config(test_config_name)
+        prep_test_config(test_dir)
         result = runner.invoke(cli, [s.CMD_RUN])
         assert s.MSG_VALIDATING_KEY not in result.output
         assert s.MSG_CONFIG_FILE_VALID not in result.output

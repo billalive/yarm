@@ -3,21 +3,21 @@
 
 import importlib.resources as pkg_resources
 import os
+import sqlite3
 import sys
 from typing import Any
 from typing import Optional
 
-# Dependencies
-#
-# If your distribution does not include openpyxl with pandas, you may need
-# to install python-openpyxl separately.
 import click
+from nob import Nob
 
+from yarm.export import export_database
 from yarm.helpers import abort
 from yarm.helpers import msg_with_data
 from yarm.helpers import success
 from yarm.helpers import warn
 from yarm.settings import Settings
+from yarm.tables import create_tables
 from yarm.validate import validate_config
 
 
@@ -50,6 +50,20 @@ For more options:
 @cli.command()
 @click.pass_context
 @click.option(
+    "--database/--no-database",
+    "-d/-D",
+    default=False,
+    show_default=True,
+    help="Export your tables and queries to an sqlite3 database.",
+)
+@click.option(
+    "--force/--no-force",
+    "-f/-F",
+    default=False,
+    show_default=True,
+    help="If output files exist, force overwrites without asking.",
+)
+@click.option(
     "-v", "--verbose", "verbose", count=True, default=0, help="Verbosity level."
 )
 @click.option(
@@ -60,17 +74,37 @@ For more options:
     type=click.Path(exists=True),
 )
 def run(
-    ctx: Optional[click.Context], config_path: Optional[str], verbose: Optional[int]
+    ctx: Optional[click.Context],
+    config_path: Optional[str],
+    verbose: Optional[int],
+    database: Optional[bool],
+    force: Optional[bool],
 ) -> None:
     """Run the report."""
     s = Settings()
+
     if config_path is None:  # pragma: no branch
         config_path = s.DEFAULT_CONFIG_FILE  # type: ignore[unreachable]
     if verbose is None:  # pragma: no branch
         verbose = 0  # type: ignore[unreachable]  # pragma: no cover
     if verbose > 1:
         msg_with_data("Verbosity level", str(verbose))
-    validate_config(config_path)
+
+    config: Nob = Nob(validate_config(config_path).data)
+
+    # Create a temporary sqlite database
+    try:
+        conn = sqlite3.connect(":memory:")
+
+        create_tables(conn, config)
+
+        export_database(conn, config)
+
+    except sqlite3.Error as error:
+        abort(s.MSG_SQLITE_ERROR, error=str(error))  # pragma: no cover
+    finally:
+        conn.close()
+
     sys.exit()
 
 

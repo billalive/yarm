@@ -9,6 +9,9 @@ tests:
 mypy:
 	nox -rxs mypy
 
+typeguard:
+	nox -rxs typeguard
+
 docs:
 	nox -rxs docs
 

@@ -1,0 +1,8 @@
+output:
+  dir: output
+  basename: test
+  export_tables: csv
+
+tables_config:
+  products:
+    - path: products.csv

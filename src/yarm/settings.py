@@ -16,11 +16,14 @@ class Settings:
     DIR_TESTS_DATA: str = "tests_data"
 
     ARG_VERBOSE: str = "verbose"
+    ARG_EXPORT_DATABASE: str = "database"
+    ARG_FORCE: str = "force"
 
     EXT_YAML: str = ".yaml"
 
     TEST_CONFIG_BAD_YAML: str = "test_config_bad_yaml"
     TEST_CONFIG_BAD_OPTIONS: str = "test_config_bad_options"
+    DEFAULT_TEST: str = "test_validate_complete_config_valid"
 
     MSG_ABORT: str = "Failed."
     MSG_SUCCESS: str = "Success!"
@@ -57,10 +60,16 @@ try surrounding the entire value with single or double quote marks."""
 
     CONFIG_SCHEMA = "config_schema.yaml"
 
+    SCHEMA_EXPORT_FORMATS: list = ["csv", "xlsx"]
+
     MSG_TEST_KEY_NOT_IN_SCHEMA: str = "key not in schema"
     MSG_TEST_EXPECTED_LIST: str = "found a mapping"
     MSG_MISSING_REQUIRED_KEY: str = "Missing required key(s):"
+    MSG_NL: str = "\n"
     MSG_NL_TAB: str = "\n   "
+    MSG_TAB: str = "   "
+    MSG_LINE: str = "------------------------------------------------"
+    MSG_LINE_DOUBLE: str = "================================================"
     MSG_NEED_EXPORT_TABLES_OR_QUERIES: str = """
 No queries found. We need something to output!
     Please either:
@@ -69,3 +78,105 @@ No queries found. We need something to output!
     MSG_EXPORT_TABLES_ONLY: str = (
         "No queries found, but 'output: export_tables' is set. Will output tables to"
     )
+
+    MSG_CONNECTION_DATABASE_FAILED: str = "Failed to connect to database."
+    MSG_SQLITE_ERROR: str = "There was a problem with sqlite:"
+
+    # tables_config
+    MSG_CREATING_TABLE: str = "Creating table"
+    MSG_CREATED_TABLE: str = "Table created"
+    MSG_IMPORTING_DATA: str = "Importing data from"
+    MSG_IMPORTING_SHEET: str = "Importing sheet"
+    MSG_STRIP_WHITESPACE: str = (
+        "Stripping whitespace at start and end of all strings..."
+    )
+    MSG_SLUGIFY_COLUMNS: str = "Slugifying all columns..."
+    MSG_LOWERCASE_COLUMNS: str = "Lowercasing all columns..."
+    MSG_UPPERCASE_ROWS: str = "Uppercasing all rows..."
+    MSG_APPLYING_PIVOT: str = "Applying pivot"
+    MSG_INCLUDE_INDEX_ALL_TRUE: str = (
+        "include_index: Index column included for all tables (unless overridden)."
+    )
+    MSG_INCLUDE_INDEX_ALL_FALSE: str = (
+        "include_index: Index column omitted for all tables (unless overridden)."
+    )
+    MSG_INCLUDE_INDEX_TABLE_TRUE: str = "include_index: Index column included for table"
+    MSG_INCLUDE_INDEX_TABLE_FALSE: str = "include_index: Index column omitted for table"
+    MSG_INCLUDE_INDEX_TABLE_PIVOT: str = (
+        "include_index: Index column automatically included for pivot table"
+    )
+    MSG_INCLUDE_INDEX_TABLE_CONFLICT: str = (
+        "More than one 'include_index' defined for this table"
+    )
+    MSG_INCLUDE_INDEX_TABLE_CONFLICT_PS: str = (
+        "Please define 'include_index' for only one path, at most, in each table."
+    )
+    MSG_MERGING_PATH: str = "Merging path"
+    MSG_MERGE_ERROR: str = "Merge error: No common column to merge on with table"
+    MSG_MERGE_ERROR_PS: str = """Remember: merge column names are...
+    - case-sensitive (unless you set lowercase_columns = true)
+    - must be spelled the same in every path."""
+    MSG_MERGE_TYPE_ERROR: str = "Type error while merging table"
+    MSG_CONVERTING_DATETIME: str = "Converting field(s) to datetime:"
+
+    MSG_INPUT_FORMAT_UNRECOGNIZED: str = "Format for input path not recognized"
+
+    MSG_SHOW_DF: str = "Dataframe"
+    MSG_NO_SHEET_PROVIDED: str = "No 'sheet' key provided, importing first sheet from"
+    MSG_BAD_FILE_EXT: str = "Bad file extension in"
+    MSG_CREATE_TABLE_DATABASE_ERROR: str = "Database Error: Could not create table"
+    MSG_CREATE_TABLE_VALUE_ERROR: str = "Value Error: Could not create table"
+    MSG_MISSING_DATETIME: str = "Column under 'datetime:' not found"
+    MSG_PIVOT_FAILED_KEY_ERROR: str = "Pivot failed, because this column is missing"
+
+    # NOTE These keys are for use with Nob objects, not for validating YAML schemas.
+    KEY_TABLES_CONFIG = "/tables_config"
+    KEY_OUTPUT__BASENAME = "/output/basename"
+    KEY_OUTPUT__DIR = "/output/dir"
+    KEY_INPUT = "/input"
+    KEY_INPUT__STRIP = "/input/strip"
+    KEY_INPUT__SLUGIFY_COLUMNS = "/input/slugify_columns"
+    KEY_INPUT__LOWERCASE_COLUMNS = "/input/lowercase_columns"
+    KEY_INPUT__UPPERCASE_ROWS = "/input/uppercase_rows"
+    KEY_INPUT__INCLUDE_INDEX = "/input/include_index"
+    KEY_OUTPUT__EXPORT_TABLES = "/output/export_tables"
+    KEY_QUERIES = "/queries"
+    KEY_SHEET = "sheet"
+
+    # tables_config keys. They are deep in the path, so do not use /.
+    KEY_PIVOT = "pivot"
+    # The schema ensures that each pivot key has one of each of these:
+    KEY_PIVOT_INDEX = "index"
+    KEY_PIVOT_COLUMNS = "columns"
+    KEY_PIVOT_VALUES = "values"
+
+    KEY_DATETIME = "datetime"
+    # Individual paths can override the include_index.
+    KEY_INCLUDE_INDEX = "include_index"
+
+    CSV = "csv"
+    XLSX = "xlsx"
+
+    # export.py
+    # Basename for exporting tables
+    FILE_EXPORT_TABLES_BASENAME: str = "tables"
+
+    MSG_PROMPT: str = "> "
+    MSG_ASK_OVERWRITE_FILE: str = "Overwrite file"
+    MSG_REMOVED_FILE: str = "Removed file"
+    MSG_REMOVED_FILE_FORCE: str = "Automatic overwrite (--force), removed file"
+    MSG_CREATING_DATABASE: str = "Creating database"
+    MSG_DATABASE_EXPORTED: str = "Database exported to"
+    MSG_OVERWRITE_FILE_ABORT: str = "Cannot proceed without overwriting"
+
+    MSG_EXPORTING_TABLES: str = "Exporting tables..."
+    MSG_TABLES_EXPORTED: str = "All tables exported to format"
+    MSG_TABLE_EXPORTED: str = "Table exported to"
+    MSG_QUERIES_EXPORTED: str = "All queries exported to format"
+    MSG_QUERY_EXPORTED: str = "Query exported to"
+    MSG_EXPORT_FORMAT_UNRECOGNIZED: str = "Format for export_tables not recognized"
+
+    MSG_OUTPUT_DIR_EXISTS: str = "Output directory already exists"
+    MSG_CREATING_OUTPUT_DIR: str = "Creating output directory"
+    MSG_OUTPUT_DIR: str = "Output directory"
+    MSG_CANT_CREATE_OUTPUT_DIR: str = "Cannot create output dir at"

@@ -1,0 +1,11 @@
+# You can edit this file during testing.
+# See test_df_input_options() for actual test config.
+output:
+  dir: output
+  basename: test
+  export_tables: csv
+input:
+  slugify_columns: true
+tables_config:
+  test:
+    - path: tests.xlsx
