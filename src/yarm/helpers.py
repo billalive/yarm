@@ -5,6 +5,8 @@
 import os
 import sys
 from typing import Any
+from typing import List
+from typing import Tuple
 
 import click
 from path import Path
@@ -167,3 +169,23 @@ def overwrite_file(path: str, force: bool = False):
                 os.remove(path)
             else:
                 abort(s.MSG_OVERWRITE_FILE_ABORT, data=path)
+
+
+def key_show_message(key_msg: List[Tuple[str, str]], config: YAML, verbose: int = 1):
+    """For each key, if that key is in config, show message.
+
+    key_msg must be a list of tuples.
+
+    Example:
+    key_msg: list = [
+        (s.KEY_INPUT__STRIP, s.MSG_STRIP_WHITESPACE),
+        (s.KEY_INPUT__SLUGIFY_COLUMNS, s.MSG_SLUGIFY_COLUMNS),
+        (s.KEY_INPUT__LOWERCASE_COLUMNS, s.MSG_LOWERCASE_COLUMNS),
+        (s.KEY_INPUT__UPPERCASE_ROWS, s.MSG_UPPERCASE_ROWS),
+    ]
+    key_show_message(key_msg, config, verbose=1)
+
+    """
+    for key, msg_str in key_msg:
+        if key in config and config[key][:]:
+            msg(msg_str, verbose=verbose)

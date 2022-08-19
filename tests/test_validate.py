@@ -184,3 +184,15 @@ output:
 
 def test_check_is_file(runner: CliRunner) -> None:
     """Test check_is_file() permutations."""
+    # TODO
+    pass
+
+
+def test_validate_slugify(runner: CliRunner) -> None:
+    """Slugify correctly formats keys."""
+    s = Settings()
+    test_config_name: str = "test_validate_slugify"
+    with runner.isolated_filesystem():
+        prep_test_config(test_config_name)
+        result = runner.invoke(cli, [s.CMD_RUN])
+        assert result.exit_code == 0

@@ -10,6 +10,7 @@ from pandas.core.frame import DataFrame
 from slugify import slugify
 
 from yarm.helpers import abort
+from yarm.helpers import key_show_message
 from yarm.helpers import msg
 from yarm.helpers import msg_with_data
 from yarm.helpers import verbose_ge
@@ -23,6 +24,15 @@ def create_tables(conn, config):
     tables: NobView = config[s.KEY_TABLES_CONFIG]
 
     include_index_all: bool = get_include_index_all(config)
+
+    # Input options apply to all tables, so show them once here.
+    key_msg: list = [
+        (s.KEY_INPUT__STRIP, s.MSG_STRIP_WHITESPACE),
+        (s.KEY_INPUT__SLUGIFY_COLUMNS, s.MSG_SLUGIFY_COLUMNS),
+        (s.KEY_INPUT__LOWERCASE_COLUMNS, s.MSG_LOWERCASE_COLUMNS),
+        (s.KEY_INPUT__UPPERCASE_ROWS, s.MSG_UPPERCASE_ROWS),
+    ]
+    key_show_message(key_msg, config, verbose=1)
 
     for table_name in tables.keys():
         msg(s.MSG_LINE_DOUBLE, verbose=2)
@@ -194,7 +204,7 @@ def input_path(
     df = df_tables_config_options(df, path_config, table_name, input_file)
 
     # After all transformations, merge to existing table_df.
-    msg_with_data(s.MSG_MERGING_PATH, data=input_file, indent=1)
+    msg_with_data(s.MSG_MERGING_PATH, data=input_file, indent=1, verbose=2)
     if isinstance(table_df, DataFrame):
         try:
             df = pd.merge(left=table_df, right=df, how="outer")
@@ -232,13 +242,11 @@ def df_input_options(df: DataFrame, c):
         # input:
         #   strip: true
         if s.KEY_INPUT__STRIP in c and c[s.KEY_INPUT__STRIP][:]:
-            msg(s.MSG_STRIP_WHITESPACE, verbose=1)
             df = df.applymap(lambda x: x.strip() if type(x) == str else x)
 
         # input:
         #   slugify_columns: true
         if s.KEY_INPUT__SLUGIFY_COLUMNS in c and c[s.KEY_INPUT__SLUGIFY_COLUMNS][:]:
-            msg(s.MSG_SLUGIFY_COLUMNS, verbose=1)
             df.columns = [
                 slugify(col, lowercase=False, separator="_") for col in df.columns
             ]
@@ -246,7 +254,6 @@ def df_input_options(df: DataFrame, c):
         # input:
         #   lowercase_columns: true
         if s.KEY_INPUT__LOWERCASE_COLUMNS in c and c[s.KEY_INPUT__LOWERCASE_COLUMNS][:]:
-            msg(s.MSG_LOWERCASE_COLUMNS, verbose=1)
             df.columns = [col.lower() for col in df.columns]
 
         # input:
@@ -254,7 +261,6 @@ def df_input_options(df: DataFrame, c):
         # Note: The uppercase transformation happens BEFORE running query, replace
         # This matters for case-sensitive queries and regexes.
         if s.KEY_INPUT__UPPERCASE_ROWS in c and c[s.KEY_INPUT__UPPERCASE_ROWS][:]:
-            msg(s.MSG_UPPERCASE_ROWS, verbose=1)
             df = df.applymap(lambda s: s.upper() if type(s) == str else s)
 
         # TODO Implement option to remove stopwords from column names with slugify?
@@ -302,7 +308,7 @@ def df_tables_config_options(df, path_config: NobView, table_name: str, input_fi
         except KeyError as error:
             abort(s.MSG_PIVOT_FAILED_KEY_ERROR, data=error, file_path=input_file)
     if s.KEY_DATETIME in pc:
-        msg(s.MSG_CONVERTING_DATETIME, indent=1)
+        msg(s.MSG_CONVERTING_DATETIME, indent=1, verbose=2)
         for key in pc[s.KEY_DATETIME][:]:
             if key in df.columns:
                 df = back_up_column(df, key)
@@ -315,10 +321,10 @@ def df_tables_config_options(df, path_config: NobView, table_name: str, input_fi
                     # TODO Test for bad format? strictyaml makes this a str,
                     # so it may not be possible to trigger an error.
                     datetime_format: str = pc[s.KEY_DATETIME][key][:]
-                    msg_with_data(key, data=datetime_format, indent=2)
+                    msg_with_data(key, data=datetime_format, indent=2, verbose=2)
                     df[key] = df[key].dt.strftime(f"{datetime_format}")
                 else:
-                    msg_with_data(key, data="(default format)", indent=2)
+                    msg_with_data(key, data="(default format)", indent=2, verbose=2)
 
             else:
                 abort(s.MSG_MISSING_DATETIME, data=key, file_path=input_file)

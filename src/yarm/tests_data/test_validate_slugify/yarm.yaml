@@ -1,0 +1,33 @@
+# You can vary case and spacing for keys, and slugify will fix them.
+# This yaml looks terrible, but it should validate.
+# Exception: any user-defined keys are NOT altered.
+---
+TABLES cOnFig:
+  products:
+    - PatH: "products.csv"
+      INCLUDE   INDEX: false
+
+imporT:
+  - PATH: "report.py"
+
+INPUT:
+  Strip: true
+  Lowercase   COLUMNS: true
+  upperCASE-rows: true
+
+oUtpUt:
+  DIR: output
+  Basename: mwe
+  prepend----date: true
+  EXPORT____tables: "csv"
+  # Even random punctuation gets transformed into an underscore.
+  export.,;-_queries: "csv"
+  StYleS:
+    COLUMN_-/+?width: 15
+
+qUeriEs:
+  - Name: "Descriptions"
+    SQL: |
+      SELECT description
+      FROM products
+      ;
