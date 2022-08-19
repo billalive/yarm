@@ -30,3 +30,18 @@ def test_export_database(runner: CliRunner) -> None:
         assert result.exit_code == 0
         assert s.MSG_DATABASE_EXPORTED in result.output
         assert os.path.isfile(os.fspath("OUTPUT/BASENAME.db"))
+
+
+def test_export_tables_csv(runner: CliRunner) -> None:
+    """Tables are successfully exported to csv."""
+    s = Settings()
+    test_config_name: str = s.DEFAULT_TEST
+    with runner.isolated_filesystem():
+        prep_test_config(test_config_name)
+        result = runner.invoke(cli, [s.CMD_RUN, "-v"])
+        assert result.exit_code == 0
+        assert s.MSG_TABLES_EXPORTED in result.output
+        assert os.path.isfile(os.fspath("OUTPUT/TABLE_FROM_SPREADSHEET.csv"))
+
+
+# TODO test_export_tables_xlsx

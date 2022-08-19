@@ -364,6 +364,23 @@ def validate_key_output(c: YAML, config_path: str):
                 key_validator=Slug(),
             )
             revalidate_yaml(c[key]["styles"], schema, config_path, "output.styles")
+        validate_key_output_dir(c)
+
+
+def validate_key_output_dir(c: YAML):
+    """Prepare output directory."""
+    s = Settings()
+    config: Nob = Nob(c.data)
+    output_dir = os.fspath(config[s.KEY_OUTPUT__DIR][:])
+    if not os.path.isdir(output_dir):
+        if os.path.exists(output_dir):
+            abort(s.MSG_CANT_CREATE_OUTPUT_DIR, data=output_dir)
+        else:
+            msg_with_data(s.MSG_CREATING_OUTPUT_DIR, data=output_dir)
+            os.makedirs(output_dir)
+    else:
+        msg_with_data(s.MSG_OUTPUT_DIR_EXISTS, data=output_dir, verbose=2)
+    msg_with_data(s.MSG_OUTPUT_DIR, data=output_dir)
 
 
 def validate_key_queries(c: YAML, config_path: str):

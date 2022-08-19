@@ -9,6 +9,7 @@ from nob.nob import NobView
 from pandas.core.frame import DataFrame
 from slugify import slugify
 
+from yarm.export import export_table
 from yarm.helpers import abort
 from yarm.helpers import key_show_message
 from yarm.helpers import msg
@@ -97,6 +98,7 @@ def create_tables(conn, config):
             table_df.to_sql(
                 table_name, conn, if_exists=exists_mode, index=include_index_table
             )
+            export_table(table_name, table_df, config, include_index_table)
             msg_with_data(s.MSG_CREATED_TABLE, table_name)
         except pd.io.sql.DatabaseError as error:
             conn.close()
@@ -112,6 +114,13 @@ def create_tables(conn, config):
                 error=error,
                 data=table_name,
             )
+    if s.KEY_OUTPUT__EXPORT_TABLES in config:
+        msg_with_data(
+            s.MSG_TABLES_EXPORTED,
+            data=config[s.KEY_OUTPUT__EXPORT_TABLES][:],
+            indent=0,
+            verbose=1,
+        )
 
 
 def get_include_index_all(config: Nob) -> bool:

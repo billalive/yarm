@@ -158,6 +158,11 @@ No queries found. We need something to output!
     MSG_DATABASE_EXPORTED: str = "Database exported to"
     MSG_OVERWRITE_FILE_ABORT: str = "Cannot proceed without overwriting"
 
+    MSG_TABLES_EXPORTED: str = "All tables exported to format"
+    MSG_TABLE_EXPORTED: str = "Table exported to"
+    MSG_QUERIES_EXPORTED: str = "All queries exported to format"
+    MSG_QUERY_EXPORTED: str = "Query exported to"
+
     MSG_OUTPUT_DIR_EXISTS: str = "Output directory already exists"
     MSG_CREATING_OUTPUT_DIR: str = "Creating output directory"
     MSG_OUTPUT_DIR: str = "Output directory"

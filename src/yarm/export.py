@@ -3,8 +3,10 @@ import os
 import sqlite3
 from datetime import date
 
+# import pandas as pd
 from click import get_current_context
 from nob.nob import Nob
+from pandas.core.frame import DataFrame
 
 from yarm.helpers import abort
 from yarm.helpers import msg_with_data
@@ -41,15 +43,6 @@ def get_output_dir_path(config: Nob, filename: str):
     s = Settings()
 
     output_dir = os.fspath(config[s.KEY_OUTPUT__DIR][:])
-    if not os.path.isdir(output_dir):
-        if os.path.exists(output_dir):
-            abort(s.MSG_CANT_CREATE_OUTPUT_DIR, data=output_dir)
-        else:
-            msg_with_data(s.MSG_CREATING_OUTPUT_DIR, data=output_dir)
-            os.makedirs(output_dir)
-    else:
-        msg_with_data(s.MSG_OUTPUT_DIR_EXISTS, data=output_dir, verbose=2)
-    msg_with_data(s.MSG_OUTPUT_DIR, data=output_dir)
     result = os.fspath(f"{output_dir}/{filename}")
     return result
 
@@ -66,3 +59,30 @@ def get_full_output_basename(config: Nob) -> str:
     path: str = get_output_dir_path(config, basename)
 
     return path
+
+
+def export_table(
+    table_name: str,
+    table_df: DataFrame,
+    config: Nob,
+    include_index: bool,
+    indent: int = 1,
+    verbose: int = 2,
+):
+    """Export a table to a file."""
+    s = Settings()
+    if s.KEY_OUTPUT__EXPORT_TABLES in config:
+        # ext should be one of: csv, xlsx, see validate_key_output()
+        ext: str = config[s.KEY_OUTPUT__EXPORT_TABLES][:]
+        if ext == "csv":
+            filename = get_output_dir_path(config, f"{table_name}.{ext}")
+            overwrite_file(filename)
+            table_df.to_csv(filename, index=include_index)
+            msg_with_data(
+                s.MSG_TABLE_EXPORTED, data=filename, indent=indent, verbose=verbose
+            )
+
+
+# with pd.ExcelWriter('output.xlsx') as writer:
+#    df1.to_excel(writer, sheet_name='Sheet_name_1')
+#    df2.to_excel(writer, sheet_name='Sheet_name_2')
