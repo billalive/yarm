@@ -10,6 +10,7 @@ from typing import Tuple
 
 import click
 from nob.nob import Nob
+from pandas.core.frame import DataFrame
 from path import Path
 
 # from strictyaml import Int
@@ -212,3 +213,13 @@ def key_show_message(key_msg: List[Tuple[str, str]], config: Nob, verbose: int =
     for key, msg_str in key_msg:
         if key in config and config[key][:]:
             msg(msg_str, verbose=verbose)
+
+
+def show_df(df: DataFrame, data: str, verbose: int = 3):
+    """Display a dataframe."""
+    s = Settings()
+    if verbose_ge(verbose):
+        print(s.MSG_LINE)
+        msg_with_data(s.MSG_SHOW_DF, data=data)
+        print(df)
+        print(s.MSG_LINE)

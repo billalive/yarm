@@ -154,6 +154,9 @@ No queries found. We need something to output!
     # Individual paths can override the include_index.
     KEY_INCLUDE_INDEX = "include_index"
 
+    KEY_SQL = "sql"
+    KEY_NAME = "name"
+
     CSV = "csv"
     XLSX = "xlsx"
 
@@ -180,3 +183,7 @@ No queries found. We need something to output!
     MSG_CREATING_OUTPUT_DIR: str = "Creating output directory"
     MSG_OUTPUT_DIR: str = "Output directory"
     MSG_CANT_CREATE_OUTPUT_DIR: str = "Cannot create output dir at"
+
+    # queries
+    MSG_RUNNING_QUERY: str = "Running query"
+    MSG_QUERY_ERROR: str = "Could not run query"

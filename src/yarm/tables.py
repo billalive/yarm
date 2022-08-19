@@ -14,7 +14,7 @@ from yarm.helpers import abort
 from yarm.helpers import key_show_message
 from yarm.helpers import msg
 from yarm.helpers import msg_with_data
-from yarm.helpers import verbose_ge
+from yarm.helpers import show_df
 from yarm.settings import Settings
 
 
@@ -158,16 +158,6 @@ def get_include_index_table(
         msg_with_data(msg, data=table_name, verbose=2, indent=1)
 
     return include_index_table
-
-
-def show_df(df: DataFrame, data: str, verbose: int = 3):
-    """Display a dataframe."""
-    s = Settings()
-    if verbose_ge(verbose):
-        print(s.MSG_LINE)
-        msg_with_data(s.MSG_SHOW_DF, data=data)
-        print(df)
-        print(s.MSG_LINE)
 
 
 def input_path(

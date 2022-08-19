@@ -26,8 +26,8 @@ oUtpUt:
     COLUMN_-/+?width: 15
 
 qUeriEs:
-  - Name: "Descriptions"
+  - Name: "Names"
     SQL: |
-      SELECT description
+      SELECT name
       FROM products
       ;

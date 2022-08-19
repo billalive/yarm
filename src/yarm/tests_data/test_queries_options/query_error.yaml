@@ -1,0 +1,17 @@
+output:
+  dir: output
+  basename: test
+
+tables_config:
+  products:
+    - path: products.csv
+  orders:
+    - path: orders.xlsx
+
+queries:
+  - name: Order Information
+    sql: |
+      SELECT * FROM
+      orders as o,
+      JOIN
+      ;

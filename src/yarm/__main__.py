@@ -16,6 +16,7 @@ from yarm.helpers import abort
 from yarm.helpers import msg_with_data
 from yarm.helpers import success
 from yarm.helpers import warn
+from yarm.queries import run_queries
 from yarm.settings import Settings
 from yarm.tables import create_tables
 from yarm.validate import validate_config
@@ -99,6 +100,8 @@ def run(
         create_tables(conn, config)
 
         export_database(conn, config)
+
+        run_queries(conn, config)
 
     except sqlite3.Error as error:
         abort(s.MSG_SQLITE_ERROR, error=str(error))  # pragma: no cover
