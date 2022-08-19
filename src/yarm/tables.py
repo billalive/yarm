@@ -223,7 +223,7 @@ def input_path(
             # TODO Figure out how to test this.
             abort(
                 s.MSG_MERGE_TYPE_ERROR,
-                error=error,
+                error=str(error),
                 data=table_name,
                 file_path=input_file,
             )
@@ -231,7 +231,7 @@ def input_path(
             conn.close()
             abort(
                 s.MSG_CREATE_TABLE_VALUE_ERROR,
-                error=error,
+                error=str(error),
                 data=table_name,
             )
     show_df(df, table_name)
@@ -318,7 +318,7 @@ def df_tables_config_options(df, path_config: NobView, table_name: str, input_fi
                 values=pc[s.KEY_PIVOT_VALUES][:],
             )
         except KeyError as error:
-            abort(s.MSG_PIVOT_FAILED_KEY_ERROR, data=error, file_path=input_file)
+            abort(s.MSG_PIVOT_FAILED_KEY_ERROR, data=str(error), file_path=input_file)
     if s.KEY_DATETIME in pc:
         msg(s.MSG_CONVERTING_DATETIME, indent=1, verbose=2)
         for key in pc[s.KEY_DATETIME][:]:

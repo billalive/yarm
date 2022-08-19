@@ -97,13 +97,15 @@ def prep_test_config(
     if append_config:
         print("Appending config:", append_config)
         print(s.MSG_LINE)
-        with open(s.DEFAULT_CONFIG_FILE, "a") as f:
-            f.write(append_config)
+        # NOTE mypy and open() don't seem to play well together
+        # https://github.com/python/typeshed/issues/6076
+        with open(os.fspath(s.DEFAULT_CONFIG_FILE), "a") as f:  # type: ignore
+            f.write(append_config)  # type: ignore
     if print_config:  # pragma: no cover
-        with open(s.DEFAULT_CONFIG_FILE) as f:
+        with open(s.DEFAULT_CONFIG_FILE) as f:  # type: ignore
             print(s.MSG_LINE_DOUBLE)
             print("CONFIG FILE:")
-            shutil.copyfileobj(f, sys.stdout)
+            shutil.copyfileobj(f, sys.stdout)  # type: ignore
             print(s.MSG_LINE_DOUBLE)
 
 
@@ -116,7 +118,7 @@ def string_as_config(config: str) -> bool:
     assert isinstance(s.DEFAULT_CONFIG_FILE, str)
     # Ensure we're not writing over an existing config file.
     assert not os.path.isfile(s.DEFAULT_CONFIG_FILE)
-    with open(s.DEFAULT_CONFIG_FILE, "w") as f:
+    with open(s.DEFAULT_CONFIG_FILE, "w") as f:  # type: ignore
         f.write(config)
     assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
     return True

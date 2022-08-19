@@ -6,12 +6,14 @@ from datetime import date
 import pandas as pd
 from click import get_current_context
 from nob.nob import Nob
-from pandas.core.frame import DataFrame
 
 from yarm.helpers import abort
 from yarm.helpers import msg_with_data
 from yarm.helpers import overwrite_file
 from yarm.settings import Settings
+
+
+# from pandas.core.frame import DataFrame
 
 
 def export_database(conn, config: Nob):
@@ -31,7 +33,7 @@ def export_database(conn, config: Nob):
             for line in conn.iterdump():
                 export_conn.execute(line)
         except sqlite3.Error as error:  # pragma: no cover
-            abort(s.MSG_SQLITE_ERROR, error=error)  # pragma: no cover
+            abort(s.MSG_SQLITE_ERROR, error=str(error))  # pragma: no cover
         finally:
             export_conn.close()
 
@@ -78,24 +80,22 @@ def export_tables(
             # TODO This approach queries the database, rather than our config,
             # the list of tables. Will this still work after we export queries
             # to the db? Or should queries be saved as Views rather than Tables?
-            query = "SELECT name from sqlite_master WHERE type ='table'"
+            query: str = "SELECT name from sqlite_master WHERE type ='table'"
             for table in conn.execute(query).fetchall():
                 table_name = table[0]
                 # NOTE You cannot use placeholders for table names.
                 # flake8 flags possible SQL injection here (S608), but we are iterating
                 # through table names we just pulled from the database.
-                query: str = "SELECT * from " + table_name  # noqa: S608
-                df: DataFrame = pd.read_sql(
-                    query, conn, params={"table_name": table_name}
-                )
+                query = "SELECT * from " + table_name  # noqa: S608
+                df = pd.read_sql(query, conn, params={"table_name": table_name})
                 df_tables.append((table_name, df))
 
             # Export depending on format.
             if ext == "csv":
                 for table in df_tables:
-                    table_name: str = table[0]
-                    df: DataFrame = table[1]
-                    filename: str = get_output_dir_path(config, f"{table_name}.{ext}")
+                    table_name = table[0]
+                    df = table[1]
+                    filename = get_output_dir_path(config, f"{table_name}.{ext}")
                     overwrite_file(filename)
                     df.to_csv(filename, index=False)
                     msg_with_data(
@@ -107,13 +107,13 @@ def export_tables(
             elif ext == "xlsx":  # pragma: no branch
                 # NOTE This branch is tested in test_export_tables_xlsx
                 # but coverage does not seem to realize it.
-                filename: str = f"{s.FILE_EXPORT_TABLES_BASENAME}.{ext}"
+                filename = f"{s.FILE_EXPORT_TABLES_BASENAME}.{ext}"
                 filename = get_output_dir_path(config, filename)
                 overwrite_file(filename)
                 with pd.ExcelWriter(filename) as writer:
                     for table in df_tables:
-                        table_name: str = table[0]
-                        df: DataFrame = table[1]
+                        table_name = table[0]
+                        df = table[1]
                         df.to_excel(writer, sheet_name=table_name)
 
         else:  # pragma: no cover

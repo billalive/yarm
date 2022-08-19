@@ -101,7 +101,7 @@ def run(
         export_database(conn, config)
 
     except sqlite3.Error as error:
-        abort(s.MSG_SQLITE_ERROR, error=error)  # pragma: no cover
+        abort(s.MSG_SQLITE_ERROR, error=str(error))  # pragma: no cover
     finally:
         conn.close()
 
