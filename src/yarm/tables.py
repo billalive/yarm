@@ -174,11 +174,11 @@ def input_path(
     input_format: str,
     conn,
     config: Nob,
-    path_config: Nob,
+    path_config: NobView,
     table_name: str,
     table_df: Union[DataFrame, None],
     input_file: str,
-    input_sheet: str,
+    input_sheet: Union[int, str, None],
 ) -> DataFrame:
     """Input a path into a table DataFrame.
 

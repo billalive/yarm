@@ -27,6 +27,7 @@ def test_export_database(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         prep_test_config(test_dir)
         result = runner.invoke(cli, [s.CMD_RUN, "--database", "-vv"])
+        print(result.output)
         assert result.exit_code == 0
         assert s.MSG_DATABASE_EXPORTED in result.output
         assert os.path.isfile(os.fspath("OUTPUT/BASENAME.db"))

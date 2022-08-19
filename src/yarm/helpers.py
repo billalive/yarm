@@ -9,6 +9,7 @@ from typing import List
 from typing import Tuple
 
 import click
+from nob.nob import Nob
 from path import Path
 
 # from strictyaml import Int
@@ -193,7 +194,7 @@ def overwrite_file(path: str, indent: int = 1) -> bool:
     return remove
 
 
-def key_show_message(key_msg: List[Tuple[str, str]], config: YAML, verbose: int = 1):
+def key_show_message(key_msg: List[Tuple[str, str]], config: Nob, verbose: int = 1):
     """For each key, if that key is in config, show message.
 
     key_msg must be a list of tuples.
