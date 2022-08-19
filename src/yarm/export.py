@@ -74,14 +74,13 @@ def export_tables(
         ext: str = config[s.KEY_OUTPUT__EXPORT_TABLES][:]
         msg_with_data(s.MSG_EXPORTING_TABLES, data=ext, verbose=2)
         if ext in s.LIST_EXPORT_FORMATS:
+            df_tables = []
             # TODO This approach queries the database, rather than our config,
             # the list of tables. Will this still work after we export queries
             # to the db? Or should queries be saved as Views rather than Tables?
             query = "SELECT name from sqlite_master WHERE type ='table'"
             for table in conn.execute(query).fetchall():
                 table_name = table[0]
-                # Create an output file name for this table.
-                # Query the table from the database.
                 # NOTE You cannot use placeholders for table names.
                 # flake8 flags possible SQL injection here (S608), but we are iterating
                 # through table names we just pulled from the database.
@@ -89,13 +88,23 @@ def export_tables(
                 df: DataFrame = pd.read_sql(
                     query, conn, params={"table_name": table_name}
                 )
-                # Save the table to output_filename
-                filename = get_output_dir_path(config, f"{table_name}.{ext}")
-                overwrite_file(filename)
-                df.to_csv(filename, index=False)
-                msg_with_data(
-                    s.MSG_TABLE_EXPORTED, data=filename, indent=indent, verbose=verbose
-                )
+                df_tables.append((table_name, df))
+
+            # Export depending on format.
+            if ext == "csv":
+                for table in df_tables:
+                    table_name: str = table[0]
+                    df: DataFrame = table[1]
+                    # Save the table to output_filename
+                    filename: str = get_output_dir_path(config, f"{table_name}.{ext}")
+                    overwrite_file(filename)
+                    df.to_csv(filename, index=False)
+                    msg_with_data(
+                        s.MSG_TABLE_EXPORTED,
+                        data=filename,
+                        indent=indent,
+                        verbose=verbose,
+                    )
         else:
             abort(s.MSG_EXPORT_FORMAT_UNRECOGNIZED, data=ext)
 

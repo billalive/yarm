@@ -153,6 +153,9 @@ No queries found. We need something to output!
     LIST_EXPORT_FORMATS: list = ["csv", "xlsx"]
 
     # export.py
+    # Basename for exporting tables
+    FILE_EXPORT_TABLES_BASENAME: str = "tables"
+
     MSG_PROMPT: str = "> "
     MSG_ASK_OVERWRITE_FILE: str = "Overwrite file"
     MSG_REMOVED_FILE: str = "Removed file"
