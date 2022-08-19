@@ -150,18 +150,22 @@ No queries found. We need something to output!
 
     CSV = "csv"
     XLSX = "xlsx"
+    LIST_EXPORT_FORMATS: list = ["csv", "xlsx"]
 
     # export.py
+    MSG_PROMPT: str = "> "
     MSG_ASK_OVERWRITE_FILE: str = "Overwrite file"
-    MSG_REMOVING_FILE: str = "Removing file"
+    MSG_REMOVED_FILE: str = "Removed file"
     MSG_CREATING_DATABASE: str = "Creating database"
     MSG_DATABASE_EXPORTED: str = "Database exported to"
     MSG_OVERWRITE_FILE_ABORT: str = "Cannot proceed without overwriting"
 
+    MSG_EXPORTING_TABLES: str = "Exporting tables..."
     MSG_TABLES_EXPORTED: str = "All tables exported to format"
     MSG_TABLE_EXPORTED: str = "Table exported to"
     MSG_QUERIES_EXPORTED: str = "All queries exported to format"
     MSG_QUERY_EXPORTED: str = "Query exported to"
+    MSG_EXPORT_FORMAT_UNRECOGNIZED: str = "Format for export_tables not recognized"
 
     MSG_OUTPUT_DIR_EXISTS: str = "Output directory already exists"
     MSG_CREATING_OUTPUT_DIR: str = "Creating output directory"

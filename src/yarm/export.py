@@ -3,7 +3,7 @@ import os
 import sqlite3
 from datetime import date
 
-# import pandas as pd
+import pandas as pd
 from click import get_current_context
 from nob.nob import Nob
 from pandas.core.frame import DataFrame
@@ -61,11 +61,9 @@ def get_full_output_basename(config: Nob) -> str:
     return path
 
 
-def export_table(
-    table_name: str,
-    table_df: DataFrame,
+def export_tables(
     config: Nob,
-    include_index: bool,
+    conn,
     indent: int = 1,
     verbose: int = 2,
 ):
@@ -74,15 +72,41 @@ def export_table(
     if s.KEY_OUTPUT__EXPORT_TABLES in config:
         # ext should be one of: csv, xlsx, see validate_key_output()
         ext: str = config[s.KEY_OUTPUT__EXPORT_TABLES][:]
-        if ext == "csv":
-            filename = get_output_dir_path(config, f"{table_name}.{ext}")
-            overwrite_file(filename)
-            table_df.to_csv(filename, index=include_index)
-            msg_with_data(
-                s.MSG_TABLE_EXPORTED, data=filename, indent=indent, verbose=verbose
-            )
+        msg_with_data(s.MSG_EXPORTING_TABLES, data=ext, verbose=2)
+        if ext in s.LIST_EXPORT_FORMATS:
+            # TODO This approach queries the database, rather than our config,
+            # the list of tables. Will this still work after we export queries
+            # to the db? Or should queries be saved as Views rather than Tables?
+            query = "SELECT name from sqlite_master WHERE type ='table'"
+            for table in conn.execute(query).fetchall():
+                table_name = table[0]
+                # Create an output file name for this table.
+                # Query the table from the database.
+                # NOTE You cannot use placeholders for table names.
+                # flake8 flags possible SQL injection here (S608), but we are iterating
+                # through table names we just pulled from the database.
+                query: str = "SELECT * from " + table_name  # noqa: S608
+                df: DataFrame = pd.read_sql(
+                    query, conn, params={"table_name": table_name}
+                )
+                # Save the table to output_filename
+                filename = get_output_dir_path(config, f"{table_name}.{ext}")
+                overwrite_file(filename)
+                df.to_csv(filename, index=False)
+                msg_with_data(
+                    s.MSG_TABLE_EXPORTED, data=filename, indent=indent, verbose=verbose
+                )
+        else:
+            abort(s.MSG_EXPORT_FORMAT_UNRECOGNIZED, data=ext)
 
-
-# with pd.ExcelWriter('output.xlsx') as writer:
-#    df1.to_excel(writer, sheet_name='Sheet_name_1')
-#    df2.to_excel(writer, sheet_name='Sheet_name_2')
+        msg_with_data(
+            s.MSG_TABLES_EXPORTED,
+            data=ext,
+            indent=0,
+            verbose=1,
+        )
+    # TODO Implement output: export_tables: xlsx
+    # Output tables.xlsx, with each table a separate sheet.
+    # with pd.ExcelWriter('output.xlsx') as writer:
+    #    df1.to_excel(writer, sheet_name='Sheet_name_1')
+    #    df2.to_excel(writer, sheet_name='Sheet_name_2')

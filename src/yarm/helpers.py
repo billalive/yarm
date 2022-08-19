@@ -152,7 +152,7 @@ def verbose_ge(verbose: int) -> bool:
         return False
 
 
-def overwrite_file(path: str, force: bool = False):
+def overwrite_file(path: str, force: bool = False, indent: int = 1):
     """Overwrite a file if it exists.
 
     (Technically, this function only removes the file.)
@@ -162,10 +162,10 @@ def overwrite_file(path: str, force: bool = False):
     s = Settings()
     if os.path.isfile(path):
         if not force:
-            msg: str = f"{s.MSG_ASK_OVERWRITE_FILE} {path}?"
-            if click.confirm(msg, default=True, abort=True):
+            msg: str = f"{s.MSG_PROMPT}{s.MSG_ASK_OVERWRITE_FILE} {path}?"
+            if click.confirm(msg, default=True, abort=False):
                 if verbose_ge(2):
-                    msg_with_data(s.MSG_REMOVING_FILE, path)
+                    msg_with_data(s.MSG_REMOVED_FILE, data=path, indent=indent)
                 os.remove(path)
             else:
                 abort(s.MSG_OVERWRITE_FILE_ABORT, data=path)
