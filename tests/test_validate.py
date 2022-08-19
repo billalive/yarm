@@ -191,8 +191,8 @@ def test_check_is_file(runner: CliRunner) -> None:
 def test_validate_slugify(runner: CliRunner) -> None:
     """Slugify correctly formats keys."""
     s = Settings()
-    test_config_name: str = "test_validate_slugify"
+    test_dir: str = "test_validate_slugify"
     with runner.isolated_filesystem():
-        prep_test_config(test_config_name)
+        prep_test_config(test_dir)
         result = runner.invoke(cli, [s.CMD_RUN])
         assert result.exit_code == 0

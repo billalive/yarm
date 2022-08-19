@@ -342,6 +342,7 @@ def validate_key_output(c: YAML, config_path: str):
         styles:
             column_width: 15
     """
+    s = Settings()
     key: str = check_key("output", c)
     if key:
         schema = Map(
@@ -349,8 +350,8 @@ def validate_key_output(c: YAML, config_path: str):
                 "basename": StrNotEmpty(),
                 OptionalYAML("dir"): StrNotEmpty(),
                 OptionalYAML("prepend_date"): Bool(),
-                OptionalYAML("export_tables"): Enum(["csv", "xlsx"]),
-                OptionalYAML("export_queries"): Enum(["csv", "xlsx"]),
+                OptionalYAML("export_tables"): Enum(s.SCHEMA_EXPORT_FORMATS),
+                OptionalYAML("export_queries"): Enum(s.SCHEMA_EXPORT_FORMATS),
                 OptionalYAML("styles"): AnyYAML(),
             },
             key_validator=Slug(),

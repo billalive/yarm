@@ -20,9 +20,9 @@ def runner() -> CliRunner:
 def test_create_tables(runner: CliRunner) -> None:
     """Tables are successfully created."""
     s = Settings()
-    test_config_name: str = "test_create_tables"
+    test_dir: str = "test_create_tables"
     with runner.isolated_filesystem():
-        prep_test_config(test_config_name)
+        prep_test_config(test_dir)
         result = runner.invoke(cli, [s.CMD_RUN, "-vv"])
         assert result.exit_code == 0
         assert s.MSG_CREATING_TABLE in result.output
@@ -32,10 +32,10 @@ def test_create_tables(runner: CliRunner) -> None:
 def test_df_input_options(runner: CliRunner) -> None:
     """Options in input: are successfully applied."""
     s = Settings()
-    test_config_name: str = "test_df_input_options"
+    test_dir: str = "test_df_input_options"
     append_config: str = ""
     with runner.isolated_filesystem():
-        prep_test_config(test_config_name)
+        prep_test_config(test_dir)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert result.exit_code == 0
         assert "Venkman " in result.output
@@ -46,7 +46,7 @@ def test_df_input_options(runner: CliRunner) -> None:
 input:
   strip: true
 """
-        prep_test_config(test_config_name, append_config=append_config)
+        prep_test_config(test_dir, append_config=append_config)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert result.exit_code == 0
         assert "Venkman " not in result.output
@@ -60,7 +60,7 @@ input:
 input:
   lowercase_columns: true
 """
-        prep_test_config(test_config_name, append_config=append_config)
+        prep_test_config(test_dir, append_config=append_config)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert result.exit_code == 0
         assert "First Name" not in result.output
@@ -76,7 +76,7 @@ input:
   slugify_columns: true
   lowercase_columns: true
 """
-        prep_test_config(test_config_name, append_config=append_config)
+        prep_test_config(test_dir, append_config=append_config)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert result.exit_code == 0
         assert "First Name" not in result.output
@@ -92,7 +92,7 @@ input:
 input:
   uppercase_rows: true
 """
-        prep_test_config(test_config_name, append_config=append_config)
+        prep_test_config(test_dir, append_config=append_config)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert result.exit_code == 0
         assert "    Peter" not in result.output
@@ -107,10 +107,10 @@ input:
 def test_df_tables_config_options(runner: CliRunner) -> None:
     """Table options in tables_config: are successfully applied."""
     s = Settings()
-    test_config_name: str = "test_df_tables_config_options"
+    test_dir: str = "test_df_tables_config_options"
     append_config: str = ""
     with runner.isolated_filesystem():
-        prep_test_config(test_config_name)
+        prep_test_config(test_dir)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert result.exit_code == 0
         assert s.MSG_APPLYING_PIVOT not in result.output
@@ -122,7 +122,7 @@ def test_df_tables_config_options(runner: CliRunner) -> None:
         columns: key
         values: value
 """
-        prep_test_config(test_config_name, append_config=append_config)
+        prep_test_config(test_dir, append_config=append_config)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert result.exit_code == 0
         assert s.MSG_APPLYING_PIVOT in result.output
@@ -135,7 +135,7 @@ def test_df_tables_config_options(runner: CliRunner) -> None:
         columns: key
         values: value
 """
-        prep_test_config(test_config_name, append_config=append_config)
+        prep_test_config(test_dir, append_config=append_config)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert result.exit_code == 1
         assert s.MSG_PIVOT_FAILED_KEY_ERROR in result.output
@@ -148,7 +148,7 @@ def test_df_tables_config_options(runner: CliRunner) -> None:
         ordered:
         shipped: "%b, %d, %Y"
 """
-        prep_test_config(test_config_name, append_config=append_config)
+        prep_test_config(test_dir, append_config=append_config)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert result.exit_code == 0
         assert s.MSG_APPLYING_PIVOT not in result.output
@@ -163,10 +163,19 @@ def test_df_tables_config_options(runner: CliRunner) -> None:
       datetime:
         missing:
 """
-        prep_test_config(test_config_name, append_config=append_config)
+        prep_test_config(test_dir, append_config=append_config)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert result.exit_code == 1
         assert s.MSG_MISSING_DATETIME in result.output
+    with runner.isolated_filesystem():
+        append_config = """
+  products2:
+    - path: products.badext
+"""
+        prep_test_config(test_dir, append_config=append_config)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 1
+        assert s.MSG_BAD_FILE_EXT in result.output
 
     # TODO Test creating different tables, with different options, from the same path
     # - path 1: pivot columns into new renamed columns.

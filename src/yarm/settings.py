@@ -59,6 +59,8 @@ try surrounding the entire value with single or double quote marks."""
 
     CONFIG_SCHEMA = "config_schema.yaml"
 
+    SCHEMA_EXPORT_FORMATS: list = ["csv", "xlsx"]
+
     MSG_TEST_KEY_NOT_IN_SCHEMA: str = "key not in schema"
     MSG_TEST_EXPECTED_LIST: str = "found a mapping"
     MSG_MISSING_REQUIRED_KEY: str = "Missing required key(s):"
@@ -150,7 +152,6 @@ No queries found. We need something to output!
 
     CSV = "csv"
     XLSX = "xlsx"
-    LIST_EXPORT_FORMATS: list = ["csv", "xlsx"]
 
     # export.py
     # Basename for exporting tables

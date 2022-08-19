@@ -23,9 +23,9 @@ def test_export_database(runner: CliRunner) -> None:
     """Database is successfully exported."""
     s = Settings()
     # NOTE We can reuse existing test files for this test.
-    test_config_name: str = s.DEFAULT_TEST
+    test_dir: str = s.DEFAULT_TEST
     with runner.isolated_filesystem():
-        prep_test_config(test_config_name)
+        prep_test_config(test_dir)
         result = runner.invoke(cli, [s.CMD_RUN, "--database", "-vv"])
         assert result.exit_code == 0
         assert s.MSG_DATABASE_EXPORTED in result.output
@@ -35,9 +35,9 @@ def test_export_database(runner: CliRunner) -> None:
 def test_export_tables_csv(runner: CliRunner) -> None:
     """Tables are successfully exported to csv."""
     s = Settings()
-    test_config_name: str = s.DEFAULT_TEST
+    test_dir: str = s.DEFAULT_TEST
     with runner.isolated_filesystem():
-        prep_test_config(test_config_name)
+        prep_test_config(test_dir)
         result = runner.invoke(cli, [s.CMD_RUN, "-v"])
         assert result.exit_code == 0
         assert s.MSG_TABLES_EXPORTED in result.output
@@ -47,11 +47,9 @@ def test_export_tables_csv(runner: CliRunner) -> None:
 def test_export_tables_xlsx(runner: CliRunner) -> None:
     """Tables are successfully exported to xlsx."""
     s = Settings()
-    test_config_name: str = s.DEFAULT_TEST
+    test_dir: str = s.DEFAULT_TEST
     with runner.isolated_filesystem():
-        prep_test_config(
-            test_config_name, config_file_override="test_export_tables_xlsx.yaml"
-        )
+        prep_test_config(test_dir, config_file_override="test_export_tables_xlsx.yaml")
         result = runner.invoke(cli, [s.CMD_RUN, "-v"])
         assert result.exit_code == 0
         assert s.MSG_TABLES_EXPORTED in result.output

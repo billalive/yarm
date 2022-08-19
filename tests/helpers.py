@@ -65,7 +65,7 @@ def prep_test_config(
     assert os.path.isdir(os.path.dirname(dir_tests_data)), "Test directory not found."
     test_dir = f"{dir_tests_data}/{test_dir}/"
     # NOTE Next lines tested in: test_prep_config_copies_files()
-    if os.path.isdir(os.path.dirname(test_dir)):  # pragma: no branch
+    if os.path.isdir(os.path.dirname(test_dir)):  # pragma: no cover
         # print("is a dir:", dir_test_dir)
         for f in Path(test_dir).glob("*"):
             if os.path.isfile(f):  # pragma: no branch
