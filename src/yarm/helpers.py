@@ -152,23 +152,45 @@ def verbose_ge(verbose: int) -> bool:
         return False
 
 
-def overwrite_file(path: str, force: bool = False, indent: int = 1):
+def overwrite_file(path: str, indent: int = 1) -> bool:
     """Overwrite a file if it exists.
 
     (Technically, this function only removes the file.)
+
+    Args:
+        path (str): file to overwrite
+        indent (int): (optional) indent for "removed file" message.
+            Prompt question is not indented.
+
+    Returns:
+        (bool) True if file existed and was removed, False otherwise.
     """
     # TODO Should this test whether we are in output/dir?
     # And only overwrite files in that directory?
     s = Settings()
+
+    ctx = click.get_current_context()
+
+    msg_removed: str = s.MSG_REMOVED_FILE
+
+    remove: bool = False
     if os.path.isfile(path):
-        if not force:
+        if ctx.params[s.ARG_FORCE]:
+            remove = True
+            msg_removed = s.MSG_REMOVED_FILE_FORCE
+        else:
             msg: str = f"{s.MSG_PROMPT}{s.MSG_ASK_OVERWRITE_FILE} {path}?"
             if click.confirm(msg, default=True, abort=False):
-                if verbose_ge(2):
-                    msg_with_data(s.MSG_REMOVED_FILE, data=path, indent=indent)
-                os.remove(path)
+                remove = True
             else:
-                abort(s.MSG_OVERWRITE_FILE_ABORT, data=path)
+                abort(s.MSG_OVERWRITE_FILE_ABORT, data=path)  # pragma: no cover
+
+        if remove:  # pragma: no cover
+            # TODO Why doesn't coverage detect test_overwrite_file()?
+            if verbose_ge(2):
+                msg_with_data(msg_removed, data=path, indent=indent)
+            os.remove(path)
+    return remove
 
 
 def key_show_message(key_msg: List[Tuple[str, str]], config: YAML, verbose: int = 1):

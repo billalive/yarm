@@ -57,6 +57,13 @@ For more options:
     help="Export your tables and queries to an sqlite3 database.",
 )
 @click.option(
+    "--force/--no-force",
+    "-f/-F",
+    default=False,
+    show_default=True,
+    help="If output files exist, force overwrites without asking.",
+)
+@click.option(
     "-v", "--verbose", "verbose", count=True, default=0, help="Verbosity level."
 )
 @click.option(
@@ -71,6 +78,7 @@ def run(
     config_path: Optional[str],
     verbose: Optional[int],
     database: Optional[bool],
+    force: Optional[bool],
 ) -> None:
     """Run the report."""
     s = Settings()

@@ -17,6 +17,7 @@ class Settings:
 
     ARG_VERBOSE: str = "verbose"
     ARG_EXPORT_DATABASE: str = "database"
+    ARG_FORCE: str = "force"
 
     EXT_YAML: str = ".yaml"
 
@@ -81,6 +82,7 @@ No queries found. We need something to output!
     MSG_CONNECTION_DATABASE_FAILED: str = "Failed to connect to database."
     MSG_SQLITE_ERROR: str = "There was a problem with sqlite:"
 
+    # tables_config
     MSG_CREATING_TABLE: str = "Creating table"
     MSG_CREATED_TABLE: str = "Table created"
     MSG_IMPORTING_DATA: str = "Importing data from"
@@ -116,6 +118,8 @@ No queries found. We need something to output!
     - must be spelled the same in every path."""
     MSG_MERGE_TYPE_ERROR: str = "Type error while merging table"
     MSG_CONVERTING_DATETIME: str = "Converting field(s) to datetime:"
+
+    MSG_INPUT_FORMAT_UNRECOGNIZED: str = "Format for input path not recognized"
 
     MSG_SHOW_DF: str = "Dataframe"
     MSG_NO_SHEET_PROVIDED: str = "No 'sheet' key provided, importing first sheet from"
@@ -160,6 +164,7 @@ No queries found. We need something to output!
     MSG_PROMPT: str = "> "
     MSG_ASK_OVERWRITE_FILE: str = "Overwrite file"
     MSG_REMOVED_FILE: str = "Removed file"
+    MSG_REMOVED_FILE_FORCE: str = "Automatic overwrite (--force), removed file"
     MSG_CREATING_DATABASE: str = "Creating database"
     MSG_DATABASE_EXPORTED: str = "Database exported to"
     MSG_OVERWRITE_FILE_ABORT: str = "Cannot proceed without overwriting"

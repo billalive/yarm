@@ -2,6 +2,7 @@
 import inspect
 import os
 import shutil
+import sys
 from typing import List
 
 from path import Path
@@ -25,7 +26,10 @@ def assert_messages(messages: List[str], output: str) -> bool:
 
 
 def prep_test_config(
-    test_dir: str, append_config: str = "", config_file_override: str = ""
+    test_dir: str,
+    append_config: str = "",
+    config_file_override: str = "",
+    print_config: bool = False,
 ) -> None:
     """Prepare test config file for a particular test.
 
@@ -48,6 +52,7 @@ def prep_test_config(
         config_file_override (str): (optional) use this config file
             File path must be relative to directory of test_dir.
         append_config (str): (optional) append this string as config
+        print_config (bool): (optional) print the config file
 
     """
     s = Settings()
@@ -80,7 +85,7 @@ def prep_test_config(
     if config_file_override:
         print("Config file override:", config_file_override)
         test_config_file += config_file_override
-        if not os.path.isfile(test_config_file):
+        if not os.path.isfile(test_config_file):  # pragma: no cover
             print("Error: override config file not found at:", test_config_file)
             assert 1 == 0
         # Copy in this override file as the default config file.
@@ -94,8 +99,12 @@ def prep_test_config(
         print(s.MSG_LINE)
         with open(s.DEFAULT_CONFIG_FILE, "a") as f:
             f.write(append_config)
-    # Not all tests require a config file.
-    # assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
+    if print_config:  # pragma: no cover
+        with open(s.DEFAULT_CONFIG_FILE) as f:
+            print(s.MSG_LINE_DOUBLE)
+            print("CONFIG FILE:")
+            shutil.copyfileobj(f, sys.stdout)
+            print(s.MSG_LINE_DOUBLE)
 
 
 def string_as_config(config: str) -> bool:

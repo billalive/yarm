@@ -176,21 +176,66 @@ def test_df_tables_config_options(runner: CliRunner) -> None:
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert result.exit_code == 1
         assert s.MSG_BAD_FILE_EXT in result.output
-
-    # TODO Test creating different tables, with different options, from the same path
-    # - path 1: pivot columns into new renamed columns.
-    # - path 2: data starts out with those renamed columns.
-
-    # TODO test merging paths with same columns
-    # TODO test merging paths when a later path adds columns
-    # TODO test merging paths when a later path has fewer columns
-    # TODO test merging paths when field with same name doesn't match: ValueError
-    # TODO test merging paths when no columns in common: MergeError
-    # TODO test columns have different case, but you lowercase all, should work
-
-    # TODO test each of:
-    # MSG_INCLUDE_INDEX_ALL_TRUE
-    # MSG_INCLUDE_INDEX_ALL_FALSE
-    # MSG_INCLUDE_INDEX_TABLE_TRUE
-    # MSG_INCLUDE_INDEX_TABLE_FALSE
-    # MSG_INCLUDE_INDEX_TABLE_CONFLICT: >1 path has include_index, even if same.
+    with runner.isolated_filesystem():
+        append_config = """
+    - path: products_pivot2.csv
+"""
+        prep_test_config(test_dir, append_config=append_config)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 0
+        # Successful merge.
+        assert "products_pivot2.csv" in result.output
+    with runner.isolated_filesystem():
+        append_config = """
+    - path: products_no_merge.csv
+"""
+        prep_test_config(test_dir, append_config=append_config)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 1
+        assert s.MSG_MERGE_ERROR in result.output
+    with runner.isolated_filesystem():
+        append_config = """
+    - path: products_merge_value_error.csv
+"""
+        prep_test_config(test_dir, append_config=append_config)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        # print("RESULT OUTPUT:")
+        # print(result.output)
+        assert result.exit_code == 1
+        assert s.MSG_CREATE_TABLE_VALUE_ERROR in result.output
+    with runner.isolated_filesystem():
+        append_config = """
+input:
+  include_index: true
+"""
+        prep_test_config(test_dir, append_config=append_config)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 0
+        assert s.MSG_INCLUDE_INDEX_ALL_TRUE in result.output
+    with runner.isolated_filesystem():
+        append_config = """
+input:
+  include_index: false
+"""
+        prep_test_config(test_dir, append_config=append_config)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 0
+        assert s.MSG_INCLUDE_INDEX_ALL_FALSE in result.output
+    with runner.isolated_filesystem():
+        append_config = """
+      include_index: true
+    - path: products_pivot2.csv
+      include_index: true
+"""
+        prep_test_config(test_dir, append_config=append_config)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 1
+        assert s.MSG_INCLUDE_INDEX_TABLE_CONFLICT in result.output
+    with runner.isolated_filesystem():
+        prep_test_config(test_dir)
+        # Write a file where output_dir should be.
+        with open("output", "w") as f:
+            f.write("")
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert s.MSG_CANT_CREATE_OUTPUT_DIR in result.output
+        assert result.exit_code == 1

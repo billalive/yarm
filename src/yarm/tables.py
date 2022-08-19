@@ -99,14 +99,15 @@ def create_tables(conn, config):
                 table_name, conn, if_exists=exists_mode, index=include_index_table
             )
             msg_with_data(s.MSG_CREATED_TABLE, table_name)
-        except pd.io.sql.DatabaseError as error:
+        except pd.io.sql.DatabaseError as error:  # pragma: no cover
+            # TODO Figure out how to test these errors.
             conn.close()
             abort(
                 s.MSG_CREATE_TABLE_DATABASE_ERROR,
                 error=error,
                 data=table_name,
             )
-        except ValueError as error:
+        except ValueError as error:  # pragma: no cover
             conn.close()
             abort(
                 s.MSG_CREATE_TABLE_VALUE_ERROR,
@@ -196,8 +197,9 @@ def input_path(
         msg_show_df += f": {input_sheet}"
         with open(input_file, "rb") as f:
             df = pd.read_excel(f, sheet_name=input_sheet)
-    else:
-        abort("Unknown input mode", data=input_format)
+    else:  # pragma: no cover
+        # This branch should never execute, because of previous tests.
+        abort(s.MSG_INPUT_FORMAT_UNRECOGNIZED, data=input_format)
 
     # Show data before any options (only at high verbosity)
     show_df(df, msg_show_df, 4)
@@ -217,12 +219,20 @@ def input_path(
                 file_path=input_file,
                 ps=s.MSG_MERGE_ERROR_PS,
             )
-        except TypeError as error:
+        except TypeError as error:  # pragma: no cover
+            # TODO Figure out how to test this.
             abort(
                 s.MSG_MERGE_TYPE_ERROR,
                 error=error,
                 data=table_name,
                 file_path=input_file,
+            )
+        except ValueError as error:
+            conn.close()
+            abort(
+                s.MSG_CREATE_TABLE_VALUE_ERROR,
+                error=error,
+                data=table_name,
             )
     show_df(df, table_name)
     return df
