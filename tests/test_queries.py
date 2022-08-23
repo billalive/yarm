@@ -52,6 +52,7 @@ def test_query_error(runner: CliRunner) -> None:
             "postprocess_return_empty_df.yaml",
         ),
         (0, test_dir, s.MSG_QUERY_EMPTY_ERROR, "query_empty.yaml"),
+        (1, test_dir, s.MSG_POSTPROCESS_BUT_NO_IMPORT, "postprocess_no_import.yaml"),
     ]
     process_test_tuples(test_config, runner)
 
