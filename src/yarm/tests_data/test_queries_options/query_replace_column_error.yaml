@@ -1,6 +1,3 @@
-import:
-  - path: custom.py
-
 output:
   dir: output
   basename: test
@@ -22,7 +19,8 @@ queries:
       name:
         Retro: Deluxe
         Replacement: Deluxe Replacement
-    postprocess: test
+      missing_field:
+        Match: Replace
     sql: |
       SELECT od.order_id, p.id as product_id, p.name, p.discount
       FROM

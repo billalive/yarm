@@ -49,23 +49,22 @@ def msg_options(
     """
     s = Settings()
     # TODO Use err=True to print to stderr?
-    if indent > 0:
-        click.echo(s.MSG_TAB * indent, nl=False)
+    i = s.MSG_TAB * indent
     # TODO test_msg_options tests this, but coverage doesn't recognize the test.
     if prefix and prefix_color:  # pragma: no cover
-        click.secho(prefix, fg=prefix_color, nl=False, bold=True)
+        click.secho(i + prefix, fg=prefix_color, nl=False, bold=True)
         click.echo(" ", nl=False)
     if data:
         click.echo(msg, nl=False)
         click.echo(": ", nl=False)
         click.secho(data, fg=s.COLOR_DATA, bold=True)
     else:
-        click.echo(msg)
+        click.echo(i + msg)
     if file_path:
-        click.secho("In file: ", nl=False)
+        click.secho(i + "In file: ", nl=False)
         click.secho(file_path, fg=s.COLOR_DATA, bold=True)
     if error:
-        click.echo("Error: ", nl=False)
+        click.echo(i + "Error: ", nl=False)
         click.secho(error, fg=s.COLOR_ERROR)
     if ps:
         click.echo(ps)
@@ -135,7 +134,8 @@ def msg_suggest_verbose(suggest_verbose):
         msg_verbose = s.MSG_VERBOSITY_PS
         msg_verbose += "-"
         msg_verbose += "v" * suggest_verbose
-        if suggest_verbose < s.MAX_VERBOSE:
+        # TODO Next lines tested in test_msg_suggest_verbose, but coverage misses.
+        if suggest_verbose < s.MAX_VERBOSE:  # pragma: no cover
             msg_verbose += " or -"
             msg_verbose += "v" * (suggest_verbose + 1)
         msg_verbose += "."

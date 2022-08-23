@@ -432,6 +432,7 @@ def validate_key_queries(c: YAML, config_path: str):
       s.id = c.id
       ;
     """
+    s = Settings()
     key: str = check_key("queries", c)
     if key:
         for query in c[key]:
@@ -445,6 +446,7 @@ def validate_key_queries(c: YAML, config_path: str):
                 key_validator=Slug(),
             )
             revalidate_yaml(query, schema, config_path)
+
             if "replace" in query:
                 schema = MapPattern(Str(), AnyYAML())
                 revalidate_yaml(
@@ -453,15 +455,14 @@ def validate_key_queries(c: YAML, config_path: str):
                 for field in query["replace"]:
                     schema = MapPattern(Str(), Str())
                     revalidate_yaml(query["replace"][field], schema, config_path)
-                    # for match in query["replace"][field]:
-                    #     print(
-                    #         "field:",
-                    #         field,
-                    #         "match:",
-                    #         match,
-                    #         "replace with:",
-                    #         query["replace"][field][match].data,
-                    #     )
+
+            if "postprocess" in query:
+                if "import" not in c:
+                    abort(
+                        s.MSG_POSTPROCESS_BUT_NO_IMPORT,
+                        data=query["postprocess"][:],
+                        ps=s.MSG_POSTPROCESS_BUT_NO_IMPORT_PS,
+                    )
 
 
 def revalidate_yaml(

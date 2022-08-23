@@ -1,9 +1,7 @@
-"""Custom code for test_queries_optoins."""
+"""import for test_validate_complete_config_valid.yaml()."""
 
 
-class Custom:
-    """Custom class to contain function(s) for postprocess."""
-
-    def add_colors(self):
-        """Minimum function for test."""
-        return self
+def test(data):
+    """Test print function."""
+    print("    ****** POSTPROCESS FUNCTION RUNS ******")
+    return data

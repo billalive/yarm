@@ -101,6 +101,12 @@ with a higher level of verbosity, such as """
     MSG_POSTPROCESS_FUNCTION_NOT_FOUND_PS: str = (
         "Are you sure you defined this function in your import: code?"
     )
+    MSG_POSTPROCESS_BUT_NO_IMPORT: str = (
+        "No imported code found for postprocess function"
+    )
+    MSG_POSTPROCESS_BUT_NO_IMPORT_PS: str = (
+        "You need to add an import: rule for your code."
+    )
 
     # tables_config
     MSG_CREATING_TABLE: str = "Creating table"

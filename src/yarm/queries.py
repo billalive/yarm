@@ -95,8 +95,16 @@ def df_query_replace(df: DataFrame, query_config: NobView) -> DataFrame:
                         df[column_name] = df[column_name].str.replace(
                             find, replace, regex=True
                         )
-                    except KeyError as error:
-                        warn(s.MSG_QUERY_REPLACE_ERROR, data=str(error))
+                    # TODO Can this error ever happen?
+                    # except KeyError as error:
+                    #    warn(s.MSG_QUERY_REPLACE_ERROR, data=str(error))
+                    except re.error as error:
+                        warn(
+                            s.MSG_QUERY_REPLACE_MATCH_ERROR,
+                            data=replace,
+                            error=str(error),
+                            indent=3,
+                        )
             else:
                 warn(s.MSG_QUERY_REPLACE_COLUMN_ERROR, data=column_name, indent=1)
     return df
