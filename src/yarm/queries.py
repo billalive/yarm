@@ -34,6 +34,7 @@ def run_queries(conn, config: Nob):
             msg_with_data(s.MSG_RUNNING_QUERY, data=name, verbose=1)
             msg(sql, verbose=3)
 
+            # Apply query options.
             try:
                 df = pd.read_sql(sql, conn)
                 # Empty query results? Sometimes that is desirable, but throw a warning.
@@ -43,9 +44,8 @@ def run_queries(conn, config: Nob):
             except DatabaseError as error:
                 abort(s.MSG_QUERY_RUN_ERROR, data=name, error=str(error))
 
+            # Save procesesed query to database.
             try:
-                # FIXME what if name already exists?
-                # FIXME what if name has strange characters?
                 df.to_sql(name, conn, index=False)
             except DatabaseError as error:
                 abort(s.MSG_QUERY_SAVE_ERROR, data=name, error=str(error))
@@ -60,6 +60,8 @@ def run_queries(conn, config: Nob):
                 else:
                     abort(s.MSG_QUERY_SAVE_ERROR, data=name, error=str(error))
                 sys.exit()
+
+            # FIXME Export query to CSV or XLSX
 
 
 def query_options(df: DataFrame, config: Nob, query_config: NobView) -> DataFrame:

@@ -56,7 +56,7 @@ queries:
       table_from_spreadsheet AS s
       ;
 
-  - name: QUERY A
+  - name: QUERY B
     replace:
       FIELD_A:
         MATCH A1: REPLACE A1
