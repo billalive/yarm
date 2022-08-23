@@ -143,9 +143,11 @@ def process_test_tuples(test_config, runner):
             config_file_override = test_tuple[3]
         except IndexError:
             pass
-        print("test:", test_dir, f"{s.MSG_NL_TAB}msg:", msg)
+        print("test:", test_dir)
+        print("msg:", msg)
         with runner.isolated_filesystem():
             prep_test_config(test_dir, config_file_override=config_file_override)
-            result = runner.invoke(cli, [s.CMD_RUN])
+            result = runner.invoke(cli, [s.CMD_RUN], "-vvv")
+            print(s.MSG_TAB, "Output:", result.output)
             assert result.output.find(msg)
             assert result.exit_code == exit_code

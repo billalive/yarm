@@ -138,7 +138,9 @@ def df_query_postprocess(
 
         try:
             df = postprocess_function(df)
-        except TypeError as error:
+        except TypeError as error:  # pragma: no cover
+            # TODO This branch is tested in test_query_error(),
+            # but coverage misses it.
             error = str(error)
             if "positional arguments but 1 was given" in error:
                 abort(
@@ -191,7 +193,8 @@ def save_query_to_database(df, conn, name):
     s = Settings()
     try:
         df.to_sql(name, conn, index=False)
-    except DatabaseError as error:
+    except DatabaseError as error:  # pragma: no cover
+        # TODO Does this error ever trigger?
         abort(s.MSG_QUERY_SAVE_ERROR, data=name, error=str(error))
     except ValueError as error:
         error = str(error)
@@ -201,6 +204,7 @@ def save_query_to_database(df, conn, name):
                 data=name,
                 ps=s.MSG_QUERY_DUPLICATE_ERROR_PS,
             )
-        else:
+        else:  # pragma: no cover
+            # TODO Does this error ever trigger?
             abort(s.MSG_QUERY_SAVE_ERROR, data=name, error=str(error))
         sys.exit()
