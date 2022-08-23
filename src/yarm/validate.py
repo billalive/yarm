@@ -310,10 +310,10 @@ def validate_key_import(c: YAML, config_path: str):
             msg_with_data(s.MSG_IMPORTING_MODULE_PATH, data=file_path, indent=1)
             module_name = s.IMPORT_MODULE_NAME
             # https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
-            spec = importlib.util.spec_from_file_location(module_name, file_path)
-            module = importlib.util.module_from_spec(spec)
+            spec = importlib.util.spec_from_file_location(module_name, file_path)  # type: ignore  # noqa:B950
+            module = importlib.util.module_from_spec(spec)  # type: ignore
             sys.modules[module_name] = module
-            spec.loader.exec_module(module)
+            spec.loader.exec_module(module)  # type: ignore
 
 
 def validate_key_input(c: YAML, config_path: str):

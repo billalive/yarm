@@ -27,7 +27,7 @@ def export_database(conn, config: Nob):
 
         overwrite_file(export_db)
 
-        msg_with_data(s.MSG_CREATING_DATABASE, export_db, verbose=2)
+        msg_with_data(s.MSG_CREATING_DATABASE, data=export_db, verbose=2)
 
         try:
             export_conn = sqlite3.connect(export_db)
@@ -38,10 +38,10 @@ def export_database(conn, config: Nob):
         finally:
             export_conn.close()
 
-        msg_with_data(s.MSG_DATABASE_EXPORTED, export_db)
+        msg_with_data(s.MSG_DATABASE_EXPORTED, data=export_db)
 
 
-def get_output_dir_path(config: Nob, filename: str):
+def get_output_dir_path(config: Nob, filename: str) -> str:
     """Get full path to filename in output dir."""
     s = Settings()
 
@@ -77,7 +77,7 @@ def export_tables(
     s = Settings()
     if s.KEY_OUTPUT__EXPORT_TABLES in config:
         # ext should be one of: csv, xlsx, see validate_key_output()
-        ext: str = config[s.KEY_OUTPUT__EXPORT_TABLES][:]
+        ext: str = str(config[s.KEY_OUTPUT__EXPORT_TABLES][:])
         msg_with_data(s.MSG_EXPORTING_TABLES, data=ext, verbose=2)
 
         export_database_tables(
@@ -249,7 +249,7 @@ def export_queries(config, df_list):
             export_df_list_xlsx(
                 config,
                 df_list,
-                config[s.KEY_OUTPUT__BASENAME],
+                str(config[s.KEY_OUTPUT__BASENAME][:]),
                 s.MSG_QUERY_EXPORTED_SHEET,
                 indent=indent,
                 verbose=verbose,

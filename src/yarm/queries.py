@@ -63,7 +63,7 @@ def query_options(df: DataFrame, config: Nob, query_config: NobView) -> DataFram
     s = Settings()
     qc: NobView = query_config
 
-    show_df(df, qc[s.KEY_QUERY__NAME])
+    show_df(df, qc[s.KEY_QUERY__NAME][:])
 
     # Process each query option.
     # These options are defined in validate_key_queries()
@@ -72,7 +72,7 @@ def query_options(df: DataFrame, config: Nob, query_config: NobView) -> DataFram
 
     df = df_query_postprocess(df, config, query_config)
 
-    show_df(df, qc[s.KEY_QUERY__NAME])
+    show_df(df, qc[s.KEY_QUERY__NAME][:])
     return df
 
 
@@ -141,8 +141,8 @@ def df_query_postprocess(
         except TypeError as error:  # pragma: no cover
             # TODO This branch is tested in test_query_error(),
             # but coverage misses it.
-            error = str(error)
-            if "positional arguments but 1 was given" in error:
+            error_msg: str = str(error)
+            if "positional arguments but 1 was given" in error_msg:
                 abort(
                     s.MSG_POSTPROCESS_WRONG_ARGS,
                     data=postprocess,
@@ -152,7 +152,7 @@ def df_query_postprocess(
                 abort(
                     s.MSG_POSTPROCESS_OTHER_TYPE_ERROR,
                     data=postprocess,
-                    error=str(error),
+                    error=error_msg,
                 )
         except KeyError as error:
             abort(
