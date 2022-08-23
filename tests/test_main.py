@@ -64,6 +64,25 @@ def test_new_noargs_succeeds(
         assert result.exit_code == 0
 
 
+def test_new_existing_file_fails(
+    runner: CliRunner,
+    mock_click_edit: Any,  # pylint: disable=unused-argument
+) -> None:
+    """If the config file already exists, abort."""
+    s = Settings()
+    with runner.isolated_filesystem():
+        result = runner.invoke(cli, ["new", "--no-edit"])
+        result = runner.invoke(cli, ["new", "--no-edit"])
+        assert s.MSG_NEW_CONFIG_FILE_EXISTS_ERROR in result.output
+        assert s.MSG_NEW_CONFIG_FILE_OVERWRITE not in result.output
+        assert result.exit_code == 1
+        result = runner.invoke(cli, ["new", "--no-edit", "--force"])
+        assert s.MSG_NEW_CONFIG_FILE_EXISTS_ERROR not in result.output
+        assert s.MSG_NEW_CONFIG_FILE_OVERWRITE in result.output
+        assert s.MSG_NEW_CONFIG_FILE_WRITTEN in result.output
+        assert result.exit_code == 0
+
+
 def test_new_edit_succeeds(
     runner: CliRunner,
     mock_click_edit: Any,  # pylint: disable=unused-argument

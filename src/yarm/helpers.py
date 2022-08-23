@@ -130,16 +130,17 @@ def msg_suggest_verbose(suggest_verbose):
     """Suggest rerunning with a higher level of verbosity."""
     s = Settings()
     ctx = click.get_current_context()
-    if ctx.params[s.ARG_VERBOSE] < suggest_verbose:
-        msg_verbose = s.MSG_VERBOSITY_PS
-        msg_verbose += "-"
-        msg_verbose += "v" * suggest_verbose
-        # TODO Next lines tested in test_msg_suggest_verbose, but coverage misses.
-        if suggest_verbose < s.MAX_VERBOSE:  # pragma: no cover
-            msg_verbose += " or -"
-            msg_verbose += "v" * (suggest_verbose + 1)
-        msg_verbose += "."
-        click.echo(msg_verbose)
+    if s.ARG_VERBOSE in ctx.params:
+        if ctx.params[s.ARG_VERBOSE] < suggest_verbose:
+            msg_verbose = s.MSG_VERBOSITY_PS
+            msg_verbose += "-"
+            msg_verbose += "v" * suggest_verbose
+            # TODO Next lines tested in test_msg_suggest_verbose, but coverage misses.
+            if suggest_verbose < s.MAX_VERBOSE:  # pragma: no cover
+                msg_verbose += " or -"
+                msg_verbose += "v" * (suggest_verbose + 1)
+            msg_verbose += "."
+            click.echo(msg_verbose)
 
 
 def success(

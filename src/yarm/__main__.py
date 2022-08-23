@@ -155,24 +155,25 @@ def new(edit: Any, force: Any, custom_config_path: str) -> None:
     )
     if os.path.isfile(config_file):
         if not force:
-            abort(f"Config file already exists: {config_file}")
+            abort(s.MSG_NEW_CONFIG_FILE_EXISTS_ERROR, data=config_file)
         else:
-            warn(f"Detected --force, overwriting existing config file: {config_file}")
+            warn(s.MSG_NEW_CONFIG_FILE_OVERWRITE, data=config_file)
 
     with open(config_file, "wt") as new_config:
         new_config.write(default_config)
 
     if edit:
         click.edit(filename=config_file)
-    msg = f"""New config file written to: {config_file}
-
-To run this report, type:
-    """
-    if config_file == s.DEFAULT_CONFIG_FILE:
-        msg += "yarm run"
-    else:
-        msg += f"yarm run -c {config_file}"
-    success(msg)
+    success(
+        s.MSG_NEW_CONFIG_FILE_WRITTEN,
+        data=config_file,
+        ps=s.MSG_NEW_CONFIG_FILE_WRITTEN_PS,
+    )
+    msg: str = "yarm run"
+    if not config_file == s.DEFAULT_CONFIG_FILE:
+        msg = f"yarm run -c {config_file}"
+    click.echo()
+    click.echo(msg)
 
 
 if __name__ == "__main__":

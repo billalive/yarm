@@ -34,6 +34,14 @@ class Settings:
     MSG_WARN: str = "Warning:"
     MSG_USAGE: str = "Usage:"
 
+    # new
+    MSG_NEW_CONFIG_FILE_WRITTEN: str = "New config file written to"
+    MSG_NEW_CONFIG_FILE_WRITTEN_PS: str = "To run this report, type:"
+    MSG_NEW_CONFIG_FILE_EXISTS_ERROR: str = "Config file already exists"
+    MSG_NEW_CONFIG_FILE_OVERWRITE: str = (
+        "Detected --force, overwriting existing config file"
+    )
+
     MSG_CONFIG_FILE_NOT_FOUND: str = "Could not find config file:"
     MSG_DIRECTORY_ERROR: str = "Expected a file, but this is a directory:"
     MSG_PERMISSION_ERROR: str = "Permission denied."

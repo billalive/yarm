@@ -9,7 +9,7 @@ homepage = "https://github.com/billalive/yarm"
 repository = "https://github.com/billalive/yarm"
 documentation = "https://yarm.readthedocs.io"
 classifiers = [
-    "Development Status :: 1 - Planning",
+    "Development Status :: 3 - Alpha",
 ]
 
 [tool.poetry.urls]
