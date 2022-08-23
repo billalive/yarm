@@ -213,3 +213,42 @@ def export_df_list_xlsx(
         indent=indent,
         verbose=verbose,
     )
+
+
+def export_queries(config, df_list):
+    """Export queries."""
+    s = Settings()
+    # Export queries to CSV or XLSX
+    # By default, queries export to xlsx.
+    ext = s.XLSX
+    # Override if needed.
+    if s.KEY_OUTPUT__EXPORT_QUERIES:
+        ext = config[s.KEY_OUTPUT__EXPORT_QUERIES][:]
+
+    if ext in s.SCHEMA_EXPORT_FORMATS:
+        indent = 1
+        verbose = 2
+        if ext == "csv":
+            for table in df_list:
+                table_name = table[0]
+                df = table[1]
+                export_df_csv(
+                    config,
+                    df,
+                    table_name,
+                    s.MSG_QUERY_EXPORTED,
+                    indent=indent,
+                    verbose=verbose,
+                )
+        elif ext == "xlsx":  # pragma: no branch
+            export_df_list_xlsx(
+                config,
+                df_list,
+                config[s.KEY_OUTPUT__BASENAME],
+                s.MSG_QUERY_EXPORTED_SHEET,
+                indent=indent,
+                verbose=verbose,
+            )
+    else:  # pragma: no cover
+        # This path should never execute.
+        abort(s.MSG_EXPORT_FORMAT_UNRECOGNIZED, data=ext)  # pragma: no cover
