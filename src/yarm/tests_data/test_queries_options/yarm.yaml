@@ -15,6 +15,11 @@ tables_config:
 
 queries:
   - name: Order Information
+    replace:
+      name:
+        Retro: Deluxe
+        Replacement: Deluxe Replacement
+    df_postprocess: modify_df
     sql: |
       SELECT od.order_id, p.id as product_id, p.name, p.discount
       FROM

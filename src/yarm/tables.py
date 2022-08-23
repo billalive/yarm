@@ -69,8 +69,8 @@ def create_tables(conn, config):
                 )
             elif re.findall(s.XLSX, file_ext):
                 sheet = Union[int, str]
-                if s.KEY_SHEET in table[i]:
-                    sheet = table[i][s.KEY_SHEET][:]
+                if s.KEY_TABLE__SHEET in table[i]:
+                    sheet = table[i][s.KEY_TABLE__SHEET][:]
                     msg_with_data(s.MSG_IMPORTING_SHEET, sheet, verbose=2, indent=2)
                 else:
                     # If no sheet is provided, use the first sheet.

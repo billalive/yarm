@@ -131,6 +131,8 @@ No queries found. We need something to output!
 
     # NOTE These keys are for use with Nob objects, not for validating YAML schemas.
     KEY_TABLES_CONFIG = "/tables_config"
+    # Sheet relative to table
+    KEY_TABLE__SHEET = "/sheet"
     KEY_OUTPUT__BASENAME = "/output/basename"
     KEY_OUTPUT__DIR = "/output/dir"
     KEY_INPUT = "/input"
@@ -141,7 +143,6 @@ No queries found. We need something to output!
     KEY_INPUT__INCLUDE_INDEX = "/input/include_index"
     KEY_OUTPUT__EXPORT_TABLES = "/output/export_tables"
     KEY_QUERIES = "/queries"
-    KEY_SHEET = "sheet"
 
     # tables_config keys. They are deep in the path, so do not use /.
     KEY_PIVOT = "pivot"
@@ -154,8 +155,11 @@ No queries found. We need something to output!
     # Individual paths can override the include_index.
     KEY_INCLUDE_INDEX = "include_index"
 
-    KEY_SQL = "sql"
-    KEY_NAME = "name"
+    # Individual query options
+    KEY_QUERY__SQL = "/sql"
+    KEY_QUERY__NAME = "/name"
+    KEY_QUERY__REPLACE = "/replace"
+    KEY_QUERY__POSTPROCESS = "/postprocess"
 
     CSV = "csv"
     XLSX = "xlsx"
@@ -186,4 +190,11 @@ No queries found. We need something to output!
 
     # queries
     MSG_RUNNING_QUERY: str = "Running query"
-    MSG_QUERY_ERROR: str = "Could not run query"
+    MSG_QUERY_RUN_ERROR: str = "Could not run query"
+    MSG_APPLYING_REPLACE: str = "Applying replacements to column"
+    MSG_QUERY_EMPTY_ERROR: str = "Query returned no results"
+    MSG_QUERY_REPLACE_COLUMN_ERROR: str = "Could not find column"
+    MSG_QUERY_REPLACE_MATCH_ERROR: str = "Skipping match pattern, could not process"
+    MSG_QUERY_REPLACE_ERROR: str = "Could not complete query replacement"
+    MSG_APPLYING_POSTPROCESS: str = "Applying postprocess function"
+    MSG_POSTPROCESS_NOT_FOUND_ERROR: str = "Could not load postprocess function"

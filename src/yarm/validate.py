@@ -424,7 +424,7 @@ def validate_key_queries(c: YAML, config_path: str):
                 {
                     "name": StrNotEmpty(),
                     "sql": StrNotEmpty(),
-                    OptionalYAML("df_postprocess"): StrNotEmpty(),
+                    OptionalYAML("postprocess"): StrNotEmpty(),
                     OptionalYAML("replace"): AnyYAML(),
                 },
                 key_validator=Slug(),

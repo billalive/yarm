@@ -25,34 +25,35 @@ from strictyaml.ruamel.scanner import ScannerError
 from yarm.settings import Settings
 
 
-# from typing import Dict
-
-
-def warn(msg: str) -> None:
-    """Show warning, but proceed."""
-    s = Settings()
-    click.secho(s.MSG_WARN, fg=s.COLOR_WARN, nl=False, bold=True)
-    click.echo(" ", nl=False)
-    click.echo(msg)
-    return
-
-
-def abort(
-    msg: str, error: str = None, file_path: str = None, data: str = None, ps: str = None
+def msg_options(
+    msg: str,
+    prefix: str = None,
+    prefix_color: str = None,
+    error: str = None,
+    file_path: str = None,
+    data: str = None,
+    ps: str = None,
+    indent: int = 0,
 ):
-    """Abort with error message and status 1.
+    """Show a message with various options.
 
     Args:
         msg: (str)  message
+        prefix: (str, optional)  e.g. Error
+        prefix_color: (str, optional) e.g. s.COLOR_ERROR
         error: (str, optional)  error
         file_path: (str, optional)  file with this error, display on separate line
         data: (str, optional) data to display after msg
         ps: (str, optional) final postscript to add at end of message.
+        indent: (str, optional) indent the message by this many tabs.
     """
     s = Settings()
     # TODO Use err=True to print to stderr?
-    click.secho(s.MSG_ABORT, fg=s.COLOR_ERROR, nl=False, bold=True)
-    click.echo(" ", nl=False)
+    if indent > 0:
+        click.echo(s.MSG_TAB * indent, nl=False)
+    if prefix and prefix_color:
+        click.secho(prefix, fg=prefix_color, nl=False, bold=True)
+        click.echo(" ", nl=False)
     if data:
         click.echo(msg, nl=False)
         click.echo(": ", nl=False)
@@ -67,20 +68,83 @@ def abort(
         click.secho(error, fg=s.COLOR_ERROR)
     if ps:
         click.echo(ps)
+
+
+def warn(
+    msg: str,
+    error: str = None,
+    file_path: str = None,
+    data: str = None,
+    ps: str = None,
+    indent: int = 0,
+) -> None:
+    """Show warning, but proceed.
+
+    For args, see message_with_options()
+    """
+    s = Settings()
+    msg_options(
+        msg=msg,
+        prefix=s.MSG_WARN,
+        prefix_color=s.COLOR_WARN,
+        error=error,
+        file_path=file_path,
+        data=data,
+        ps=ps,
+        indent=indent,
+    )
+    return
+
+
+def abort(
+    msg: str,
+    error: str = None,
+    file_path: str = None,
+    data: str = None,
+    ps: str = None,
+    indent: int = 0,
+):
+    """Abort with error message and status 1.
+
+    For args, see message_with_options()
+    """
+    s = Settings()
+
+    msg_options(
+        msg=msg,
+        prefix=s.MSG_ABORT,
+        prefix_color=s.COLOR_ERROR,
+        error=error,
+        file_path=file_path,
+        data=data,
+        ps=ps,
+        indent=indent,
+    )
+
     sys.exit(1)
 
 
-def success(msg: str) -> None:
+def success(
+    msg: str,
+    prefix: str = None,
+    prefix_color: str = None,
+    file_path: str = None,
+    data: str = None,
+    ps: str = None,
+) -> None:
     """Show success message.
 
-    Args:
-        msg: (str)  message
-
+    For args, see message_with_options()
     """
     s = Settings()
-    click.secho(s.MSG_SUCCESS, fg=s.COLOR_SUCCESS, nl=False, bold=True)
-    click.echo(" ", nl=False)
-    click.echo(msg)
+    msg_options(
+        msg=msg,
+        prefix=s.MSG_SUCCESS,
+        prefix_color=s.COLOR_SUCCESS,
+        file_path=file_path,
+        data=data,
+        ps=ps,
+    )
 
 
 def load_yaml_file(input_file: str, schema: Any) -> YAML:

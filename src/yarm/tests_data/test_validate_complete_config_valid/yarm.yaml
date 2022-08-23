@@ -56,20 +56,21 @@ queries:
       ;
 
   - name: QUERY B
-    df_postprocess: postprocess_df
     replace:
       FIELD_A:
         MATCH A1: REPLACE A1
         MATCH A2: REPLACE A2
-      FIELD_B:
         'MATCH B1 W/"''COMPLEX''" #STRING': 'REPLACE B1 W/''"COMPLEX"'' #STRING'
+      FIELD_B_MISSING:
+        MATCH B1: This match won't ever happen, because the field is missing.
+    postprocess: add_colors
     sql: |
       SELECT
       *
       FROM
-      table_from_spreadsheet AS s
-      JOIN
-      table_from_csv AS c
+      TABLE_FROM_SPREADSHEET AS s
+      LEFT JOIN
+      TABLE_FROM_CSV AS c
       ON
       s.id = c.id
       ;

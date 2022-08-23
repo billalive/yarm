@@ -25,4 +25,4 @@ def test_query_error(runner: CliRunner) -> None:
         prep_test_config(test_dir, config_file_override="query_error.yaml")
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert result.exit_code == 1
-        assert s.MSG_QUERY_ERROR in result.output
+        assert s.MSG_QUERY_RUN_ERROR in result.output
