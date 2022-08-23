@@ -102,6 +102,9 @@ def test_verbose_levels(runner: CliRunner) -> None:
         assert s.MSG_VALIDATING_KEY in result.output
         assert s.MSG_CONFIG_FILE_VALID in result.output
         assert result.exit_code == 0
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvvvvvvvvvvvvvvvvvvvv"])
+        assert result.exit_code == 1
+        assert s.MSG_MAX_VERBOSE_ERROR in result.output
 
 
 def test_directory_error(runner: CliRunner) -> None:
