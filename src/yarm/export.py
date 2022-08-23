@@ -2,18 +2,18 @@
 import os
 import sqlite3
 from datetime import date
+from typing import List
+from typing import Tuple
 
 import pandas as pd
 from click import get_current_context
 from nob.nob import Nob
+from pandas.core.frame import DataFrame
 
 from yarm.helpers import abort
 from yarm.helpers import msg_with_data
 from yarm.helpers import overwrite_file
 from yarm.settings import Settings
-
-
-# from pandas.core.frame import DataFrame
 
 
 def export_database(conn, config: Nob):
@@ -117,7 +117,7 @@ def export_database_tables(
     """
     s = Settings()
     if ext in s.SCHEMA_EXPORT_FORMATS:
-        df_tables = []
+        df_list = []
         # TODO This approach queries the database, rather than our config,
         # for the list of tables. Will this still work after we export queries
         # to the db? Or should queries be saved as Views rather than Tables?
@@ -129,11 +129,11 @@ def export_database_tables(
             # through table names we just pulled from the database.
             query = "SELECT * from " + table_name  # noqa: S608
             df = pd.read_sql(query, conn, params={"table_name": table_name})
-            df_tables.append((table_name, df))
+            df_list.append((table_name, df))
 
         # Export depending on format.
         if ext == "csv":
-            for table in df_tables:
+            for table in df_list:
                 table_name = table[0]
                 df = table[1]
                 export_df_csv(
@@ -142,7 +142,7 @@ def export_database_tables(
         elif ext == "xlsx":  # pragma: no branch
             export_df_list_xlsx(
                 config,
-                df_tables,
+                df_list,
                 export_basename,
                 msg_table_exported_sheet,
                 indent,
@@ -154,7 +154,14 @@ def export_database_tables(
         abort(s.MSG_EXPORT_FORMAT_UNRECOGNIZED, data=ext)  # pragma: no cover
 
 
-def export_df_csv(config, df, name, msg_export, indent: int = 1, verbose: int = 1):
+def export_df_csv(
+    config: Nob,
+    df: DataFrame,
+    name: str,
+    msg_export: str,
+    indent: int = 1,
+    verbose: int = 1,
+):
     """Export a single dataframe to CSV."""
     ext = "csv"
     filename = get_output_dir_path(config, f"{name}.{ext}")
@@ -169,9 +176,19 @@ def export_df_csv(config, df, name, msg_export, indent: int = 1, verbose: int = 
 
 
 def export_df_list_xlsx(
-    config, df_list, export_basename, msg_export, indent: int = 1, verbose: int = 1
+    config: Nob,
+    df_list: List[Tuple[str, DataFrame]],
+    export_basename: str,
+    msg_export: str,
+    indent: int = 1,
+    verbose: int = 1,
 ):
-    """Export a list of dataframes to XLSX."""
+    """Export a list of dataframes to XLSX.
+
+    Each item in the list should be a tuple:
+    (name, df)
+
+    """
     s = Settings()
     ext = "xlsx"
     # NOTE This branch is tested in test_export_tables_xlsx,

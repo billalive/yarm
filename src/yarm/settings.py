@@ -165,6 +165,7 @@ with a higher level of verbosity, such as """
     KEY_INPUT__UPPERCASE_ROWS = "/input/uppercase_rows"
     KEY_INPUT__INCLUDE_INDEX = "/input/include_index"
     KEY_OUTPUT__EXPORT_TABLES = "/output/export_tables"
+    KEY_OUTPUT__EXPORT_QUERIES = "/output/export_queries"
     KEY_QUERIES = "/queries"
 
     # tables_config keys. They are deep in the path, so do not use /.

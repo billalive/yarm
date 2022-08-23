@@ -9,6 +9,8 @@ from nob.nob import NobView
 from pandas.core.frame import DataFrame
 from pandas.io.sql import DatabaseError
 
+from yarm.export import export_df_csv
+from yarm.export import export_df_list_xlsx
 from yarm.helpers import abort
 from yarm.helpers import msg
 from yarm.helpers import msg_with_data
@@ -23,6 +25,7 @@ def run_queries(conn, config: Nob):
 
     if s.KEY_QUERIES in config:
         queries = config[s.KEY_QUERIES]
+        df_list = []
         for i, _val in enumerate(queries):
             query = queries[i]
             # Within this query, start keys with "/" to ensure you have correct key.
@@ -35,34 +38,49 @@ def run_queries(conn, config: Nob):
             msg_with_data(s.MSG_RUNNING_QUERY, data=name, verbose=1)
             msg(sql, verbose=3)
 
-            # Apply query options.
-            try:
-                df = pd.read_sql(sql, conn)
-                # Empty query results? Sometimes that is desirable, but throw a warning.
-                if len(df) == 0:
-                    warn(s.MSG_QUERY_EMPTY_ERROR, data=name)
-                df = query_options(df, config, query)
-            except DatabaseError as error:
-                abort(s.MSG_QUERY_RUN_ERROR, data=name, error=str(error))
+            df = run_query(config, query, conn, sql, name)
 
-            # Save procesesed query to database.
-            try:
-                df.to_sql(name, conn, index=False)
-            except DatabaseError as error:
-                abort(s.MSG_QUERY_SAVE_ERROR, data=name, error=str(error))
-            except ValueError as error:
-                error = str(error)
-                if re.match(r"Table .* already exists", error):
-                    abort(
-                        s.MSG_QUERY_DUPLICATE_ERROR,
-                        data=name,
-                        ps=s.MSG_QUERY_DUPLICATE_ERROR_PS,
+            # Save processeed query to database.
+            save_query_to_database(df, conn, name)
+
+            # Save df to list for export
+            # TODO Should this be refactored to avoid the memory usage?
+            df_list.append((name, df))
+
+        # Export queries to CSV or XLSX
+        # By default, queries export to xlsx.
+        ext = s.XLSX
+        # Override if needed.
+        if s.KEY_OUTPUT__EXPORT_QUERIES:
+            ext = config[s.KEY_OUTPUT__EXPORT_QUERIES][:]
+
+        if ext in s.SCHEMA_EXPORT_FORMATS:
+            indent = 1
+            verbose = 2
+            if ext == "csv":
+                for table in df_list:
+                    table_name = table[0]
+                    df = table[1]
+                    export_df_csv(
+                        config,
+                        df,
+                        table_name,
+                        s.MSG_QUERY_EXPORTED,
+                        indent=indent,
+                        verbose=verbose,
                     )
-                else:
-                    abort(s.MSG_QUERY_SAVE_ERROR, data=name, error=str(error))
-                sys.exit()
-
-            # FIXME Export query to CSV or XLSX
+            elif ext == "xlsx":  # pragma: no branch
+                export_df_list_xlsx(
+                    config,
+                    df_list,
+                    config[s.KEY_OUTPUT__BASENAME],
+                    s.MSG_QUERY_EXPORTED_SHEET,
+                    indent=indent,
+                    verbose=verbose,
+                )
+        else:  # pragma: no cover
+            # This path should never execute.
+            abort(s.MSG_EXPORT_FORMAT_UNRECOGNIZED, data=ext)  # pragma: no cover
 
 
 def query_options(df: DataFrame, config: Nob, query_config: NobView) -> DataFrame:
@@ -175,3 +193,36 @@ def df_query_postprocess(
                 ps=s.MSG_POSTPROCESS_ARGS_PS,
             )
     return df
+
+
+def run_query(config, query, conn, sql, name):
+    """Run query, apply options, and return a dataframe."""
+    s = Settings()
+    try:
+        df = pd.read_sql(sql, conn)
+        # Empty query results? Sometimes that is desirable, but throw a warning.
+        if len(df) == 0:
+            warn(s.MSG_QUERY_EMPTY_ERROR, data=name)
+        df = query_options(df, config, query)
+    except DatabaseError as error:
+        abort(s.MSG_QUERY_RUN_ERROR, data=name, error=str(error))
+
+
+def save_query_to_database(df, conn, name):
+    """Save the processed query to the database."""
+    s = Settings()
+    try:
+        df.to_sql(name, conn, index=False)
+    except DatabaseError as error:
+        abort(s.MSG_QUERY_SAVE_ERROR, data=name, error=str(error))
+    except ValueError as error:
+        error = str(error)
+        if re.match(r"Table .* already exists", error):
+            abort(
+                s.MSG_QUERY_DUPLICATE_ERROR,
+                data=name,
+                ps=s.MSG_QUERY_DUPLICATE_ERROR_PS,
+            )
+        else:
+            abort(s.MSG_QUERY_SAVE_ERROR, data=name, error=str(error))
+        sys.exit()
