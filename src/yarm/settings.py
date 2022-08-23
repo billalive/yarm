@@ -235,7 +235,10 @@ with a higher level of verbosity, such as """
     MSG_POSTPROCESS_WRONG_ARGS: str = (
         "Wrong number of arguments in your postprocess function"
     )
-    MSG_POSTPROCESS_RETURNED_NONE: str = "No data returned from postprocess function"
+    MSG_POSTPROCESS_RETURNED_EMPTY_DF: str = (
+        "No data returned from postprocess function"
+    )
+    MSG_POSTPROCESS_RETURNED_OTHER: str = "Wrong return type from postprocess function"
     MSG_POSTPROCESS_ARGS_PS: str = """Remember:
 Your postprocess function must take a DataFrame as its one argument,
 and return the processed DataFrame as its one result."""

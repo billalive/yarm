@@ -1,0 +1,20 @@
+import:
+  - path: custom.py
+
+output:
+  dir: output
+  basename: test
+
+tables_config:
+  products:
+    - path: products.csv
+      pivot:
+        index: id
+        columns: key
+        values: value
+
+queries:
+  - name: Query A
+    postprocess: missing_function
+    sql: |
+      SELECT * FROM products;

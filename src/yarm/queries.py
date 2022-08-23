@@ -69,6 +69,7 @@ def query_options(df: DataFrame, config: Nob, query_config: NobView) -> DataFram
     # These options are defined in validate_key_queries()
 
     df = df_query_replace(df, query_config)
+
     df = df_query_postprocess(df, config, query_config)
 
     show_df(df, qc[s.KEY_QUERY__NAME])
@@ -155,17 +156,19 @@ def df_query_postprocess(
             abort(
                 s.MSG_POSTPROCESS_OTHER_TYPE_ERROR,
                 data=postprocess,
-                error="KeyError:" + str(error),
+                error="Key Error: " + str(error),
                 suggest_verbose=3,
                 ps=s.MSG_POSTPROCESS_EXAMINE_CODE,
             )
 
-        if df is None:
+        if not isinstance(df, DataFrame):
             abort(
-                s.MSG_POSTPROCESS_RETURNED_NONE,
+                s.MSG_POSTPROCESS_RETURNED_OTHER,
                 data=postprocess,
                 ps=s.MSG_POSTPROCESS_ARGS_PS,
             )
+        elif df.empty:
+            abort(s.MSG_POSTPROCESS_RETURNED_EMPTY_DF, data=postprocess)
     return df
 
 
@@ -178,9 +181,9 @@ def run_query(config, query, conn, sql, name):
         if len(df) == 0:
             warn(s.MSG_QUERY_EMPTY_ERROR, data=name)
         df = query_options(df, config, query)
-        return df
     except DatabaseError as error:
         abort(s.MSG_QUERY_RUN_ERROR, data=name, error=str(error))
+    return df
 
 
 def save_query_to_database(df, conn, name):

@@ -8,6 +8,7 @@ from typing import List
 from path import Path
 
 from yarm import tests_data
+from yarm.__main__ import cli
 from yarm.settings import Settings
 
 
@@ -67,21 +68,18 @@ def prep_test_config(
     # Copy all files from testing dir into the temporary testing dir.
     # Use inspect to get the actual path.
     # print("dir_tests_data:", dir_tests_data)
-    assert os.path.isdir(os.path.dirname(dir_tests_data)), "Test directory not found."
-    test_dir = f"{dir_tests_data}/{test_dir}/"
+    test_dir_path = f"{dir_tests_data}/{test_dir}/"
+    assert os.path.isdir(
+        os.path.dirname(test_dir_path)
+    ), f"Test directory not found: {test_dir}"
     # NOTE Next lines tested in: test_prep_config_copies_files()
-    if os.path.isdir(os.path.dirname(test_dir)):  # pragma: no cover
-        # print("is a dir:", dir_test_dir)
-        for f in Path(test_dir).glob("*"):
-            if os.path.isfile(f):  # pragma: no branch
-                shutil.copy(f, ".")
-                # print("copying in:", f)
-    # else:
-    # print("not a dir:", dir_test_dir)
+    for f in Path(test_dir_path).glob("*"):
+        if os.path.isfile(f):  # pragma: no branch
+            shutil.copy(f, ".")
 
     # Make sure we have a default config file location.
     assert isinstance(s.DEFAULT_CONFIG_FILE, str)
-    test_config_file: str = test_dir
+    test_config_file: str = test_dir_path
     if config_file_override:
         print("Config file override:", config_file_override)
         test_config_file += config_file_override
@@ -122,3 +120,32 @@ def string_as_config(config: str) -> bool:
         f.write(config)
     assert os.path.isfile(s.DEFAULT_CONFIG_FILE)
     return True
+
+
+def process_test_tuples(test_config, runner):
+    """Test a list of tuples.
+
+    Tuple elements:
+    0: expected exit code
+    1: test dir
+    2: expected message in result.output
+    3: (optional) config file override
+
+
+    """
+    s = Settings()
+    for test_tuple in test_config:
+        exit_code: int = test_tuple[0]
+        test_dir: str = test_tuple[1]
+        msg: str = test_tuple[2]
+        config_file_override: str = None
+        try:
+            config_file_override = test_tuple[3]
+        except IndexError:
+            pass
+        print("test:", test_dir, f"{s.MSG_NL_TAB}msg:", msg)
+        with runner.isolated_filesystem():
+            prep_test_config(test_dir, config_file_override=config_file_override)
+            result = runner.invoke(cli, [s.CMD_RUN])
+            assert result.output.find(msg)
+            assert result.exit_code == exit_code

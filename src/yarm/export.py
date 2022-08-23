@@ -1,7 +1,8 @@
 """Export data."""
 import os
 import sqlite3
-from datetime import date
+
+# from datetime import date
 from typing import List
 from typing import Tuple
 
@@ -55,8 +56,7 @@ def get_full_output_basename(config: Nob) -> str:
     basename: str = config[s.KEY_OUTPUT__BASENAME][:]
 
     # TODO Implement append_date, prepend_date
-    today = date.today()
-    print(today)
+    # today = date.today()
 
     path: str = get_output_dir_path(config, basename)
 
@@ -200,7 +200,12 @@ def export_df_list_xlsx(
         for item in df_list:
             sheet_name = item[0]
             df = item[1]
-            df.to_excel(writer, sheet_name=sheet_name)
+            # TODO Are there any situations where our spreadsheet needs the index?
+            # Probably not.
+            # If a table is imported into the database with include_index = True,
+            # then when it is later exported, the index is simply another column.
+            index = False
+            df.to_excel(writer, sheet_name=sheet_name, index=index)
             msg_with_data(
                 msg_export,
                 data=sheet_name,
