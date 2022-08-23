@@ -296,8 +296,8 @@ def validate_key_import(c: YAML, config_path: str):
      - path: MODULE_A.py
      - path: MODULE_B.py
 
-    If more than one module defines the same function, the later module will
-    silently override the previous definition.
+    If more than one module in this list defines the same function,
+    the later module will silently override the previous definition.
     """
     s = Settings()
     key: str = check_key("import", c)

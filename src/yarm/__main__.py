@@ -89,7 +89,11 @@ def run(
     if verbose is None:  # pragma: no branch
         verbose = 0  # type: ignore[unreachable]  # pragma: no cover
     if verbose > 1:
-        msg_with_data("Verbosity level", str(verbose))
+        if verbose > s.MAX_VERBOSE:
+            max_verbose = "-" + ("v" * s.MAX_VERBOSE)
+            abort(s.MSG_MAX_VERBOSE_ERROR, data=max_verbose)
+        else:
+            msg_with_data("Verbosity level", str(verbose))
 
     config: Nob = Nob(validate_config(config_path).data)
 
@@ -99,12 +103,13 @@ def run(
 
         create_tables(conn, config)
 
-        export_database(conn, config)
-
         run_queries(conn, config)
 
+        export_database(conn, config)
     except sqlite3.Error as error:
-        abort(s.MSG_SQLITE_ERROR, error=str(error))  # pragma: no cover
+        abort(
+            s.MSG_SQLITE_ERROR, error=str(error), suggest_verbose=3
+        )  # pragma: no cover
     finally:
         conn.close()
 

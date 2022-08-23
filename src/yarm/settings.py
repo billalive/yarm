@@ -19,6 +19,10 @@ class Settings:
     ARG_EXPORT_DATABASE: str = "database"
     ARG_FORCE: str = "force"
 
+    # Maximum number of -v switches.
+    MAX_VERBOSE = 3
+    MSG_MAX_VERBOSE_ERROR = "Maximum verbosity level is"
+
     EXT_YAML: str = ".yaml"
 
     TEST_CONFIG_BAD_YAML: str = "test_config_bad_yaml"
@@ -81,6 +85,13 @@ No queries found. We need something to output!
 
     MSG_CONNECTION_DATABASE_FAILED: str = "Failed to connect to database."
     MSG_SQLITE_ERROR: str = "There was a problem with sqlite:"
+    MSG_EXPORT_DATABASE_ERROR: str = "There was a problem exporting the database."
+    MSG_QUERY_DUPLICATE_ERROR: str = "More than one query has the same name"
+    MSG_QUERY_DUPLICATE_ERROR_PS: str = (
+        "Please ensure that each query has a unique name, and then try again."
+    )
+    MSG_VERBOSITY_PS: str = """To debug this problem, you may want to rerun this report
+with a higher level of verbosity, such as """
 
     # import
     MSG_IMPORTING_MODULE_PATH: str = "Importing code from"
@@ -218,3 +229,5 @@ No queries found. We need something to output!
     MSG_POSTPROCESS_ARGS_PS: str = """Remember:
 Your postprocess function must take a DataFrame as its one argument,
 and return the processed DataFrame as its one result."""
+    MSG_POSTPROCESS_EXAMINE_CODE: str = "This error seems to be in your custom code."
+    MSG_QUERY_SAVE_ERROR: str = "Could not save query to database"

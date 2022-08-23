@@ -56,7 +56,7 @@ queries:
       table_from_spreadsheet AS s
       ;
 
-  - name: QUERY B
+  - name: QUERY A
     replace:
       FIELD_A:
         MATCH A1: REPLACE A1
@@ -67,11 +67,13 @@ queries:
     postprocess: test
     sql: |
       SELECT
-      *
+      s.id,
+      FIELD_A,
+      FIELD_B
       FROM
       TABLE_FROM_SPREADSHEET AS s
       LEFT JOIN
       TABLE_FROM_CSV AS c
       ON
-      s.id = c.id
+      s.id = c.ID
       ;

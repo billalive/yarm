@@ -1,5 +1,6 @@
 """Run queries."""
 
+import re
 import sys
 
 import pandas as pd
@@ -41,6 +42,24 @@ def run_queries(conn, config: Nob):
                 df = query_options(df, config, query)
             except DatabaseError as error:
                 abort(s.MSG_QUERY_RUN_ERROR, data=name, error=str(error))
+
+            try:
+                # FIXME what if name already exists?
+                # FIXME what if name has strange characters?
+                df.to_sql(name, conn, index=False)
+            except DatabaseError as error:
+                abort(s.MSG_QUERY_SAVE_ERROR, data=name, error=str(error))
+            except ValueError as error:
+                error = str(error)
+                if re.match(r"Table .* already exists", error):
+                    abort(
+                        s.MSG_QUERY_DUPLICATE_ERROR,
+                        data=name,
+                        ps=s.MSG_QUERY_DUPLICATE_ERROR_PS,
+                    )
+                else:
+                    abort(s.MSG_QUERY_SAVE_ERROR, data=name, error=str(error))
+                sys.exit()
 
 
 def query_options(df: DataFrame, config: Nob, query_config: NobView) -> DataFrame:
@@ -111,8 +130,8 @@ def df_query_postprocess(
             indent=1,
         )
 
-        module_name = s.IMPORT_MODULE_NAME
         try:
+            module_name = s.IMPORT_MODULE_NAME
             postprocess_function = getattr(sys.modules[module_name], postprocess)
         except AttributeError:
             abort(
@@ -120,6 +139,7 @@ def df_query_postprocess(
                 data=postprocess,
                 ps=s.MSG_POSTPROCESS_FUNCTION_NOT_FOUND_PS,
             )
+
         try:
             df = postprocess_function(df)
         except TypeError as error:
@@ -131,7 +151,19 @@ def df_query_postprocess(
                     ps=s.MSG_POSTPROCESS_ARGS_PS,
                 )
             else:
-                abort(s.MSG_POSTPROCESS_OTHER_TYPE_ERROR, data=postprocess, error=error)
+                abort(
+                    s.MSG_POSTPROCESS_OTHER_TYPE_ERROR,
+                    data=postprocess,
+                    error=str(error),
+                )
+        except KeyError as error:
+            abort(
+                s.MSG_POSTPROCESS_OTHER_TYPE_ERROR,
+                data=postprocess,
+                error="KeyError:" + str(error),
+                suggest_verbose=3,
+                ps=s.MSG_POSTPROCESS_EXAMINE_CODE,
+            )
 
         if df is None:
             abort(

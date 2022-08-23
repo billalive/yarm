@@ -103,6 +103,7 @@ def abort(
     data: str = None,
     ps: str = None,
     indent: int = 0,
+    suggest_verbose: int = 1,
 ):
     """Abort with error message and status 1.
 
@@ -121,7 +122,23 @@ def abort(
         indent=indent,
     )
 
+    msg_suggest_verbose(suggest_verbose)
     sys.exit(1)
+
+
+def msg_suggest_verbose(suggest_verbose):
+    """Suggest rerunning with a higher level of verbosity."""
+    s = Settings()
+    ctx = click.get_current_context()
+    if ctx.params[s.ARG_VERBOSE] < suggest_verbose:
+        msg_verbose = s.MSG_VERBOSITY_PS
+        msg_verbose += "-"
+        msg_verbose += "v" * suggest_verbose
+        if suggest_verbose < s.MAX_VERBOSE:
+            msg_verbose += " or -"
+            msg_verbose += "v" * (suggest_verbose + 1)
+        msg_verbose += "."
+        click.echo(msg_verbose)
 
 
 def success(

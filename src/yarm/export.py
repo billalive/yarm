@@ -33,7 +33,7 @@ def export_database(conn, config: Nob):
             for line in conn.iterdump():
                 export_conn.execute(line)
         except sqlite3.Error as error:  # pragma: no cover
-            abort(s.MSG_SQLITE_ERROR, error=str(error))  # pragma: no cover
+            abort(s.MSG_EXPORT_DATABASE_ERROR, error=str(error))  # pragma: no cover
         finally:
             export_conn.close()
 
