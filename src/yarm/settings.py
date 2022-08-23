@@ -82,6 +82,15 @@ No queries found. We need something to output!
     MSG_CONNECTION_DATABASE_FAILED: str = "Failed to connect to database."
     MSG_SQLITE_ERROR: str = "There was a problem with sqlite:"
 
+    # import
+    MSG_IMPORTING_MODULE_PATH: str = "Importing code from"
+    # All import paths are loaded into IMPORT_MODULE_NAME
+    IMPORT_MODULE_NAME: str = "custom"
+    MSG_POSTPROCESS_FUNCTION_NOT_FOUND: str = "Could not run postprocess function"
+    MSG_POSTPROCESS_FUNCTION_NOT_FOUND_PS: str = (
+        "Are you sure you defined this function in your import: code?"
+    )
+
     # tables_config
     MSG_CREATING_TABLE: str = "Creating table"
     MSG_CREATED_TABLE: str = "Table created"
@@ -130,6 +139,9 @@ No queries found. We need something to output!
     MSG_PIVOT_FAILED_KEY_ERROR: str = "Pivot failed, because this column is missing"
 
     # NOTE These keys are for use with Nob objects, not for validating YAML schemas.
+    KEY_IMPORT = "/import"
+    # within each imported module:
+    KEY_MODULE__PATH = "/path"
     KEY_TABLES_CONFIG = "/tables_config"
     # Sheet relative to table
     KEY_TABLE__SHEET = "/sheet"
@@ -198,3 +210,11 @@ No queries found. We need something to output!
     MSG_QUERY_REPLACE_ERROR: str = "Could not complete query replacement"
     MSG_APPLYING_POSTPROCESS: str = "Applying postprocess function"
     MSG_POSTPROCESS_NOT_FOUND_ERROR: str = "Could not load postprocess function"
+    MSG_POSTPROCESS_OTHER_TYPE_ERROR: str = "Could not apply postprocess function"
+    MSG_POSTPROCESS_WRONG_ARGS: str = (
+        "Wrong number of arguments in your postprocess function"
+    )
+    MSG_POSTPROCESS_RETURNED_NONE: str = "No data returned from postprocess function"
+    MSG_POSTPROCESS_ARGS_PS: str = """Remember:
+Your postprocess function must take a DataFrame as its one argument,
+and return the processed DataFrame as its one result."""

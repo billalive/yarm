@@ -1,5 +1,7 @@
 """Run queries."""
 
+import sys
+
 import pandas as pd
 from nob.nob import Nob
 from nob.nob import NobView
@@ -33,18 +35,20 @@ def run_queries(conn, config: Nob):
 
             try:
                 df = pd.read_sql(sql, conn)
+                # Empty query results? Sometimes that is desirable, but throw a warning.
                 if len(df) == 0:
-                    abort(s.MSG_QUERY_EMPTY_ERROR, data=name)
-                df = query_options(df, query)
+                    warn(s.MSG_QUERY_EMPTY_ERROR, data=name)
+                df = query_options(df, config, query)
             except DatabaseError as error:
                 abort(s.MSG_QUERY_RUN_ERROR, data=name, error=str(error))
 
 
-def query_options(df: DataFrame, query_config: NobView):
+def query_options(df: DataFrame, config: Nob, query_config: NobView) -> DataFrame:
     """Process options for a particular query.
 
     Args:
         df (DataFrame): dataframe with initial query results
+        config (Nob): config
         query_config (NobView): config for this query
 
     Returns:
@@ -58,7 +62,17 @@ def query_options(df: DataFrame, query_config: NobView):
     # Process each query option.
     # These options are defined in validate_key_queries()
 
-    # replace:
+    df = df_query_replace(df, query_config)
+    df = df_query_postprocess(df, config, query_config)
+
+    show_df(df, qc[s.KEY_QUERY__NAME])
+    return df
+
+
+def df_query_replace(df: DataFrame, query_config: NobView) -> DataFrame:
+    """Process replacements for a particular query."""
+    s = Settings()
+    qc = query_config
     if s.KEY_QUERY__REPLACE in qc:
         for column_name in qc[s.KEY_QUERY__REPLACE][:]:
             if column_name in df.columns:
@@ -79,7 +93,15 @@ def query_options(df: DataFrame, query_config: NobView):
                         warn(s.MSG_QUERY_REPLACE_ERROR, data=str(error))
             else:
                 warn(s.MSG_QUERY_REPLACE_COLUMN_ERROR, data=column_name, indent=1)
+    return df
 
+
+def df_query_postprocess(
+    df: DataFrame, config: Nob, query_config: NobView
+) -> DataFrame:
+    """Process postprocess function for a particular query."""
+    s = Settings()
+    qc = query_config
     # postprocess:
     if s.KEY_QUERY__POSTPROCESS in qc:
         postprocess: str = qc[s.KEY_QUERY__POSTPROCESS][:]
@@ -89,13 +111,32 @@ def query_options(df: DataFrame, query_config: NobView):
             indent=1,
         )
 
-        # cmd: str = f"custom_module.{postprocess}(df)"
-        # cmd = getattr(custom, postprocess)
-        # eval("print('working:', cmd)")
-        # result = cmd(df)
+        module_name = s.IMPORT_MODULE_NAME
+        try:
+            postprocess_function = getattr(sys.modules[module_name], postprocess)
+        except AttributeError:
+            abort(
+                s.MSG_POSTPROCESS_FUNCTION_NOT_FOUND,
+                data=postprocess,
+                ps=s.MSG_POSTPROCESS_FUNCTION_NOT_FOUND_PS,
+            )
+        try:
+            df = postprocess_function(df)
+        except TypeError as error:
+            error = str(error)
+            if "positional arguments but 1 was given" in error:
+                abort(
+                    s.MSG_POSTPROCESS_WRONG_ARGS,
+                    data=postprocess,
+                    ps=s.MSG_POSTPROCESS_ARGS_PS,
+                )
+            else:
+                abort(s.MSG_POSTPROCESS_OTHER_TYPE_ERROR, data=postprocess, error=error)
 
-    # if df is None:
-    #    abort(f"process_df_function '{key}: {callback}' returned empty dataframe.")
-
-    show_df(df, qc[s.KEY_QUERY__NAME])
+        if df is None:
+            abort(
+                s.MSG_POSTPROCESS_RETURNED_NONE,
+                data=postprocess,
+                ps=s.MSG_POSTPROCESS_ARGS_PS,
+            )
     return df

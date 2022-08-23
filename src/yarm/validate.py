@@ -6,8 +6,10 @@
 """Validate config file."""
 
 import importlib.resources as pkg_resources
+import importlib.util
 import os
 import re
+import sys
 
 # from typing import Dict
 from typing import Any
@@ -293,12 +295,25 @@ def validate_key_import(c: YAML, config_path: str):
     import:
      - path: MODULE_A.py
      - path: MODULE_B.py
+
+    If more than one module defines the same function, the later module will
+    silently override the previous definition.
     """
+    s = Settings()
     key: str = check_key("import", c)
     if key:
         schema = Seq(Map({"path": StrNotEmpty()}, key_validator=Slug()))
         revalidate_yaml(c[key], schema, config_path)
         check_is_file(c[key].data, "path")
+        for source in c[key]:
+            file_path = source[s.KEY_MODULE__PATH].data
+            msg_with_data(s.MSG_IMPORTING_MODULE_PATH, data=file_path, indent=1)
+            module_name = s.IMPORT_MODULE_NAME
+            # https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
+            spec = importlib.util.spec_from_file_location(module_name, file_path)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = module
+            spec.loader.exec_module(module)
 
 
 def validate_key_input(c: YAML, config_path: str):
@@ -399,7 +414,7 @@ def validate_key_queries(c: YAML, config_path: str):
       ;
 
     - name: QUERY B
-      df_postprocess: postprocess_df
+      postprocess: postprocess_function
       replace:
         FIELD_A:
           MATCH A1: REPLACE A1

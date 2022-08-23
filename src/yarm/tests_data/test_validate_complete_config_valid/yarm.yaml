@@ -2,6 +2,7 @@
 # But normally, you don't have to use uppercase.
 import:
   - path: MODULE_A.py
+  - path: MODULE_B.py
 
 output:
   dir: OUTPUT
@@ -63,7 +64,7 @@ queries:
         'MATCH B1 W/"''COMPLEX''" #STRING': 'REPLACE B1 W/''"COMPLEX"'' #STRING'
       FIELD_B_MISSING:
         MATCH B1: This match won't ever happen, because the field is missing.
-    postprocess: add_colors
+    postprocess: test
     sql: |
       SELECT
       *
