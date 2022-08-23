@@ -51,7 +51,8 @@ def msg_options(
     # TODO Use err=True to print to stderr?
     if indent > 0:
         click.echo(s.MSG_TAB * indent, nl=False)
-    if prefix and prefix_color:
+    # TODO test_msg_options tests this, but coverage doesn't recognize the test.
+    if prefix and prefix_color:  # pragma: no cover
         click.secho(prefix, fg=prefix_color, nl=False, bold=True)
         click.echo(" ", nl=False)
     if data:

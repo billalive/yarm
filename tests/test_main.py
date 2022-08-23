@@ -105,6 +105,7 @@ def test_verbose_levels(runner: CliRunner) -> None:
         result = runner.invoke(cli, [s.CMD_RUN, "-vvvvvvvvvvvvvvvvvvvvv"])
         assert result.exit_code == 1
         assert s.MSG_MAX_VERBOSE_ERROR in result.output
+        assert s.MSG_ABORT in result.output
 
 
 def test_directory_error(runner: CliRunner) -> None:
