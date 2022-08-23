@@ -20,6 +20,7 @@ from yarm.settings import Settings
 def run_queries(conn, config: Nob):
     """Run queries."""
     s = Settings()
+
     if s.KEY_QUERIES in config:
         queries = config[s.KEY_QUERIES]
         for i, _val in enumerate(queries):
