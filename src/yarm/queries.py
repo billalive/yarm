@@ -170,6 +170,7 @@ def run_query(config, query, conn, sql, name):
         if len(df) == 0:
             warn(s.MSG_QUERY_EMPTY_ERROR, data=name)
         df = query_options(df, config, query)
+        return df
     except DatabaseError as error:
         abort(s.MSG_QUERY_RUN_ERROR, data=name, error=str(error))
 

@@ -222,7 +222,7 @@ def export_queries(config, df_list):
     # By default, queries export to xlsx.
     ext = s.XLSX
     # Override if needed.
-    if s.KEY_OUTPUT__EXPORT_QUERIES:
+    if s.KEY_OUTPUT__EXPORT_QUERIES in config:
         ext = config[s.KEY_OUTPUT__EXPORT_QUERIES][:]
 
     if ext in s.SCHEMA_EXPORT_FORMATS:
