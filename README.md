@@ -230,7 +230,6 @@ create_tables:
   - orders
   - products
   - tax
-
 # The rest of the config file continues as usual...
 ```
 
@@ -242,17 +241,17 @@ I'm not sure. I can see the use cases, but if you need charts, it might be time 
 
 ### Your Killer Feature?
 
-Am I missing something? Is there some tedious bit of repetitive data wrangling that you'd *love* to automate into a single line of YAML?
+Am I missing something? Is there some tedious bit of repetitive data wrangling that you'd _love_ to automate into a single line of YAML?
 
 [File an issue][file an issue]! I'd love to hear from you.
 
 ## Is `yarm` for You?
 
-This tool has a clear focus: Make it **easy** to run and **rerun reports** from the **command line** that query **multiple sources** of tabular data. 
+This tool has a clear focus: Make it **easy** to run and **rerun reports** from the **command line** that query **multiple sources** of tabular data.
 
-Once you set up the initial configuration file, the workflow for future reports is simple. Download fresh data over the old files, then rerun the report. 
+Once you set up the initial configuration file, the workflow for future reports is simple. Download fresh data over the old files, then rerun the report.
 
-This means that `yarm` is **not** a tool for data **exploration**. 
+This means that `yarm` is **not** a tool for data **exploration**.
 
 True, you may still want `yarm` to **prepare** your data for exploration. Once you get used to listing a few data sources, setting a few options, and spitting out a nice, clean SQLite database or set of CSV files to play with, you may get hooked.
 
@@ -297,7 +296,7 @@ This project was generated from [@cjolowicz]'s [Hypermodern Python Cookiecutter]
 [jupyter lab]: https://jupyter.org/try
 [select]: https://www.sqlite.org/lang_select.html
 [sqlitebrowser]: https://sqlitebrowser.org/
-[SQL Notebook]: https://sqlnotebook.com/
+[sql notebook]: https://sqlnotebook.com/
 [jq]: https://stedolan.github.io/jq/
 [mlr]: https://miller.readthedocs.io/en/latest/
 [htmlq]: https://github.com/mgdm/htmlq

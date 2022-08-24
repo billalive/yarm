@@ -114,7 +114,22 @@ def df_query_replace(df: DataFrame, query_config: NobView) -> DataFrame:
 def df_query_postprocess(
     df: DataFrame, config: Nob, query_config: NobView
 ) -> DataFrame:
-    """Process postprocess function for a particular query."""
+    """Process postprocess function for a particular query.
+
+    Args:
+        df: Results of query
+        config: Report configuration
+        query_config: Configuration for this query
+
+    Returns:
+        Query data after applying postprocess function
+
+    Important:
+        A postprocess function is defined by the user in a separate Python file,
+        which must be imported with the :data:`import:` key.
+        See :func:`yarm.validate.validate_key_import`
+
+    """
     s = Settings()
     qc = query_config
     # postprocess:

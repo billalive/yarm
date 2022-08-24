@@ -104,7 +104,7 @@ with a higher level of verbosity, such as """
     # import
     MSG_IMPORTING_MODULE_PATH: str = "Importing code from"
     # All import paths are loaded into IMPORT_MODULE_NAME
-    IMPORT_MODULE_NAME: str = "custom"
+    IMPORT_MODULE_NAME: str = "yarm_import"
     MSG_POSTPROCESS_FUNCTION_NOT_FOUND: str = "Could not run postprocess function"
     MSG_POSTPROCESS_FUNCTION_NOT_FOUND_PS: str = (
         "Are you sure you defined this function in your import: code?"

@@ -320,13 +320,24 @@ def validate_key_import(config_yaml: YAML, config_path: str):
     .. literalinclude:: validate/validate_key_import.yaml
        :language: yaml
 
-    If more than one module in this list defines the same function,
-    the later module will silently override the previous definition.
+    This key allows the user to import their own custom Python code.
+    Any imported function can be applied to the results of a query using
+    the :data:`postprocess` key.
+
+    Warning:
+        If more than one module in this list defines the same function,
+        the **later module** in the list will **silently override** the
+        previous definition.
+
+        This may be desired behavior, but only if you expect it.
 
     Args:
         config_yaml: Configuration to validate
         config_path: Configuration file
 
+    See Also:
+        - :func:`validate_key_queries`
+        - :func:`yarm.query.df_query_postprocess`
     """
     s = Settings()
     c: YAML = config_yaml
@@ -445,6 +456,14 @@ def validate_key_queries(config_yaml: YAML, config_path: str):
         config_yaml: Configuration to validate
         config_path: Configuration file
 
+    Important:
+        A postprocess function is defined by the user in a separate Python file,
+        which must be imported with the :data:`import:` key.
+        See :func:`yarm.validate.validate_key_import`
+
+    See Also:
+        - :func:`validate_key_import`
+        - :func:`yarm.query.df_query_postprocess`
     """
     s = Settings()
     c: YAML = config_yaml

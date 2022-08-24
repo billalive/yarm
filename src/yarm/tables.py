@@ -115,7 +115,7 @@ def create_table_df(
     Args:
         conn: Temporary database in memory
         config: Report configuration
-        table_df: :data:`None` if this table is new, otherwise the existing table.
+        table_df: :data:`None` if this table is new, otherwise the existing table
         table_name: Table we are creating or appending to
         table: Table configuration
         source: Source configuration
@@ -185,7 +185,7 @@ def get_include_index_all(config: Nob) -> bool:
         config: Report configuration
 
     Returns:
-        **Default** value for whether to include the index in each table.
+        **Default** value for whether to include the index in each table
 
     Note:
         This value can be overridden by each particular table.
@@ -215,7 +215,7 @@ def get_include_index_table(
         include_index_all: Default :data:`include_index` value
 
     Returns:
-        Whether to include the index in **this** table.
+        Whether to include the index in **this** table
 
     See Also:
         - :func:`get_include_index_all`
@@ -264,12 +264,12 @@ def input_source(
         config: Report configuration
         source_config: Configuration for this source
         table_name: Table we are creating or appending to
-        table_df: :data:`None` if this table is new, otherwise the existing table.
+        table_df: :data:`None` if this table is new, otherwise the existing table
         input_file: Actual file with source data
         input_sheet: Name of sheet if source is spreadsheet, otherwise :data:`None`
 
     Returns:
-        DataFrame of our new or updated table
+        New or updated table
 
     See Also:
         - :func:`create_table_df`
@@ -342,7 +342,7 @@ def df_input_options(df: DataFrame, config: Nob) -> DataFrame:
         config: Report configuration
 
     Returns:
-        DataFrame with options applied
+        Data with options applied
 
     See Also:
         - :func:`yarm.validate.validate_key_input`
@@ -409,7 +409,7 @@ def df_tables_config_options(
         input_file: Path to this source data
 
     Returns:
-        DataFrame of this table, with options applied from this source.
+        Updated table, with options applied from this source
 
     See Also:
         - :func:`create_tables`
@@ -464,7 +464,7 @@ def back_up_column(df: DataFrame, col: str):
         col: column to back up
 
     Returns:
-        DataFrame with copy of column :data:`col` that has :data:`_raw`
+        Data with copy of column :data:`col` that has :data:`_raw`
         appended to the column name. The original column can now safely
         be manipulated by further code.
 
