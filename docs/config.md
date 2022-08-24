@@ -38,7 +38,9 @@ Note that options shown here are **not necessarily the defaults**. For example, 
 
 ## TODO Actually document these options
 
-Coming soon...
+_Coming soon..._
+
+_In the meantime, give them a try. They're supposed to work exactly like you'd guess._
 
 ## Solutions to Common Config Problems
 

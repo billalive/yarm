@@ -29,9 +29,9 @@ Yarm makes it easy for you to create **recurring reports** by:
 
 - Importing **multiple spreadsheets and CSVs** into a temporary database.
 - Offering **easy** options for **common data cleaning** tasks (e.g. `replace`, `slugify_columns`, `pivot`)
-- Running **SQL queries** (or, for [pandas] fans, **Python** code) on all this data.
+- Running **SQL queries** (or, for [pandas] fans, [custom **Python** code][postprocess]) on all this data.
 - **Exporting the results** as a new **spreadsheet**, **CSV**, or even SQLite **database**.
-- All configured in a simple **YAML file** for easy **reuse**. Download fresh data, `yarm run`, and you're done.
+- All configured in a [simple **YAML file**][config] for easy **reuse**. Download fresh data, `yarm run`, and you're done.
 
 ## Basic Usage
 
@@ -79,11 +79,11 @@ Please see the [documentation][read the docs] for more details and features.
 
 ## Example Report Config File
 
-You configure a report in a single YAML file.
+You configure a report in a [single YAML file][config].
 
 Each query becomes a separate sheet in your output spreadsheet.
 
-This example config file is moderately complex. Your report can be much simpler; you might have only one or two tables and a single query. (Or you might have ten queries, each with a custom `postprocess` function...)
+This example config file is moderately complex. Your report can be much simpler; you might have only one or two tables and a single query. (Or you might have ten queries, each with a [custom postprocess function][postprocess]...)
 
 ```yaml
 ---
@@ -152,6 +152,12 @@ queries:
 import:
   - path: custom.py
 ```
+
+_Learn more about your [configuration file options][config]..._
+
+## Custom Postprocessing Code
+
+If make-it-easy options like `slugify_columns` and SQL aren't enough for you, you can write a [custom postprocess function][postprocess] for any query you like.
 
 ## Status: Alpha
 
@@ -300,6 +306,8 @@ This project was generated from [@cjolowicz]'s [Hypermodern Python Cookiecutter]
 [jq]: https://stedolan.github.io/jq/
 [mlr]: https://miller.readthedocs.io/en/latest/
 [htmlq]: https://github.com/mgdm/htmlq
+[config]: https://yarm.readthedocs.io/en/latest/config.html
+[postprocess]: https://yarm.readthedocs.io/en/latest/postprocess.html
 
 <!-- github-only -->
 

@@ -14,9 +14,9 @@ hidden:
 maxdepth: 1
 ---
 
-usage
 config
 postprocess
+usage
 reference
 contributing
 Code of Conduct <codeofconduct>
