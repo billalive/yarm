@@ -1,6 +1,7 @@
 """Export data."""
 import os
 import sqlite3
+from sqlite3 import Connection
 
 # from datetime import date
 from typing import List
@@ -17,8 +18,13 @@ from yarm.helpers import overwrite_file
 from yarm.settings import Settings
 
 
-def export_database(conn, config: Nob):
-    """Export database to sqlite3 database file."""
+def export_database(conn: Connection, config: Nob):
+    """Export database to sqlite3 database file.
+
+    Args:
+        conn: Temporary database in memory
+        config: Report configuration
+    """
     s = Settings()
     ctx = get_current_context()
     if ctx.params[s.ARG_EXPORT_DATABASE]:
@@ -42,7 +48,15 @@ def export_database(conn, config: Nob):
 
 
 def get_output_dir_path(config: Nob, filename: str) -> str:
-    """Get full path to filename in output dir."""
+    """Get full path to filename in output dir.
+
+    Args:
+        config: Report configuration
+        filename: output filename
+
+    Returns:
+        Full path to output filename
+    """
     s = Settings()
 
     output_dir = os.fspath(config[s.KEY_OUTPUT__DIR][:])
@@ -51,7 +65,14 @@ def get_output_dir_path(config: Nob, filename: str) -> str:
 
 
 def get_full_output_basename(config: Nob) -> str:
-    """Return full basename for output files, with path to output dir."""
+    """Return full basename for output files, with path to output dir.
+
+    Args:
+        config: Report configuration
+
+    Returns:
+        Basename for output files
+    """
     s = Settings()
     basename: str = config[s.KEY_OUTPUT__BASENAME][:]
 
@@ -65,14 +86,22 @@ def get_full_output_basename(config: Nob) -> str:
 
 def export_tables(
     config: Nob,
-    conn,
+    conn: Connection,
     indent: int = 1,
     verbose: int = 2,
 ):
-    """Export the tables we have created.
+    """Export the tables created from configuration.
 
-    This function expects the connected database to contain
-    *only* the tables in the config, *not* the queries yet.
+    Args:
+        config: Report configuration
+        conn: Temporary database in memory (**see note**)
+        indent: Number of indents before message
+        verbose: Minimum verbosity required to show the message
+
+    Important:
+        This function expects the connected database to contain
+        **only** the tables in the config, **not** the queries yet.
+        Queries are exported later, in :func:`export_queries`.
     """
     s = Settings()
     if s.KEY_OUTPUT__EXPORT_TABLES in config:
@@ -101,7 +130,7 @@ def export_tables(
 
 def export_database_tables(
     config: Nob,
-    conn,
+    conn: Connection,
     ext: str,
     msg_table_exported_csv: str,
     msg_table_exported_sheet: str,
@@ -109,11 +138,22 @@ def export_database_tables(
     indent: int = 1,
     verbose: int = 2,
 ):
-    """Export all tables in a database as file(s).
+    """Export all database tables as file(s).
 
-    A database "table" may be either one of the tables defined in
-    tables_config or one of the queries. Both are saved as database
-    "tables".
+    Note:
+        In this context, a database "table" may be *either* a **table**
+        defined in :data:`tables_config` *or* a **query** defined in :data:`queries:`.
+        Both are saved as type :data:`table` in the database.
+
+    Args:
+        config: Report configuration
+        conn: Temporary database in memory (**see note**)
+        ext: Extension for output file
+        msg_table_exported_csv: Message after exporting table to CSV
+        msg_table_exported_sheet: Message after exporting table to sheet
+        export_basename: Basename for single output file
+        indent: Number of indents before message
+        verbose: Minimum verbosity required to show the message
     """
     s = Settings()
     if ext in s.SCHEMA_EXPORT_FORMATS:
@@ -162,7 +202,16 @@ def export_df_csv(
     indent: int = 1,
     verbose: int = 1,
 ):
-    """Export a single dataframe to CSV."""
+    """Export a single dataframe to CSV.
+
+    Args:
+        config: Report configuration
+        df: Data to export
+        name: Name of dataframe, used as basename for output CSV
+        msg_export: Confirmation message
+        indent: Number of indents before message
+        verbose: Minimum verbosity required to show the message
+    """
     ext = "csv"
     filename = get_output_dir_path(config, f"{name}.{ext}")
     overwrite_file(filename)
@@ -185,8 +234,13 @@ def export_df_list_xlsx(
 ):
     """Export a list of dataframes to XLSX.
 
-    Each item in the list should be a tuple:
-    (name, df)
+    Args:
+        config: Report configuration
+        df_list: List of tuples (**see note** in :func:`export_queries`)
+        export_basename: Basename for output spreadsheet
+        msg_export: Confirmation message
+        indent: Number of indents before message
+        verbose: Minimum verbosity required to show the message
 
     """
     s = Settings()
@@ -220,8 +274,25 @@ def export_df_list_xlsx(
     )
 
 
-def export_queries(config, df_list):
-    """Export queries."""
+def export_queries(config: Nob, df_list):
+    """Export all queries.
+
+    Args:
+        config: Report configuration
+        df_list: List of tuples (**see note**)
+
+    Important:
+        Each item in :data:`df_list` should be a tuple of the form:
+        :data:`(name, df)`
+
+    Note:
+        The default output format is :data:`XLSX`, but this can be overriden
+        with :data:`export_queries: csv` under :data:`output:`.
+
+    See Also:
+        - :func:`export_df_csv`
+        - :func:`export_df_list_xlsx`
+    """
     s = Settings()
     # Export queries to CSV or XLSX
     # By default, queries export to xlsx.

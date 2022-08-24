@@ -19,7 +19,7 @@ from yarm.helpers import warn
 from yarm.settings import Settings
 
 
-def run_queries(conn, config: Nob):
+def run_queries(conn: Connection, config: Nob):
     """Run all the queries.
 
     Args:
