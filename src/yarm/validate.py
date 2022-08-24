@@ -406,7 +406,7 @@ def validate_key_output(config_yaml: YAML, config_path: str):
             {
                 "basename": StrNotEmpty(),
                 OptionalYAML("dir"): StrNotEmpty(),
-                OptionalYAML("prepend_date"): Bool(),
+                # OptionalYAML("prepend_date"): Bool(),
                 OptionalYAML("export_tables"): Enum(s.SCHEMA_EXPORT_FORMATS),
                 OptionalYAML("export_queries"): Enum(s.SCHEMA_EXPORT_FORMATS),
                 OptionalYAML("styles"): AnyYAML(),

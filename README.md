@@ -124,7 +124,7 @@ tables_config:
 # Set up your output spreadsheet:
 queries:
   - name: Order Details with Product Names
-    sql: |
+    sql: >
       SELECT *
       FROM order_details as od
       JOIN products as p
@@ -132,6 +132,13 @@ queries:
       ;
 
   - name: Orders With Sales Tax
+    sql: >
+      SELECT orders.*,
+      tax.rate
+      FROM orders
+      JOIN tax
+      ON orders.billing_state = tax.state
+      ;
     # These query results will need a Python function to complete this sheet:
     postprocess: calculate_tax
     # But we can do simple regex replacements right here:
@@ -139,13 +146,6 @@ queries:
       billing_state:
         Virginia: VA
         West Virginia: WV
-    sql: |
-      SELECT orders.*,
-      tax.rate
-      FROM orders
-      JOIN tax
-      ON orders.billing_state = tax.state
-      ;
 
 # Since we need that custom function calculate_tax(), we'll
 # write it in a separate Python file.

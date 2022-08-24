@@ -9,7 +9,7 @@ output:
 
 queries:
   - name: "Names"
-    sql: |
+    sql: >
       SELECT name
       FROM products
       ;

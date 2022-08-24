@@ -15,6 +15,8 @@ maxdepth: 1
 ---
 
 usage
+config
+postprocess
 reference
 contributing
 Code of Conduct <codeofconduct>

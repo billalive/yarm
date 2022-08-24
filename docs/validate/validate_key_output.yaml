@@ -1,7 +1,6 @@
 output:
   dir: output
   basename: BASENAME
-  prepend_date: true
   export_tables: csv
   export_queries: csv
   styles:

@@ -7,7 +7,6 @@ import:
 output:
   dir: OUTPUT
   basename: BASENAME
-  prepend_date: true
   export_tables: csv
   export_queries: csv
   styles:
@@ -49,7 +48,7 @@ tables_config:
 
 queries:
   - name: QUERY A
-    sql: |
+    sql: >
       SELECT
       *
       FROM
@@ -57,15 +56,7 @@ queries:
       ;
 
   - name: QUERY B
-    replace:
-      FIELD_A:
-        MATCH A1: REPLACE A1
-        MATCH A2: REPLACE A2
-        'MATCH B1 W/"''COMPLEX''" #STRING': 'REPLACE B1 W/''"COMPLEX"'' #STRING'
-      FIELD_B_MISSING:
-        MATCH B1: This match won't ever happen, because the field is missing.
-    postprocess: test
-    sql: |
+    sql: >
       SELECT
       s.id,
       FIELD_A,
@@ -77,3 +68,11 @@ queries:
       ON
       s.id = c.ID
       ;
+    replace:
+      FIELD_A:
+        MATCH A1: REPLACE A1
+        MATCH A2: REPLACE A2
+        'MATCH B1 W/"''COMPLEX''" #STRING': 'REPLACE B1 W/''"COMPLEX"'' #STRING'
+      FIELD_B_MISSING:
+        MATCH B1: This match won't ever happen, because the field is missing.
+    postprocess: test

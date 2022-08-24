@@ -4,7 +4,10 @@ import os
 import shutil
 import sys
 from typing import List
+from typing import Optional
+from typing import Tuple
 
+from click.testing import CliRunner
 from path import Path
 
 from yarm import tests_data
@@ -13,14 +16,30 @@ from yarm.settings import Settings
 
 
 def assert_files_exist(files: List[str]) -> bool:
-    """Assert that each file in files exists."""
+    """Assert that each file in a list files exists.
+
+    Args:
+        files: List of file paths
+
+    Returns:
+        True if all files exist, otherwise False
+
+    """
     for f in files:
         assert os.path.isfile(f)
     return True
 
 
 def assert_messages(messages: List[str], output: str) -> bool:
-    """Assert that each message in messages appears in output."""
+    """Assert that each message in a list of messages appears in :data:`output`.
+
+    Args:
+        messages: list of messages to check for
+        output: result of test
+
+    Returns:
+        True if all messages in list appear in output, otherwise False.
+    """
     for msg in messages:
         assert msg in output
     return True
@@ -39,21 +58,27 @@ def prep_test_config(
 
     Use this helper function inside other tests.
 
-    To prepare a new test:
+    Tip:
+        **To prepare a new test:**
 
-    - Create test_dir as directory in tests_data/.
-      Every file in this dir will be copied into the temporary dir for this test.
+        - Create :data:`test_dir` as a directory in :data:`tests_data/`.
 
-    - In this directory, create a config file with name defined in s.DEFAULT_CONFIG_FILE
+        - In this directory, create a config file with the name
+          defined in :data:`DEFAULT_CONFIG_FILE`
+          (see :class:`yarm.settings.Settings`)
 
-    - If needed, add any supporting files.
+        - If needed, add any supporting files. Every file in :data:`test_dir` will be
+          copied into the temporary directory for this test.
+
+    Important:
+        File path in :data:`config_file_override` must be relative to
+        directory of :data:`test_dir`.
 
     Args:
-        test_dir (str): directory with files for this test.
-        config_file_override (str): (optional) use this config file
-            File path must be relative to directory of test_dir.
-        append_config (str): (optional) append this string as config
-        print_config (bool): (optional) print the config file
+        test_dir: Directory with files for this test
+        config_file_override: Use this config file (not default in :data:`test_dir`)
+        append_config: Append this string as configuration
+        print_config: If True, print the configuration for this test
 
     """
     s = Settings()
@@ -110,7 +135,16 @@ def prep_test_config(
 def string_as_config(config: str) -> bool:
     """Write a multiline string as the config file for a test.
 
-    Intended for use within a temporary directory.
+    Important:
+        Intended for use within a temporary directory created
+        with :func:`click.testing.CliRunner.isolated_filesystem`
+
+    Args:
+        config: String of configuration YAML
+
+    Returns:
+        True if config was successfully written as temporary
+        configuration file for this test.
     """
     s = Settings()
     assert isinstance(s.DEFAULT_CONFIG_FILE, str)
@@ -122,16 +156,22 @@ def string_as_config(config: str) -> bool:
     return True
 
 
-def process_test_tuples(test_config, runner):
+def process_test_tuples(
+    test_config: List[Tuple[int, str, str, Optional[str]]], runner: CliRunner
+):
     """Test a list of tuples.
 
-    Tuple elements:
-    0: expected exit code
-    1: test dir
-    2: expected message in result.output
-    3: (optional) config file override
+    Args:
+        test_config: List of tuples describing tests (**see below**)
+        runner: Test runner from test
 
+    Important:
+        Each tuple in the list must have these elements:
 
+        - 0. Expected exit code (:data:`0` for success, :data:`1` for failure)
+        - 1. Test directory
+        - 2. Expected message in :data:`result.output`
+        - 3. (Optional) Configuration file override
     """
     s = Settings()
     for test_tuple in test_config:

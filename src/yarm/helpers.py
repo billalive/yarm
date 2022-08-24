@@ -276,8 +276,7 @@ def verbose_ge(verbose: int) -> bool:
         verbose: verbosity level
 
     Returns:
-        :data:`True` if user used :data:`verbose` or more :data:`-v` flags,
-        otherwise :data:`False`
+        True if user used `verbose` or more `-v` flags, otherwise False
 
     """
     s = Settings()

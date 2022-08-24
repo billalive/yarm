@@ -5,6 +5,13 @@
 ```{eval-rst}
 .. automodule:: yarm
    :members:
+
+This page contains documentation for almost every function in :data:`yarm`.
+
+Developers are most likely to find it useful, but users may find some critical necessary detail here as well.
+
+No matter what, you'll want to read the introductory documentation first, such as
+:doc:`usage` and :doc:`config`.
 ```
 
 ### Main
