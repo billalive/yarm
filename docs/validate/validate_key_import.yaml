@@ -1,0 +1,3 @@
+import:
+  - path: MODULE_A.py
+  - path: MODULE_B.py

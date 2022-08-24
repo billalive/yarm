@@ -1,0 +1,6 @@
+input:
+  strip: true
+  slugify_columns: true
+  lowercase_columns: true
+  uppercase_rows: true
+  include_index: true

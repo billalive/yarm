@@ -139,8 +139,8 @@ def check_is_file(list_of_paths: list[Union[str, Dict]], key: Optional[str]):
     """For each item in a list, check that the value is a file.
 
     Args:
-        list_of_paths: List of strings or dictionaries.
-        key: If dictionaries, this key matches the paths.
+        list_of_paths: List of strings or dictionaries
+        key: If dictionaries, this is the key for the path (e.g. `path`)
 
     """
     s = Settings()
@@ -177,7 +177,14 @@ class StrNotEmpty(Str):
 
     @staticmethod
     def validate_scalar(chunk: YAMLChunk) -> str:
-        """Invalidate if string is empty."""
+        """Invalidate if string is empty.
+
+        Args:
+            chunk: YAML to be validated
+
+        Returns:
+            Validated string
+        """
         if any([chunk.contents == ""]):
             chunk.expecting_but_found("when expecting a string that is not empty")
         return chunk.contents
@@ -260,17 +267,17 @@ def validate_key_tables_config(c: YAML, config_path: str):
                         )
 
 
-def check_key(key: str, c: YAML):
+def check_key(key: str, config: YAML):
     """Check whether a key exists in configuration YAML.
 
     Args:
-       key (str)   name of key
-       c (YAML)    config YAML
+       key:    name of key
+       config: configuration YAML
 
     Returns:
-       name of key (str) if present, None if not
+       name of key if present, None if not
     """
-    if key in c:
+    if key in config:
         msg_validating_key(key)
         return key
     else:
@@ -280,11 +287,8 @@ def check_key(key: str, c: YAML):
 def validate_key_import(c: YAML, config_path: str):
     """Validate config key: import.
 
-    Example Format:
-
-    import:
-     - path: MODULE_A.py
-     - path: MODULE_B.py
+    .. literalinclude:: validate/validate_key_import.yaml
+       :language: yaml
 
     If more than one module in this list defines the same function,
     the later module will silently override the previous definition.
@@ -309,14 +313,9 @@ def validate_key_import(c: YAML, config_path: str):
 def validate_key_input(c: YAML, config_path: str):
     """Validate config key: input.
 
-    Example Format:
+    .. literalinclude:: validate/validate_key_input.yaml
+       :language: yaml
 
-    input:
-        strip: true
-        slugify_columns: true
-        lowercase_columns: true
-        uppercase_rows: true
-        include_index: true
     """
     key: str = check_key("input", c)
     if key:
@@ -336,16 +335,8 @@ def validate_key_input(c: YAML, config_path: str):
 def validate_key_output(c: YAML, config_path: str):
     """Validate config key: output.
 
-    .. code-block:: yaml
-
-        output:
-            dir: output
-            basename: BASENAME
-            prepend_date: true
-            export_tables: csv
-            export_queries: csv
-            styles:
-                column_width: 15
+    .. literalinclude:: validate/validate_key_output.yaml
+       :language: yaml
 
     """
     s = Settings()
