@@ -1,9 +1,7 @@
-#!/usr/bin/env python3
 # pylint: disable=invalid-name
-
 # noqa: B950
 
-"""Validate config file."""
+"""Validate configuration file."""
 
 import importlib.resources as pkg_resources
 import importlib.util
@@ -66,7 +64,7 @@ def validate_config(config_path: str) -> YAML:
     """Validate config file before running report.
 
     Args:
-        config_path: Path to config file
+        config_path: Path to configuration file
 
     Returns:
         Validated configuration
@@ -98,7 +96,7 @@ def validate_config_edited(config_yaml: YAML) -> bool:
     """Check whether config has been edited.
 
     Args:
-        config_yaml: configuration
+        config_yaml: Report configuration
 
     Returns:
         True if configuration has been edited, aborts otherwise.
@@ -121,7 +119,7 @@ def validate_minimum_required_keys(config_yaml: YAML) -> bool:
     """Check whether config has minimum **required** keys.
 
     Args:
-        config_yaml: configuration to validate
+        config_yaml: Configuration to validate
 
     Returns:
         True if `config` has minimum required keys, abort otherwise.
@@ -214,9 +212,9 @@ def msg_validating_key(key: str, suffix: str = None, verbose: int = 1):
     """Show a message that a key is being validated.
 
     Args:
-        key: key being validated
-        suffix: string to add after message
-        verbose: minimum verbosity level required to show this message
+        key: Key being validated
+        suffix: String to add after message
+        verbose: Minimum verbosity level required to show this message
 
     """
     s = Settings()
@@ -235,8 +233,8 @@ def validate_key_tables_config(config_yaml: YAML, config_path: str):
        :language: yaml
 
     Args:
-        config_yaml: configuration to validate
-        config_path: configuration file
+        config_yaml: Configuration to validate
+        config_path: Configuration file
 
     """
     s = Settings()
@@ -303,8 +301,8 @@ def check_key(key: str, config_yaml: YAML) -> Union[str, None]:
     """Check whether a key exists in configuration YAML.
 
     Args:
-       key:    name of key
-       config_yaml: configuration to check
+       key:    Name of key
+       config_yaml: Configuration to check
 
     Returns:
        name of key if present, None if not
@@ -326,8 +324,8 @@ def validate_key_import(config_yaml: YAML, config_path: str):
     the later module will silently override the previous definition.
 
     Args:
-        config_yaml: configuration YAML to validate
-        config_path: configuration file
+        config_yaml: Configuration to validate
+        config_path: Configuration file
 
     """
     s = Settings()
@@ -355,8 +353,11 @@ def validate_key_input(config_yaml: YAML, config_path: str):
        :language: yaml
 
     Args:
-        config_yaml: configuration to validate
-        config_path: configuration file
+        config_yaml: Configuration to validate
+        config_path: Configuration file
+
+    See Also:
+        - :func:`yarm.tables.df_input_options`
 
     """
     c: YAML = config_yaml
@@ -382,8 +383,8 @@ def validate_key_output(config_yaml: YAML, config_path: str):
        :language: yaml
 
     Args:
-        config_yaml: configuration to validate
-        config_path: configuration file
+        config_yaml: Configuration to validate
+        config_path: Configuration file
 
     """
     s = Settings()
@@ -417,7 +418,7 @@ def validate_key_output_dir(config_yaml: YAML):
     """Prepare output directory.
 
     Args:
-        config_yaml: configuration
+        config_yaml: Report configuration
 
     """
     s = Settings()
@@ -441,8 +442,8 @@ def validate_key_queries(config_yaml: YAML, config_path: str):
        :language: yaml
 
     Args:
-        config_yaml: configuration to validate
-        config_path: configuration file
+        config_yaml: Configuration to validate
+        config_path: Configuration file
 
     """
     s = Settings()
@@ -490,10 +491,10 @@ def revalidate_yaml(
 
     Args:
         yaml: YAML to revalidate
-        schema: schema to revalidate this YAML against
-        config_path: file in which this configuration YAML was found
-        msg_key: message that this key is validating
-        msg_suffix: message suffix
+        schema: Schema to revalidate this YAML against
+        config_path: File in which this configuration YAML was found
+        msg_key: Message that this key is validating
+        msg_suffix: Message suffix
     """
     s = Settings()
     try:
@@ -515,6 +516,13 @@ def validate_config_schema(config_path: str) -> YAML:
 
     Returns:
         Configuration validated against top-level schema.
+
+    See Also:
+        - :func:`validate_key_tables_config`
+        - :func:`validate_key_import`
+        - :func:`validate_key_output`
+        - :func:`validate_key_input`
+        - :func:`validate_key_queries`
 
     """
     s = Settings()

@@ -1,4 +1,4 @@
-"""Run queries."""
+"""Run queries on tables."""
 
 import re
 import sys
