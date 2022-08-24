@@ -30,7 +30,7 @@ Yarm makes it easy for you to create **recurring reports** by:
 - Importing **multiple spreadsheets and CSVs** into a temporary database.
 - Offering **easy** options for **common data cleaning** tasks (e.g. `replace`, `slugify_columns`, `pivot`)
 - Running **SQL queries** (or, for [pandas] fans, **Python** code) on all this data.
-- **Exporting the results** as a new spreadsheet or CSV.
+- **Exporting the results** as a new **spreadsheet**, **CSV**, or even SQLite **database**.
 - All configured in a simple **YAML file** for easy **reuse**. Download fresh data, `yarm run`, and you're done.
 
 ## Basic Usage
@@ -61,7 +61,7 @@ $ yarm run
 
 ### Every Subsequent Time
 
-- Collect your data.
+- Collect fresh data. Save it over the old files.
 
 - Run the report:
 
@@ -215,13 +215,58 @@ So this feature will need some nuance.
 
 ### `create_tables`
 
-If you want to include a configuration file that defines more tables than you want for a particular report, you will be able to use `create_tables` to limit the tables for _this_ report to a particular subset.
+If you want to include a configuration file that defines more tables than you want for a particular report, you'll be able to define a list as `create_tables` to limit the tables for _this_ report to a particular subset.
+
+That might look like this:
+
+```yaml
+---
+# Include a basic config file you always use for this client:
+include:
+  - path: ../Client_A/all.yaml
+
+# For this report, we only want to use certain tables:
+create_tables:
+  - orders
+  - products
+  - tax
+
+# The rest of the config file continues as usual...
+```
 
 ### Visualizations?
 
 Since we're already loading all the data into [pandas], we might as well add [matplotlib] and let you generate some charts, right?
 
 I'm not sure. I can see the use cases, but if you need charts, it might be time to upgrade to [Jupyter Lab].
+
+### Your Killer Feature?
+
+Am I missing something? Is there some tedious bit of repetitive data wrangling that you'd *love* to automate into a single line of YAML?
+
+[File an issue][file an issue]! I'd love to hear from you.
+
+## Is `yarm` for You?
+
+This tool has a clear focus: Make it **easy** to run and **rerun reports** from the **command line** that query **multiple sources** of tabular data. 
+
+Once you set up the initial configuration file, the workflow for future reports is simple. Download fresh data over the old files, then rerun the report. 
+
+This means that `yarm` is **not** a tool for data **exploration**. 
+
+True, you may still want `yarm` to **prepare** your data for exploration. Once you get used to listing a few data sources, setting a few options, and spitting out a nice, clean SQLite database or set of CSV files to play with, you may get hooked.
+
+But for iterative tinkering with your data, you're going to need other tools.
+
+## Other Open Source Tools You Might Prefer
+
+- [sqlitebrowser]: An excellent GUI for exploring your SQLite database. I sometimes use this to **figure out my queries** before I save them into my config file.
+
+- [Jupyter Lab]: If you find your SQL queries getting more and more arcane and complex, it's probably time to learn [pandas], and that means unleashing the power of this [interactive "notebook"][jupyter lab]. Some reports are so complex that they really deserve to be run step-by-step, with immediate output after every command. Jupyter Lab makes that absurdly easy... and repeatable.
+
+- [SQL Notebook]: A newer offering that I haven't used yet, but it looks like an interesting GUI combination of sqlitebrowser and a "Jupyter-style notebook interface". Could be very powerful.
+
+- For quick, **one-off** data manipulations on the **command line**, you can reach for excellent tools like [jq] for JSON, [mlr] for CSV, and even [htmlq] for HTML. But once the command gets long and complex enough that you want to save it to a script, you might start missing SQL queries and `yarm` features like `slugify_columns: true`.
 
 ## Contributing
 
@@ -251,6 +296,11 @@ This project was generated from [@cjolowicz]'s [Hypermodern Python Cookiecutter]
 [pandas]: https://pandas.pydata.org/
 [jupyter lab]: https://jupyter.org/try
 [select]: https://www.sqlite.org/lang_select.html
+[sqlitebrowser]: https://sqlitebrowser.org/
+[SQL Notebook]: https://sqlnotebook.com/
+[jq]: https://stedolan.github.io/jq/
+[mlr]: https://miller.readthedocs.io/en/latest/
+[htmlq]: https://github.com/mgdm/htmlq
 
 <!-- github-only -->
 
