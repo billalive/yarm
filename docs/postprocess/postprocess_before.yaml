@@ -1,0 +1,15 @@
+---
+tables_config:
+  clocks:
+    - path: "clocks.csv"
+
+output:
+  dir: output
+  basename: Minimal_Postprocess_Example
+
+queries:
+  - name: "Times"
+    sql: >
+      SELECT *
+      FROM clocks
+      ;
