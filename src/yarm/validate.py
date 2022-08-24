@@ -12,7 +12,7 @@ import re
 import sys
 
 # from typing import Dict
-from typing import Any
+from typing import Dict
 from typing import Optional
 from typing import Union
 
@@ -47,15 +47,18 @@ from yarm.settings import Settings
 
 
 class Slug(ScalarValidator):
-    """Class to use slugify to make spelling consistent."""
+    """Class to use `slugify` to make spelling consistent."""
 
     def validate_scalar(self, chunk):
-        """Use slugify to make spelling consistent.
+        """Use `slugify` to make spelling consistent.
 
-        Use _ rather than - for separator; it's more Pythonic.
+        Note:
+            We use `_` rather than `-` for the separator.
 
-        Also, Ansible config files seem to favor underscores, see:
-        https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html
+            The underscore seems more Pythonic.
+
+            Also, `ansible` config files seem to favor underscores. See:
+            https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html.
         """
         return slugify(chunk.contents, separator="_")
 
@@ -64,7 +67,7 @@ def validate_config(config_path: str) -> YAML:
     """Validate config file before running report.
 
     Args:
-        config_path (str): Path to config file
+        config_path: Path to config file
 
     Returns:
         config (YAML): validated config as YAML
@@ -76,7 +79,7 @@ def validate_config(config_path: str) -> YAML:
     # for key in config:
     #    print(key, config[key])
 
-    config = validate_config_schema(config_path)
+    config: YAML = validate_config_schema(config_path)
 
     # Check whether config file has been edited.
     validate_config_edited(config)
@@ -132,12 +135,12 @@ def validate_minimum_required_keys(config: YAML) -> bool:
     return True
 
 
-def check_is_file(list_of_paths, key: Optional[str]):
+def check_is_file(list_of_paths: list[Union[str, Dict]], key: Optional[str]):
     """For each item in a list, check that the value is a file.
 
     Args:
-        list_of_paths: (list) List of strings or dictionaries
-        key: (str) (optional) If dictionaries, this key matches the paths.
+        list_of_paths: List of strings or dictionaries.
+        key: If dictionaries, this key matches the paths.
 
     """
     s = Settings()
@@ -194,22 +197,9 @@ def msg_validating_key(key: str, suffix: str = None, verbose: int = 1):
 def validate_key_tables_config(c: YAML, config_path: str):
     """Validate config key: tables_config.
 
-    Example Format:
+    .. literalinclude:: validate/validate_key_tables_config.yaml
+       :language: yaml
 
-    tables_config:
-     TABLE_NAME_A:
-       - path: SOURCE_A.xlsx
-         sheet: SHEET A.1
-         datetime:
-           FIELD_1: NONE_OR_STR
-           FIELD_2: NONE_OR_STR
-         pivot:
-           index: FIELD_ID
-           columns: FIELD_KEY
-           values: FIELD_VALUE
-         include_index: false
-     TABLE_NAME_B:
-       - path: SOURCE_B.csv
     """
     s = Settings()
     key: str = check_key("tables_config", c)
@@ -346,16 +336,17 @@ def validate_key_input(c: YAML, config_path: str):
 def validate_key_output(c: YAML, config_path: str):
     """Validate config key: output.
 
-    Example Format:
+    .. code-block:: yaml
 
-    output:
-        dir: output
-        basename: BASENAME
-        prepend_date: true
-        export_tables: csv
-        export_queries: csv
-        styles:
-            column_width: 15
+        output:
+            dir: output
+            basename: BASENAME
+            prepend_date: true
+            export_tables: csv
+            export_queries: csv
+            styles:
+                column_width: 15
+
     """
     s = Settings()
     key: str = check_key("output", c)
@@ -402,35 +393,9 @@ def validate_key_output_dir(c: YAML):
 def validate_key_queries(c: YAML, config_path: str):
     """Validate config key: queries.
 
-    Example Format:
+    .. literalinclude:: validate/validate_key_queries.yaml
+       :language: yaml
 
-    queries:
-    - name: QUERY A
-      sql: |
-      SELECT
-      *
-      FROM
-      table_from_spreadsheet AS s
-      ;
-
-    - name: QUERY B
-      postprocess: postprocess_function
-      replace:
-        FIELD_A:
-          MATCH A1: REPLACE A1
-          MATCH A2: REPLACE A2
-        FIELD_B:
-          MATCH B1: REPLACE B1
-      sql: |
-      SELECT
-      *
-      FROM
-      table_from_spreadsheet AS s
-      JOIN
-      table_from_csv AS c
-      ON
-      s.id = c.id
-      ;
     """
     s = Settings()
     key: str = check_key("queries", c)
@@ -493,11 +458,11 @@ def revalidate_yaml(
         abort(s.MSG_INVALID_YAML, err, file_path=config_path)
 
 
-def validate_config_schema(config_path: str) -> Any:
-    """Return YAML for config file if it validates agaist schema.
+def validate_config_schema(config_path: str) -> YAML:
+    """Return YAML for config file if it validates against schema.
 
     Args:
-        config_path (str): Path to config file
+        config_path: Path to config file
 
     Returns:
         config (YAML): validated config as YAML
@@ -524,23 +489,23 @@ def validate_config_schema(config_path: str) -> Any:
         key_validator=Slug(),
     )
 
-    c = load_yaml_file(config_path, schema)
+    config: YAML = load_yaml_file(config_path, schema)
 
     msg_with_data(s.MSG_BEGIN_VALIDATING_FILE, config_path, verbose=2)
 
     # TODO Uncoment include and create_tables when we implement these options.
     # validate_key_include(c, config_path)
-    validate_key_tables_config(c, config_path)
+    validate_key_tables_config(config, config_path)
     # validate_key_create_tables(c, config_path)
-    validate_key_import(c, config_path)
-    validate_key_input(c, config_path)
-    validate_key_output(c, config_path)
-    validate_key_queries(c, config_path)
+    validate_key_import(config, config_path)
+    validate_key_input(config, config_path)
+    validate_key_output(config, config_path)
+    validate_key_queries(config, config_path)
 
     msg_with_data(s.MSG_CONFIG_FILE_VALID, config_path, verbose=2)
 
     # If configuration validates, return config object.
-    return c
+    return config
 
 
 def get_default_config() -> Nob:

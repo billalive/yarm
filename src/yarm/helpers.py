@@ -284,13 +284,13 @@ def key_show_message(key_msg: List[Tuple[str, str]], config: Nob, verbose: int =
     key_msg must be a list of tuples.
 
     Example:
-    key_msg: list = [
-        (s.KEY_INPUT__STRIP, s.MSG_STRIP_WHITESPACE),
-        (s.KEY_INPUT__SLUGIFY_COLUMNS, s.MSG_SLUGIFY_COLUMNS),
-        (s.KEY_INPUT__LOWERCASE_COLUMNS, s.MSG_LOWERCASE_COLUMNS),
-        (s.KEY_INPUT__UPPERCASE_ROWS, s.MSG_UPPERCASE_ROWS),
-    ]
-    key_show_message(key_msg, config, verbose=1)
+        key_msg: list = [
+            (s.KEY_INPUT__STRIP, s.MSG_STRIP_WHITESPACE),
+            (s.KEY_INPUT__SLUGIFY_COLUMNS, s.MSG_SLUGIFY_COLUMNS),
+            (s.KEY_INPUT__LOWERCASE_COLUMNS, s.MSG_LOWERCASE_COLUMNS),
+            (s.KEY_INPUT__UPPERCASE_ROWS, s.MSG_UPPERCASE_ROWS),
+        ]
+        key_show_message(key_msg, config, verbose=1)
 
     """
     for key, msg_str in key_msg:

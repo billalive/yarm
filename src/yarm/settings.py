@@ -7,7 +7,7 @@ class Settings:
     """Define global settings.
 
     When you need a setting in a function, make an instance of this class.
-    These settings should NOT be changed; treat them as constants.
+    These settings should **not** be changed elsewhere. Treat them as constants.
     """
 
     PKG = "yarm"

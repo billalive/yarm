@@ -1,0 +1,27 @@
+queries:
+  - name: QUERY A
+    sql: |
+      SELECT
+      *
+      FROM
+      table_from_spreadsheet AS s
+      ;
+
+  - name: QUERY B
+    postprocess: postprocess_function
+    replace:
+      FIELD_A:
+      MATCH A1: REPLACE A1
+      MATCH A2: REPLACE A2
+      FIELD_B:
+      MATCH B1: REPLACE B1
+    sql: |
+      SELECT
+      *
+      FROM
+      table_from_spreadsheet AS s
+      JOIN
+      table_from_csv AS c
+      ON
+      s.id = c.id
+      ;

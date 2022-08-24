@@ -1,0 +1,14 @@
+tables_config:
+  TABLE_NAME_A:
+    - path: SOURCE_A.xlsx
+      sheet: SHEET A.1
+      datetime:
+        FIELD_1: NONE_OR_STR
+        FIELD_2: NONE_OR_STR
+      pivot:
+        index: FIELD_ID
+        columns: FIELD_KEY
+        values: FIELD_VALUE
+      include_index: false
+  TABLE_NAME_B:
+    - path: SOURCE_B.csv
