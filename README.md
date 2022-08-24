@@ -45,7 +45,7 @@ Yarm makes it easy for you to create **recurring reports** by:
 $ yarm new
 ```
 
-- Edit the YAML config file (see [below](#example-report-config-file)):
+- Edit the YAML config file (see below).
 
   - Configure your input spreadsheets and CSV files as tables.
   - Write one or more [SELECT] queries on these tables to create output sheets.

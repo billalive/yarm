@@ -15,6 +15,8 @@
    :undoc-members:
    :special-members:
    :inherited-members:
+
+See :doc:`usage`.
 ```
 
 ### Settings

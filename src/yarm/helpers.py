@@ -279,11 +279,13 @@ def overwrite_file(path: str, indent: int = 1) -> bool:
 
 
 def key_show_message(key_msg: List[Tuple[str, str]], config: Nob, verbose: int = 1):
-    """For each key, if that key is in config, show message.
+    """For each key, if that key is in :data:`config`, show the matching message.
 
-    key_msg must be a list of tuples.
+    Important:
+        :data:`key_msg` must be a **list** of **tuples** of the form: `(key, message)`.
 
-    Example:
+    .. code-block:: python
+
         key_msg: list = [
             (s.KEY_INPUT__STRIP, s.MSG_STRIP_WHITESPACE),
             (s.KEY_INPUT__SLUGIFY_COLUMNS, s.MSG_SLUGIFY_COLUMNS),
@@ -291,6 +293,11 @@ def key_show_message(key_msg: List[Tuple[str, str]], config: Nob, verbose: int =
             (s.KEY_INPUT__UPPERCASE_ROWS, s.MSG_UPPERCASE_ROWS),
         ]
         key_show_message(key_msg, config, verbose=1)
+
+    Args:
+        key_msg: list of tuples of the form: `(key, message)`
+        config: configuration
+        verbose: minimum verbosity level required to show this message
 
     """
     for key, msg_str in key_msg:

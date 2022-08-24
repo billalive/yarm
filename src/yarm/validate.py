@@ -10,9 +10,8 @@ import importlib.util
 import os
 import re
 import sys
-
-# from typing import Dict
 from typing import Dict
+from typing import List
 from typing import Optional
 from typing import Union
 
@@ -70,8 +69,12 @@ def validate_config(config_path: str) -> YAML:
         config_path: Path to config file
 
     Returns:
-        config (YAML): validated config as YAML
+        Validated configuration
 
+    See Also:
+        - :func:`validate_config_schema`
+        - :func:`validate_config_edited`
+        - :func:`validate_minimum_required_keys`
     """
     # Why no test for whether file exists? Because click() handles this.
 
@@ -79,24 +82,31 @@ def validate_config(config_path: str) -> YAML:
     # for key in config:
     #    print(key, config[key])
 
-    config: YAML = validate_config_schema(config_path)
+    config_yaml: YAML = validate_config_schema(config_path)
 
     # Check whether config file has been edited.
-    validate_config_edited(config)
+    validate_config_edited(config_yaml)
 
     # Check whether minimum required keys are present.
-    validate_minimum_required_keys(config)
+    validate_minimum_required_keys(config_yaml)
 
     # If all tests pass, config file is validated.
-    return config
+    return config_yaml
 
 
-def validate_config_edited(config: YAML) -> bool:
-    """Check whether config has been edited."""
+def validate_config_edited(config_yaml: YAML) -> bool:
+    """Check whether config has been edited.
+
+    Args:
+        config_yaml: configuration
+
+    Returns:
+        True if configuration has been edited, aborts otherwise.
+    """
     # Rather than an exhaustive search, just check a critical setting.
     s = Settings()
     default_config = get_default_config()
-    c = Nob(config.data)
+    c = Nob(config_yaml.data)
     if s.KEY_OUTPUT__BASENAME in c:
         if c[s.KEY_OUTPUT__BASENAME] == default_config[s.KEY_OUTPUT__BASENAME]:
             abort(
@@ -107,10 +117,20 @@ def validate_config_edited(config: YAML) -> bool:
     return True
 
 
-def validate_minimum_required_keys(config: YAML) -> bool:
-    """Check whether config has minimum required keys."""
+def validate_minimum_required_keys(config_yaml: YAML) -> bool:
+    """Check whether config has minimum **required** keys.
+
+    Args:
+        config_yaml: configuration to validate
+
+    Returns:
+        True if `config` has minimum required keys, abort otherwise.
+
+    Important:
+        To modify which keys are required to run a report, update this function.
+    """
     s = Settings()
-    c = Nob(config.data)
+    c = Nob(config_yaml.data)
     missing_keys = []
     for key in [
         s.KEY_TABLES_CONFIG,
@@ -135,12 +155,12 @@ def validate_minimum_required_keys(config: YAML) -> bool:
     return True
 
 
-def check_is_file(list_of_paths: list[Union[str, Dict]], key: Optional[str]):
+def check_is_file(list_of_paths: List[Union[str, Dict]], key: Optional[str]):
     """For each item in a list, check that the value is a file.
 
     Args:
         list_of_paths: List of strings or dictionaries
-        key: If dictionaries, this is the key for the path (e.g. `path`)
+        key: If dictionaries, this is the key for the path (e.g. :data:`path`)
 
     """
     s = Settings()
@@ -191,7 +211,14 @@ class StrNotEmpty(Str):
 
 
 def msg_validating_key(key: str, suffix: str = None, verbose: int = 1):
-    """Show a message that a key is being validated."""
+    """Show a message that a key is being validated.
+
+    Args:
+        key: key being validated
+        suffix: string to add after message
+        verbose: minimum verbosity level required to show this message
+
+    """
     s = Settings()
     if verbose_ge(verbose):
         msg = s.MSG_VALIDATING_KEY
@@ -201,15 +228,20 @@ def msg_validating_key(key: str, suffix: str = None, verbose: int = 1):
         msg_with_data(msg, key, verbose=verbose)
 
 
-def validate_key_tables_config(c: YAML, config_path: str):
+def validate_key_tables_config(config_yaml: YAML, config_path: str):
     """Validate config key: tables_config.
 
     .. literalinclude:: validate/validate_key_tables_config.yaml
        :language: yaml
 
+    Args:
+        config_yaml: configuration to validate
+        config_path: configuration file
+
     """
     s = Settings()
-    key: str = check_key("tables_config", c)
+    c: YAML = config_yaml
+    key: Union[str, None] = check_key("tables_config", c)
     if key:
         # Do not use Slug() on table names, because user will expect to use
         # their table names in their queries.
@@ -267,24 +299,24 @@ def validate_key_tables_config(c: YAML, config_path: str):
                         )
 
 
-def check_key(key: str, config: YAML):
+def check_key(key: str, config_yaml: YAML) -> Union[str, None]:
     """Check whether a key exists in configuration YAML.
 
     Args:
        key:    name of key
-       config: configuration YAML
+       config_yaml: configuration to check
 
     Returns:
        name of key if present, None if not
     """
-    if key in config:
+    if key in config_yaml:
         msg_validating_key(key)
         return key
     else:
         return None
 
 
-def validate_key_import(c: YAML, config_path: str):
+def validate_key_import(config_yaml: YAML, config_path: str):
     """Validate config key: import.
 
     .. literalinclude:: validate/validate_key_import.yaml
@@ -292,9 +324,15 @@ def validate_key_import(c: YAML, config_path: str):
 
     If more than one module in this list defines the same function,
     the later module will silently override the previous definition.
+
+    Args:
+        config_yaml: configuration YAML to validate
+        config_path: configuration file
+
     """
     s = Settings()
-    key: str = check_key("import", c)
+    c: YAML = config_yaml
+    key: Union[str, None] = check_key("import", c)
     if key:
         schema = Seq(Map({"path": StrNotEmpty()}, key_validator=Slug()))
         revalidate_yaml(c[key], schema, config_path)
@@ -310,14 +348,19 @@ def validate_key_import(c: YAML, config_path: str):
             spec.loader.exec_module(module)  # type: ignore
 
 
-def validate_key_input(c: YAML, config_path: str):
+def validate_key_input(config_yaml: YAML, config_path: str):
     """Validate config key: input.
 
     .. literalinclude:: validate/validate_key_input.yaml
        :language: yaml
 
+    Args:
+        config_yaml: configuration to validate
+        config_path: configuration file
+
     """
-    key: str = check_key("input", c)
+    c: YAML = config_yaml
+    key: Union[str, None] = check_key("input", c)
     if key:
         schema = Map(
             {
@@ -332,15 +375,20 @@ def validate_key_input(c: YAML, config_path: str):
         revalidate_yaml(c[key], schema, config_path)
 
 
-def validate_key_output(c: YAML, config_path: str):
+def validate_key_output(config_yaml: YAML, config_path: str):
     """Validate config key: output.
 
     .. literalinclude:: validate/validate_key_output.yaml
        :language: yaml
 
+    Args:
+        config_yaml: configuration to validate
+        config_path: configuration file
+
     """
     s = Settings()
-    key: str = check_key("output", c)
+    c: YAML = config_yaml
+    key: Union[str, None] = check_key("output", c)
     if key:
         schema = Map(
             {
@@ -365,11 +413,16 @@ def validate_key_output(c: YAML, config_path: str):
         validate_key_output_dir(c)
 
 
-def validate_key_output_dir(c: YAML):
-    """Prepare output directory."""
+def validate_key_output_dir(config_yaml: YAML):
+    """Prepare output directory.
+
+    Args:
+        config_yaml: configuration
+
+    """
     s = Settings()
-    config: Nob = Nob(c.data)
-    output_dir = os.fspath(config[s.KEY_OUTPUT__DIR][:])
+    c: Nob = Nob(config_yaml.data)
+    output_dir = os.fspath(c[s.KEY_OUTPUT__DIR][:])
     if not os.path.isdir(output_dir):
         if os.path.exists(output_dir):
             abort(s.MSG_CANT_CREATE_OUTPUT_DIR, data=output_dir)
@@ -381,15 +434,20 @@ def validate_key_output_dir(c: YAML):
     msg_with_data(s.MSG_OUTPUT_DIR, data=output_dir)
 
 
-def validate_key_queries(c: YAML, config_path: str):
+def validate_key_queries(config_yaml: YAML, config_path: str):
     """Validate config key: queries.
 
     .. literalinclude:: validate/validate_key_queries.yaml
        :language: yaml
 
+    Args:
+        config_yaml: configuration to validate
+        config_path: configuration file
+
     """
     s = Settings()
-    key: str = check_key("queries", c)
+    c: YAML = config_yaml
+    key: Union[str, None] = check_key("queries", c)
     if key:
         for query in c[key]:
             schema = Map(
@@ -428,14 +486,14 @@ def revalidate_yaml(
     msg_key: Union[str, None] = None,
     msg_suffix: Union[str, None] = None,
 ):
-    """Revalidate yaml from config_path according to schema.
+    """Revalidate configuration YAML from `config_path` according to `schema`.
 
     Args:
-        yaml (YAML): yaml to revalidate
-        schema (Map | MapPattern): schema to validate with
-        config_path (str): file in which this YAML was found.
-        msg_key (str): (optional) if provided, message that this key is validating.
-        msg_suffix (str): (optional) message suffix
+        yaml: YAML to revalidate
+        schema: schema to revalidate this YAML against
+        config_path: file in which this configuration YAML was found
+        msg_key: message that this key is validating
+        msg_suffix: message suffix
     """
     s = Settings()
     try:
@@ -450,13 +508,13 @@ def revalidate_yaml(
 
 
 def validate_config_schema(config_path: str) -> YAML:
-    """Return YAML for config file if it validates against schema.
+    """Return YAML for config file if it validates against top-level schema.
 
     Args:
         config_path: Path to config file
 
     Returns:
-        config (YAML): validated config as YAML
+        Configuration validated against top-level schema.
 
     """
     s = Settings()
@@ -500,7 +558,7 @@ def validate_config_schema(config_path: str) -> YAML:
 
 
 def get_default_config() -> Nob:
-    """Get default config."""
+    """Return default configuration."""
     s = Settings()
     return Nob(
         load(

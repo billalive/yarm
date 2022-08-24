@@ -1,10 +1,10 @@
 tables_config:
   TABLE_NAME_A:
     - path: SOURCE_A.xlsx
-      sheet: SHEET A.1
+      sheet: A.1
       datetime:
-        FIELD_1: NONE_OR_STR
-        FIELD_2: NONE_OR_STR
+        FIELD_1:
+        FIELD_2: "%Y-%m"
       pivot:
         index: FIELD_ID
         columns: FIELD_KEY
