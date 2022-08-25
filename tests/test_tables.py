@@ -239,3 +239,89 @@ input:
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
         assert s.MSG_CANT_CREATE_OUTPUT_DIR in result.output
         assert result.exit_code == 1
+    # Break tables_config with input: options.
+    # First run should pass.
+    with runner.isolated_filesystem():
+        prep_test_config(test_dir, config_file_override="slugify_error.yaml")
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert result.exit_code == 0
+        assert s.MSG_APPLYING_PIVOT in result.output
+        assert s.MSG_CONVERTING_DATETIME in result.output
+    # Then we apply input options without updating tables_config,
+    # and things break.
+    with runner.isolated_filesystem():
+        append_config = """
+tables_config:
+  dates:
+    - path: slugify_error_datetime.csv
+      datetime:
+        "DATE CREATED":
+
+input:
+  slugify_columns: true
+"""
+        prep_test_config(
+            test_dir, config_file_override="minimum.yaml", append_config=append_config
+        )
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        print(result.output)
+        assert s.MSG_MISSING_DATETIME in result.output
+        assert result.exit_code == 1
+    with runner.isolated_filesystem():
+        append_config = """
+tables_config:
+  pivoting:
+    - path: slugify_error_pivot.csv
+      pivot:
+        index: ID
+        columns: KEY
+        values: "VALUE NAME"
+
+input:
+  slugify_columns: true
+"""
+        prep_test_config(
+            test_dir, config_file_override="minimum.yaml", append_config=append_config
+        )
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        print(result.output)
+        assert s.MSG_PIVOT_FAILED_KEY_ERROR in result.output
+        assert result.exit_code == 1
+    with runner.isolated_filesystem():
+        append_config = """
+tables_config:
+  dates:
+    - path: slugify_error_datetime.csv
+      datetime:
+        "DATE CREATED":
+
+input:
+  lowercase_columns: true
+"""
+        prep_test_config(
+            test_dir, config_file_override="minimum.yaml", append_config=append_config
+        )
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        print(result.output)
+        assert s.MSG_MISSING_DATETIME in result.output
+        assert result.exit_code == 1
+    with runner.isolated_filesystem():
+        append_config = """
+tables_config:
+  pivoting:
+    - path: slugify_error_pivot.csv
+      pivot:
+        index: ID
+        columns: KEY
+        values: "VALUE NAME"
+
+input:
+  lowercase_columns: true
+"""
+        prep_test_config(
+            test_dir, config_file_override="minimum.yaml", append_config=append_config
+        )
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        print(result.output)
+        assert s.MSG_PIVOT_FAILED_KEY_ERROR in result.output
+        assert result.exit_code == 1

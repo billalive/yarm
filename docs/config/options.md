@@ -154,8 +154,7 @@ If omitted, defaults to `false`.
 .. seealso::
   This option does not change case. To also lowercase your columns, see `lowercase_columns:`_
 
-.. attention::
-  If you alter your column names, be sure to use these altered names in your queries.
+.. include:: altered_columns.rst
 ```
 
 ### `lowercase_columns:`
@@ -172,8 +171,7 @@ If omitted, defaults to `false`.
 .. seealso::
   You may also want to use `slugify_columns:`_
 
-.. attention::
-  If you alter your column names, be sure to use these altered names in your queries.
+.. include:: altered_columns.rst
 ```
 
 ### `uppercase_rows:`
@@ -294,7 +292,7 @@ If omitted, the first sheet will be used.
 
 ### `datetime:`
 
-_Optional._ One or more columns ()
+_Optional._ One or more columns that should be converted to `datetime` format.
 
 ## `import:`
 

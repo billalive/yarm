@@ -39,8 +39,8 @@ def run_queries(conn: Connection, config: Nob):
         for i, _val in enumerate(queries):
             query = queries[i]
             # Within this query, start keys with "/" to ensure you have correct key.
-            # Because "replace" can have arbitrarily named fields, this avoids error
-            # if a field is e.g. 'name'.
+            # Because "replace" can have arbitrarily named columns, this avoids error
+            # if a column is e.g. 'name'.
             sql = query[s.KEY_QUERY__SQL][:]
             name = query[s.KEY_QUERY__NAME][:]
 

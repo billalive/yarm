@@ -3,8 +3,12 @@ tables_config:
     - path: SOURCE_A.xlsx
       sheet: A.1
       datetime:
-        COLUMN_1:
-        COLUMN_2: "%Y-%m"
+        # You can supply a custom format string.
+        COLUMN_1: "%Y-%m"
+        # To use default datetime format, omit format string.
+        COLUMN_2:
+        # Spaces or punctuation in the column name? Add quotes.
+        "COLUMN 3":
       pivot:
         index: ID_COLUMN
         columns: KEY_COLUMN

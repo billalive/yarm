@@ -486,9 +486,9 @@ def validate_key_queries(config_yaml: YAML, config_path: str):
                 revalidate_yaml(
                     query["replace"], schema, config_path, f"{query['name']}: replace"
                 )
-                for field in query["replace"]:
+                for column in query["replace"]:
                     schema = MapPattern(Str(), Str())
-                    revalidate_yaml(query["replace"][field], schema, config_path)
+                    revalidate_yaml(query["replace"][column], schema, config_path)
 
             if "postprocess" in query:
                 if "import" not in c:
@@ -546,7 +546,7 @@ def validate_config_schema(config_path: str) -> YAML:
     """
     s = Settings()
 
-    # During initial validation, all fields are Optional because they
+    # During initial validation, all columns are Optional because they
     # may be spread across multiple included files.
     # Once we have processed all config files, we will check separately that
     # all critical config items have been provided.

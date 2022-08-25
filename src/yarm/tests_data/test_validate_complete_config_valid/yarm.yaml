@@ -14,7 +14,7 @@ output:
 
 input:
   strip: true
-  slugify_columns: true
+  slugify_columns: false
   lowercase_columns: false
   uppercase_rows: false
   include_index: false
@@ -32,7 +32,6 @@ tables_config:
   TABLE_PIVOT:
     - path: SOURCE_C.xlsx
       sheet: C.PIVOT
-      # pivot key sets include_index to true
       pivot:
         index: ID
         columns: KEY
@@ -44,7 +43,7 @@ tables_config:
       datetime:
         CREATED:
         MODIFIED: "%b %d, %Y"
-        TOUCHED: "%Y-%m-%d"
+        "TOUCHED UP": "%Y-%m-%d"
 
 queries:
   - name: QUERY A

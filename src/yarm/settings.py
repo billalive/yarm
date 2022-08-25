@@ -151,7 +151,7 @@ with a higher level of verbosity, such as """
     - case-sensitive (unless you set lowercase_columns = true)
     - must be spelled the same in every path."""
     MSG_MERGE_TYPE_ERROR: str = "Type error while merging table"
-    MSG_CONVERTING_DATETIME: str = "Converting field(s) to datetime:"
+    MSG_CONVERTING_DATETIME: str = "Converting column(s) to datetime:"
 
     MSG_INPUT_FORMAT_UNRECOGNIZED: str = "Format for input path not recognized"
 
@@ -252,3 +252,7 @@ Your postprocess function must take a DataFrame as its one argument,
 and return the processed DataFrame as its one result."""
     MSG_POSTPROCESS_EXAMINE_CODE: str = "This error seems to be in your custom code."
     MSG_QUERY_SAVE_ERROR: str = "Could not save query to database"
+
+    MSG_SUCCESS_REPORT_COMPLETE: str = (
+        "Report run complete, output file(s) exported to directory"
+    )
