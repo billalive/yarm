@@ -271,6 +271,10 @@ def input_source(
     Returns:
         New or updated table
 
+    Important:
+        If a table has multiple sources, each subsequent source is merged with an
+        **outer join**.
+
     See Also:
         - :func:`create_table_df`
     """

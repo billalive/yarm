@@ -1,6 +1,6 @@
 input:
-  strip: true
-  slugify_columns: true
-  lowercase_columns: true
-  uppercase_rows: true
-  include_index: true
+  strip: false
+  slugify_columns: false
+  lowercase_columns: false
+  uppercase_rows: false
+  include_index: false

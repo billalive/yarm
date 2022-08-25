@@ -2,7 +2,80 @@
 
 Your report won't run? These tips might help.
 
+```{eval-rst}
+.. _right-dir:
+```
+
+## Are You In the Right Directory?
+
+A normal config file will have relative paths that assume that all the files
+you need are in the same directory. If your config file `yarm.yaml` includes this...
+
+```{eval-rst}
+.. literalinclude:: /validate/validate_key_import.yaml
+    :language: yaml
+.. literalinclude:: /validate/validate_key_tables_config.yaml
+    :language: yaml
+```
+
+... then your directory, let's call it `report/` should look like this:
+
+```
+report/:
+
+MODULE_A.py
+MODULE_B.py
+SOURCE_A.xlsx
+SOURCE_B1.csv
+SOURCE_B2.csv
+yarm.yaml
+```
+
+As long as you are in this directory, you should be able to run your report.
+
+```bash
+# SUCCESS! This should work:
+yarm run
+```
+
+But what if you change to a different directory? Can you use `-c` to read the config? **No.**
+
+```bash
+# FAIL!
+cd ..
+yarm run -c report/yarm.yaml
+```
+
+Why does this fail? Because `yarm` looks around for files like `MODULE_A.py`, and it can't find any of them. You're in the wrong directory.
+
+### Basic Solution
+
+Always run yarm from the same directory as your config file.
+
+### Advanced Solution
+
+If you already use tools like [`make`][makefile], you can easily switch into the correct directory before running `yarm`.
+
+For instance, you could add a simple `Makefile` to your `report/` dir:
+
+```Makefile
+run:
+    yarm run -f
+```
+
+Now, wherever you are in your filesystem, you can do...
+
+```bash
+make -C /path/to/report/ run
+```
+
+... and `yarm` will correctly write your output files to `report/output/`.
+
+Now you can alias that long `make` command to a shortcut... or create a separate Makefile with commands for all your most common reports... the possibilities are limitless...
+
 ## Fix Invalid YAML
+
+Sadly, sometimes the solution is more complex than switching to the right directory.
 
 First and foremost, the config file can't have any syntax mistakes.
 
@@ -151,12 +224,17 @@ tables_config:
 
 But since each table name needs to be unique, this should be easy to remember.
 
+```{eval-rst}
+.. _when-does-order-matter:
+```
+
 ### When Does Order Matter?
 
 Note that:
 
-- The **order** of **list** items **matters**.
-- But the **order** of **keys** (including keys _within_ a list item) does **NOT matter**
+- The order of top-level blocks (like `table_config:`) does **not matter**.
+- The order of **list** items **matters**.
+- But the order of **keys** (including keys _within_ a list item) does **NOT matter**
 
 This is another reason we use lists for imports. The order **makes a difference** when you are importing sources into a table, importing Python code with `import:`, or running queries.
 
@@ -181,7 +259,7 @@ But I find this irritating.
 ## When These Options Aren't Enough
 
 ```{eval-rst}
-Need to do more with your data than `yarm`'s generous :doc:`options <options>` or the most arcane nested SQL can offer? No worries! You can :doc:`postprocess <postprocess>` your queries with custom Python code.
+Need to do more with your data than `yarm`'s generous :doc:`options <options>` or the most arcane nested SQL can offer? No worries! You can :doc:`postprocess </postprocess>` your queries with custom Python code.
 ```
 
 [strictyaml]: https://hitchdev.com/strictyaml/
@@ -189,3 +267,4 @@ Need to do more with your data than `yarm`'s generous :doc:`options <options>` o
 [online yaml editor]: https://duckduckgo.com/?q=online+editor+for+yaml&t=qupzilla&ia=web
 [multilines in yaml]: https://stackoverflow.com/a/21699210
 [yaml specification]: https://yaml.org/spec/1.2.2/
+[makefile]: https://www.gnu.org/software/make/manual/html_node/Introduction.html

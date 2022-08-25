@@ -14,7 +14,7 @@ No matter what, you'll want to read the introductory documentation first, such a
 
 - The :doc:`README <index>`
 - :doc:`usage`
-- :doc:`config`
+- :doc:`config/index`
 - :doc:`postprocess`
 ```
 

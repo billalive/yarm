@@ -56,14 +56,14 @@ queries:
 
   - name: QUERY B
     replace:
-      FIELD_A:
+      COLUMN_A:
         MATCH A1: REPLACE A1
         MATCH A2: REPLACE A2
-      FIELD_B:
+      COLUMN_B:
         'MATCH B1 W/"''COMPLEX''" #STRING': 'REPLACE B1 W/''"COMPLEX"'' #STRING'
     sql: |
       SELECT
-      s.id, s.FIELD_A, c.FIELD_B
+      s.id, s.COLUMN_A, c.COLUMN_B
       FROM
       table_from_spreadsheet AS s
       JOIN

@@ -63,10 +63,10 @@ $ yarm run
 
 - Collect fresh data. Save it over the old files.
 
-- Run the report:
+- Run the report.
 
 ```yaml
-$ yarm run
+$ yarm run -f
 ```
 
 - Send the output spreadsheet.

@@ -3,12 +3,13 @@ tables_config:
     - path: SOURCE_A.xlsx
       sheet: A.1
       datetime:
-        FIELD_1:
-        FIELD_2: "%Y-%m"
+        COLUMN_1:
+        COLUMN_2: "%Y-%m"
       pivot:
-        index: FIELD_ID
-        columns: FIELD_KEY
-        values: FIELD_VALUE
+        index: ID_COLUMN
+        columns: KEY_COLUMN
+        values: VALUE_COLUMN
       include_index: false
   TABLE_NAME_B:
-    - path: SOURCE_B.csv
+    - path: SOURCE_B1.csv
+    - path: SOURCE_B2.csv

@@ -59,8 +59,8 @@ queries:
     sql: >
       SELECT
       s.id,
-      FIELD_A,
-      FIELD_B
+      COLUMN_A,
+      COLUMN_B
       FROM
       TABLE_FROM_SPREADSHEET AS s
       LEFT JOIN
@@ -69,10 +69,10 @@ queries:
       s.id = c.ID
       ;
     replace:
-      FIELD_A:
+      COLUMN_A:
         MATCH A1: REPLACE A1
         MATCH A2: REPLACE A2
         'MATCH B1 W/"''COMPLEX''" #STRING': 'REPLACE B1 W/''"COMPLEX"'' #STRING'
-      FIELD_B_MISSING:
+      COLUMN_B_MISSING:
         MATCH B1: This match won't ever happen, because the field is missing.
     postprocess: test
