@@ -1,0 +1,5 @@
+- ``output:`` Set up your **output** options.
+- ``input:`` (Optional) Set any **input** options, for changes you want to make to data *after* you input it, but before you run your queries.
+- ``tables_config:`` Define your **tables** you want to query.
+- ``import:`` (Optional) If you want to apply a custom Python function to any of your queries, **import** your code file(s).
+- ``queries:`` Define your **queries**.

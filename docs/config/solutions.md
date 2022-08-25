@@ -1,70 +1,28 @@
-# Config
-
-The configuration file is the heart of your report.
-
-## The Basic Idea
-
-- Set up your **output** options (`output:`).
-- (Optional) Set any **input** options, for changes you want to make to data after you input it, but before you run your queries (`input:`).
-- Define your **tables** you want to query (`tables_config:`)
-- (Optional) If you want to apply a custom Python function to any of your queries, **import** your code file(s). (`import:`).
-- Define your **queries** (`queries:`)
-
-## Minimal Working Config File
-
-This file shows the bare minimum you need to run a report.
-
-```{eval-rst}
-.. literalinclude:: config/config_mwe.yaml
-    :language: yaml
-```
-
-Actually, if you set a value for `export_tables`, you can even run a report with no `queries`. Sometimes it's useful to collect multiple sources into a single CSV.
-
-Most of the time, though, you'll probably want more options.
-
-## Complete Config File
-
-This example config file (should) demonstrate every possible config option.
-
-As long as our unit tests are passing, anything you see here should work. 😅
-
-Note that options shown here are **not necessarily the defaults**. For example, if you omit `slugify_columns`, it will be `false`, _not_ `true` as shown below.
-
-```{eval-rst}
-.. literalinclude:: config/config_complete.yaml
-    :language: yaml
-```
-
-## TODO Actually document these options
-
-_Coming soon..._
-
-_In the meantime, give them a try. They're supposed to work exactly like you'd guess._
-
-## Solutions to Common Config Problems
+# Solutions to Common Config Problems
 
 Your report won't run? These tips might help.
 
-### Fix Invalid YAML
+## Fix Invalid YAML
 
 First and foremost, the config file can't have any syntax mistakes.
 
 When you get a syntax error, usually you just need to add a colon or an indent (or two).
 
-#### Use Syntax Highlighting
+If you get stuck, you can consult any basic YAML tutorial, or even the full [YAML Specification].
+
+### Use Syntax Highlighting
 
 If you're not using an editor with **syntax highlighting** for YAML, definitely try that.
 
-Or if you're in a hurry, try pasting your file into an [online YAML editor]. But then, seriously, get yourself a good editor.
+Or if you're in a hurry, try pasting your file into an [online YAML editor]. But after that... seriously, get yourself a good editor. A pleasure not to be missed.
 
-#### Check Previous Lines
+### Check Previous Lines
 
 The error messages here can be confusing; you'll get a line number, but the error is often on the **previous** line.
 
 E.g., if you have `output` instead of `output:`, that will error, but error message might focus on a later line. It's confusing.
 
-#### Watch Out for the Multiline String in `sql`
+### Watch Out for the Multiline String in `sql`
 
 Each query needs an `sql` statement, and they can be gloriously long. So long, in fact, that I have toyed with having these statements in a separate `.sql` file that could be edited separately, with syntax highlighting, and then imported.
 
@@ -86,11 +44,11 @@ sql: >
 
 No problem.
 
-#### Don't Try Any "Advanced" YAML
+### Avoid "Advanced" YAML
 
 Our YAML validator is provided by [StrictYAML], which does [disallow some features]. These are not features I expect you'll ever need to use, but if you think you might have crossed the line, check that link.
 
-### Follow the Schema
+## Follow the Schema
 
 Even if your syntax is valid YAML, your config file must also follow the special **schema** we've defined.
 
@@ -108,7 +66,7 @@ input:
 
 ...this will (sadly) throw an error.
 
-#### Watch Out For Lists!
+### Watch Out For Lists!
 
 One potential confusion: you really need to get clear on when to use lists and when to avoid them.
 
@@ -193,7 +151,7 @@ tables_config:
 
 But since each table name needs to be unique, this should be easy to remember.
 
-#### When Does Order Matter?
+### When Does Order Matter?
 
 Note that:
 
@@ -223,10 +181,11 @@ But I find this irritating.
 ## When These Options Aren't Enough
 
 ```{eval-rst}
-Need to do more with your data than `yarm`'s generous options or the most arcane nested SQL can offer? No worries! You can :doc:`postprocess <postprocess>` your queries with custom Python code.
+Need to do more with your data than `yarm`'s generous :doc:`options <options>` or the most arcane nested SQL can offer? No worries! You can :doc:`postprocess <postprocess>` your queries with custom Python code.
 ```
 
 [strictyaml]: https://hitchdev.com/strictyaml/
 [disallow some features]: https://hitchdev.com/strictyaml/features-removed/
 [online yaml editor]: https://duckduckgo.com/?q=online+editor+for+yaml&t=qupzilla&ia=web
 [multilines in yaml]: https://stackoverflow.com/a/21699210
+[yaml specification]: https://yaml.org/spec/1.2.2/

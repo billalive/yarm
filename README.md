@@ -263,7 +263,7 @@ True, you may still want `yarm` to **prepare** your data for exploration. Once y
 
 But for iterative tinkering with your data, you're going to need other tools.
 
-## Other Open Source Tools You Might Prefer
+### Other Open Source Tools You Might Prefer
 
 - [sqlitebrowser]: An excellent GUI for exploring your SQLite database. I sometimes use this to **figure out my queries** before I save them into my config file.
 

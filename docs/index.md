@@ -14,7 +14,7 @@ hidden:
 maxdepth: 1
 ---
 
-config
+config/index
 postprocess
 usage
 reference

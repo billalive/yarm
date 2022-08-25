@@ -12,7 +12,7 @@ Developers are most likely to find it useful, but users may find some critical n
 
 No matter what, you'll want to read the introductory documentation first, such as:
 
-- :doc:The `README <index>`
+- The :doc:`README <index>`
 - :doc:`usage`
 - :doc:`config`
 - :doc:`postprocess`
