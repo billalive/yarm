@@ -6,6 +6,7 @@ import sys
 from typing import List
 from typing import Optional
 from typing import Tuple
+from typing import Union
 
 from click.testing import CliRunner
 from path import Path
@@ -178,7 +179,7 @@ def process_test_tuples(
         exit_code: int = test_tuple[0]
         test_dir: str = test_tuple[1]
         msg: str = test_tuple[2]
-        config_file_override: str = None
+        config_file_override: Union[str, None] = None
         try:
             config_file_override = test_tuple[3]
         except IndexError:
@@ -186,7 +187,10 @@ def process_test_tuples(
         print("test:", test_dir)
         print("msg:", msg)
         with runner.isolated_filesystem():
-            prep_test_config(test_dir, config_file_override=config_file_override)
+            if config_file_override:
+                prep_test_config(test_dir, config_file_override=config_file_override)
+            else:
+                prep_test_config(test_dir)
             result = runner.invoke(cli, [s.CMD_RUN], "-vvv")
             print(s.MSG_TAB, "Output:", result.output)
             assert result.output.find(msg)

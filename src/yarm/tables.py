@@ -101,7 +101,7 @@ def create_table_df(
     table: NobView,
     source,
     exists_mode: str,
-) -> DataFrame():
+) -> DataFrame:
     """Create or append to a table from a configured source.
 
     Note:

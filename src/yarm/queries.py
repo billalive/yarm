@@ -255,8 +255,7 @@ def save_query_to_database(df: DataFrame, conn: Connection, name: str):
         # TODO Does this error ever trigger?
         abort(s.MSG_QUERY_SAVE_ERROR, data=name, error=str(error))
     except ValueError as error:
-        error = str(error)
-        if re.match(r"Table .* already exists", error):
+        if re.match(r"Table .* already exists", str(error)):
             abort(
                 s.MSG_QUERY_DUPLICATE_ERROR,
                 data=name,
