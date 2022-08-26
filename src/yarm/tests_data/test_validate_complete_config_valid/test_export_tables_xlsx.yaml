@@ -56,7 +56,6 @@ queries:
       ;
 
   - name: QUERY B
-    df_postprocess: postprocess_df
     replace:
       FIELD_A:
         MATCH A1: REPLACE A1
@@ -65,7 +64,7 @@ queries:
         'MATCH B1 W/"''COMPLEX''" #STRING': 'REPLACE B1 W/''"COMPLEX"'' #STRING'
     sql: |
       SELECT
-      *
+      s.id, s.FIELD_A, c.FIELD_B
       FROM
       table_from_spreadsheet AS s
       JOIN

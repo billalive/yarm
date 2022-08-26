@@ -16,6 +16,7 @@ from yarm.helpers import abort
 from yarm.helpers import msg_with_data
 from yarm.helpers import success
 from yarm.helpers import warn
+from yarm.queries import run_queries
 from yarm.settings import Settings
 from yarm.tables import create_tables
 from yarm.validate import validate_config
@@ -88,7 +89,11 @@ def run(
     if verbose is None:  # pragma: no branch
         verbose = 0  # type: ignore[unreachable]  # pragma: no cover
     if verbose > 1:
-        msg_with_data("Verbosity level", str(verbose))
+        if verbose > s.MAX_VERBOSE:
+            max_verbose = "-" + ("v" * s.MAX_VERBOSE)
+            abort(s.MSG_MAX_VERBOSE_ERROR, data=max_verbose)
+        else:
+            msg_with_data("Verbosity level", str(verbose))
 
     config: Nob = Nob(validate_config(config_path).data)
 
@@ -98,10 +103,13 @@ def run(
 
         create_tables(conn, config)
 
-        export_database(conn, config)
+        run_queries(conn, config)
 
+        export_database(conn, config)
     except sqlite3.Error as error:
-        abort(s.MSG_SQLITE_ERROR, error=str(error))  # pragma: no cover
+        abort(
+            s.MSG_SQLITE_ERROR, error=str(error), suggest_verbose=3
+        )  # pragma: no cover
     finally:
         conn.close()
 
@@ -147,24 +155,25 @@ def new(edit: Any, force: Any, custom_config_path: str) -> None:
     )
     if os.path.isfile(config_file):
         if not force:
-            abort(f"Config file already exists: {config_file}")
+            abort(s.MSG_NEW_CONFIG_FILE_EXISTS_ERROR, data=config_file)
         else:
-            warn(f"Detected --force, overwriting existing config file: {config_file}")
+            warn(s.MSG_NEW_CONFIG_FILE_OVERWRITE, data=config_file)
 
     with open(config_file, "wt") as new_config:
         new_config.write(default_config)
 
     if edit:
         click.edit(filename=config_file)
-    msg = f"""New config file written to: {config_file}
-
-To run this report, type:
-    """
-    if config_file == s.DEFAULT_CONFIG_FILE:
-        msg += "yarm run"
-    else:
-        msg += f"yarm run -c {config_file}"
-    success(msg)
+    success(
+        s.MSG_NEW_CONFIG_FILE_WRITTEN,
+        data=config_file,
+        ps=s.MSG_NEW_CONFIG_FILE_WRITTEN_PS,
+    )
+    msg: str = "yarm run"
+    if not config_file == s.DEFAULT_CONFIG_FILE:
+        msg = f"yarm run -c {config_file}"
+    click.echo()
+    click.echo(msg)
 
 
 if __name__ == "__main__":

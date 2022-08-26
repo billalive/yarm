@@ -6,8 +6,10 @@
 """Validate config file."""
 
 import importlib.resources as pkg_resources
+import importlib.util
 import os
 import re
+import sys
 
 # from typing import Dict
 from typing import Any
@@ -293,12 +295,25 @@ def validate_key_import(c: YAML, config_path: str):
     import:
      - path: MODULE_A.py
      - path: MODULE_B.py
+
+    If more than one module in this list defines the same function,
+    the later module will silently override the previous definition.
     """
+    s = Settings()
     key: str = check_key("import", c)
     if key:
         schema = Seq(Map({"path": StrNotEmpty()}, key_validator=Slug()))
         revalidate_yaml(c[key], schema, config_path)
         check_is_file(c[key].data, "path")
+        for source in c[key]:
+            file_path = source[s.KEY_MODULE__PATH].data
+            msg_with_data(s.MSG_IMPORTING_MODULE_PATH, data=file_path, indent=1)
+            module_name = s.IMPORT_MODULE_NAME
+            # https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
+            spec = importlib.util.spec_from_file_location(module_name, file_path)  # type: ignore  # noqa:B950
+            module = importlib.util.module_from_spec(spec)  # type: ignore
+            sys.modules[module_name] = module
+            spec.loader.exec_module(module)  # type: ignore
 
 
 def validate_key_input(c: YAML, config_path: str):
@@ -399,7 +414,7 @@ def validate_key_queries(c: YAML, config_path: str):
       ;
 
     - name: QUERY B
-      df_postprocess: postprocess_df
+      postprocess: postprocess_function
       replace:
         FIELD_A:
           MATCH A1: REPLACE A1
@@ -417,6 +432,7 @@ def validate_key_queries(c: YAML, config_path: str):
       s.id = c.id
       ;
     """
+    s = Settings()
     key: str = check_key("queries", c)
     if key:
         for query in c[key]:
@@ -424,12 +440,13 @@ def validate_key_queries(c: YAML, config_path: str):
                 {
                     "name": StrNotEmpty(),
                     "sql": StrNotEmpty(),
-                    OptionalYAML("df_postprocess"): StrNotEmpty(),
+                    OptionalYAML("postprocess"): StrNotEmpty(),
                     OptionalYAML("replace"): AnyYAML(),
                 },
                 key_validator=Slug(),
             )
             revalidate_yaml(query, schema, config_path)
+
             if "replace" in query:
                 schema = MapPattern(Str(), AnyYAML())
                 revalidate_yaml(
@@ -438,15 +455,14 @@ def validate_key_queries(c: YAML, config_path: str):
                 for field in query["replace"]:
                     schema = MapPattern(Str(), Str())
                     revalidate_yaml(query["replace"][field], schema, config_path)
-                    # for match in query["replace"][field]:
-                    #     print(
-                    #         "field:",
-                    #         field,
-                    #         "match:",
-                    #         match,
-                    #         "replace with:",
-                    #         query["replace"][field][match].data,
-                    #     )
+
+            if "postprocess" in query:
+                if "import" not in c:
+                    abort(
+                        s.MSG_POSTPROCESS_BUT_NO_IMPORT,
+                        data=query["postprocess"][:],
+                        ps=s.MSG_POSTPROCESS_BUT_NO_IMPORT_PS,
+                    )
 
 
 def revalidate_yaml(

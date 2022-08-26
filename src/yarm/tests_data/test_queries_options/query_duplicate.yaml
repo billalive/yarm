@@ -1,0 +1,21 @@
+output:
+  dir: output
+  basename: test
+
+tables_config:
+  products:
+    - path: products.csv
+      pivot:
+        index: id
+        columns: key
+        values: value
+
+queries:
+  - name: Query A
+    sql: |
+      SELECT * FROM products
+      WHERE id > 1000;
+  - name: Query A
+    sql: |
+      SELECT * FROM products
+      ;

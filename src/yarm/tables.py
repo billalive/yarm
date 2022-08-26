@@ -14,7 +14,7 @@ from yarm.helpers import abort
 from yarm.helpers import key_show_message
 from yarm.helpers import msg
 from yarm.helpers import msg_with_data
-from yarm.helpers import verbose_ge
+from yarm.helpers import show_df
 from yarm.settings import Settings
 
 
@@ -69,8 +69,8 @@ def create_tables(conn, config):
                 )
             elif re.findall(s.XLSX, file_ext):
                 sheet = Union[int, str]
-                if s.KEY_SHEET in table[i]:
-                    sheet = table[i][s.KEY_SHEET][:]
+                if s.KEY_TABLE__SHEET in table[i]:
+                    sheet = table[i][s.KEY_TABLE__SHEET][:]
                     msg_with_data(s.MSG_IMPORTING_SHEET, sheet, verbose=2, indent=2)
                 else:
                     # If no sheet is provided, use the first sheet.
@@ -158,16 +158,6 @@ def get_include_index_table(
         msg_with_data(msg, data=table_name, verbose=2, indent=1)
 
     return include_index_table
-
-
-def show_df(df: DataFrame, data: str, verbose: int = 3):
-    """Display a dataframe."""
-    s = Settings()
-    if verbose_ge(verbose):
-        print(s.MSG_LINE)
-        msg_with_data(s.MSG_SHOW_DF, data=data)
-        print(df)
-        print(s.MSG_LINE)
 
 
 def input_path(

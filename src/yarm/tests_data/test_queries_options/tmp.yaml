@@ -1,0 +1,22 @@
+output:
+  dir: output
+  basename: test
+  export_tables: csv
+
+tables_config:
+  products:
+    - path: products.csv
+      pivot:
+        index: id
+        columns: key
+        values: value
+    - path: products_merge_value_error.csv
+  orders:
+    - path: orders.xlsx
+      sheet: Orders
+      include_index: true
+      datetime:
+        ordered:
+        shipped: "%b %d, %Y"
+    - path: orders.xlsx
+      sheet: Orders2

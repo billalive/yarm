@@ -14,8 +14,8 @@ output:
   basename: test_create_tables
 
 queries:
-  - name: Descriptions
+  - name: Names
     sql: |
-      SELECT description
+      SELECT name
       FROM products
       ;

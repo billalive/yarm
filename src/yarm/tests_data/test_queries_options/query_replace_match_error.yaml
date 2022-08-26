@@ -1,0 +1,32 @@
+output:
+  dir: output
+  basename: test
+
+tables_config:
+  products:
+    - path: products.csv
+      pivot:
+        index: id
+        columns: key
+        values: value
+  order_details:
+    - path: orders.xlsx
+      sheet: Order Details
+
+queries:
+  - name: Order Information
+    replace:
+      name:
+        Retro: Deluxe
+        Replacement: Deluxe Replacement
+        BREAKING ''MATCH--&@!][: REPLACEMENT
+        MATCH: BROKEN REGEX\1
+    sql: |
+      SELECT od.order_id, p.id as product_id, p.name, p.discount
+      FROM
+      order_details as od
+      JOIN
+      products as p
+      ON
+      od.product_id = p.id
+      ;

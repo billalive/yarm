@@ -8,8 +8,8 @@ output:
   basename: mwe
 
 queries:
-  - name: "Descriptions"
+  - name: "Names"
     sql: |
-      SELECT description
+      SELECT name
       FROM products
       ;

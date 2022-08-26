@@ -10,6 +10,7 @@ from click.testing import CliRunner
 from tests.helpers import assert_files_exist
 from tests.helpers import assert_messages
 from tests.helpers import prep_test_config
+from tests.helpers import process_test_tuples
 from tests.helpers import string_as_config
 from yarm.__main__ import cli
 from yarm.settings import Settings
@@ -38,16 +39,7 @@ def test_validate_config_mistakes(runner: CliRunner) -> None:
         ),
         (0, "test_validate_export_tables_only", s.MSG_EXPORT_TABLES_ONLY),
     ]
-    for test_tuple in test_config:
-        exit_code: int = test_tuple[0]
-        test: str = test_tuple[1]
-        msg: str = test_tuple[2]
-        print("test:", test, f"{s.MSG_NL_TAB}msg:", msg)
-        with runner.isolated_filesystem():
-            prep_test_config(test)
-            result = runner.invoke(cli, [s.CMD_RUN])
-            assert result.output.find(msg)
-            assert result.exit_code == exit_code
+    process_test_tuples(test_config, runner)
 
 
 def test_validate_complete_config_valid(runner: CliRunner) -> None:

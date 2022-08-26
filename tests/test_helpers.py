@@ -2,6 +2,7 @@
 # pylint: disable=redefined-outer-name
 
 import os
+from io import StringIO
 from typing import Any
 from unittest import mock
 
@@ -11,6 +12,7 @@ from click.testing import CliRunner
 from tests.helpers import prep_test_config
 from tests.helpers import string_as_config
 from yarm.__main__ import cli
+from yarm.helpers import msg_options
 from yarm.settings import Settings
 
 
@@ -89,3 +91,26 @@ def test_overwrite_file(mock_click, runner: CliRunner) -> None:
         assert result.exit_code == 0
         assert s.MSG_REMOVED_FILE not in result.output
         assert s.MSG_REMOVED_FILE_FORCE in result.output
+
+
+def test_msg_options(runner: CliRunner) -> None:
+    """msg_options() works as expected."""
+    s = Settings()
+    with mock.patch("sys.stdout", new=StringIO()) as fake_out:
+        msg_options("Test message", prefix="PREFIX", prefix_color=s.COLOR_DATA)
+        assert "PREFIX" in fake_out.getvalue()
+
+
+def test_msg_suggest_verbose(runner: CliRunner) -> None:
+    """msg_suggest_verbose() works as expected."""
+    s = Settings()
+    test_dir: str = s.DEFAULT_TEST
+    with runner.isolated_filesystem():
+        append_config = """
+BAD YAML to trigger verbosity message.
+"""
+        prep_test_config(test_dir, append_config=append_config)
+        result = runner.invoke(cli, [s.CMD_RUN])
+        # print(result.output)
+        assert result.exit_code == 1
+        assert s.MSG_VERBOSITY_PS in result.output

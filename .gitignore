@@ -14,5 +14,6 @@ __pycache__/
 report.yaml
 *.ipynb
 /tmp/
+.*.md
 
 **/.~lock.*

@@ -19,6 +19,10 @@ class Settings:
     ARG_EXPORT_DATABASE: str = "database"
     ARG_FORCE: str = "force"
 
+    # Maximum number of -v switches.
+    MAX_VERBOSE = 3
+    MSG_MAX_VERBOSE_ERROR = "Maximum verbosity level is"
+
     EXT_YAML: str = ".yaml"
 
     TEST_CONFIG_BAD_YAML: str = "test_config_bad_yaml"
@@ -29,6 +33,14 @@ class Settings:
     MSG_SUCCESS: str = "Success!"
     MSG_WARN: str = "Warning:"
     MSG_USAGE: str = "Usage:"
+
+    # new
+    MSG_NEW_CONFIG_FILE_WRITTEN: str = "New config file written to"
+    MSG_NEW_CONFIG_FILE_WRITTEN_PS: str = "To run this report, type:"
+    MSG_NEW_CONFIG_FILE_EXISTS_ERROR: str = "Config file already exists"
+    MSG_NEW_CONFIG_FILE_OVERWRITE: str = (
+        "Detected --force, overwriting existing config file"
+    )
 
     MSG_CONFIG_FILE_NOT_FOUND: str = "Could not find config file:"
     MSG_DIRECTORY_ERROR: str = "Expected a file, but this is a directory:"
@@ -81,6 +93,28 @@ No queries found. We need something to output!
 
     MSG_CONNECTION_DATABASE_FAILED: str = "Failed to connect to database."
     MSG_SQLITE_ERROR: str = "There was a problem with sqlite:"
+    MSG_EXPORT_DATABASE_ERROR: str = "There was a problem exporting the database."
+    MSG_QUERY_DUPLICATE_ERROR: str = "More than one query has the same name"
+    MSG_QUERY_DUPLICATE_ERROR_PS: str = (
+        "Please ensure that each query has a unique name, and then try again."
+    )
+    MSG_VERBOSITY_PS: str = """To debug this problem, you may want to rerun this report
+with a higher level of verbosity, such as """
+
+    # import
+    MSG_IMPORTING_MODULE_PATH: str = "Importing code from"
+    # All import paths are loaded into IMPORT_MODULE_NAME
+    IMPORT_MODULE_NAME: str = "custom"
+    MSG_POSTPROCESS_FUNCTION_NOT_FOUND: str = "Could not run postprocess function"
+    MSG_POSTPROCESS_FUNCTION_NOT_FOUND_PS: str = (
+        "Are you sure you defined this function in your import: code?"
+    )
+    MSG_POSTPROCESS_BUT_NO_IMPORT: str = (
+        "No imported code found for postprocess function"
+    )
+    MSG_POSTPROCESS_BUT_NO_IMPORT_PS: str = (
+        "You need to add an import: rule for your code."
+    )
 
     # tables_config
     MSG_CREATING_TABLE: str = "Creating table"
@@ -130,7 +164,12 @@ No queries found. We need something to output!
     MSG_PIVOT_FAILED_KEY_ERROR: str = "Pivot failed, because this column is missing"
 
     # NOTE These keys are for use with Nob objects, not for validating YAML schemas.
+    KEY_IMPORT = "/import"
+    # within each imported module:
+    KEY_MODULE__PATH = "/path"
     KEY_TABLES_CONFIG = "/tables_config"
+    # Sheet relative to table
+    KEY_TABLE__SHEET = "/sheet"
     KEY_OUTPUT__BASENAME = "/output/basename"
     KEY_OUTPUT__DIR = "/output/dir"
     KEY_INPUT = "/input"
@@ -140,8 +179,8 @@ No queries found. We need something to output!
     KEY_INPUT__UPPERCASE_ROWS = "/input/uppercase_rows"
     KEY_INPUT__INCLUDE_INDEX = "/input/include_index"
     KEY_OUTPUT__EXPORT_TABLES = "/output/export_tables"
+    KEY_OUTPUT__EXPORT_QUERIES = "/output/export_queries"
     KEY_QUERIES = "/queries"
-    KEY_SHEET = "sheet"
 
     # tables_config keys. They are deep in the path, so do not use /.
     KEY_PIVOT = "pivot"
@@ -153,6 +192,12 @@ No queries found. We need something to output!
     KEY_DATETIME = "datetime"
     # Individual paths can override the include_index.
     KEY_INCLUDE_INDEX = "include_index"
+
+    # Individual query options
+    KEY_QUERY__SQL = "/sql"
+    KEY_QUERY__NAME = "/name"
+    KEY_QUERY__REPLACE = "/replace"
+    KEY_QUERY__POSTPROCESS = "/postprocess"
 
     CSV = "csv"
     XLSX = "xlsx"
@@ -169,14 +214,41 @@ No queries found. We need something to output!
     MSG_DATABASE_EXPORTED: str = "Database exported to"
     MSG_OVERWRITE_FILE_ABORT: str = "Cannot proceed without overwriting"
 
-    MSG_EXPORTING_TABLES: str = "Exporting tables..."
+    MSG_EXPORTING_TABLES: str = "Exporting tables to"
     MSG_TABLES_EXPORTED: str = "All tables exported to format"
     MSG_TABLE_EXPORTED: str = "Table exported to"
+    MSG_TABLE_EXPORTED_SHEET: str = "Table exported to sheet"
     MSG_QUERIES_EXPORTED: str = "All queries exported to format"
     MSG_QUERY_EXPORTED: str = "Query exported to"
+    MSG_QUERY_EXPORTED_SHEET: str = "Query exported to sheet"
+    MSG_SHEETS_EXPORTED: str = "All sheets saved in"
     MSG_EXPORT_FORMAT_UNRECOGNIZED: str = "Format for export_tables not recognized"
 
     MSG_OUTPUT_DIR_EXISTS: str = "Output directory already exists"
     MSG_CREATING_OUTPUT_DIR: str = "Creating output directory"
     MSG_OUTPUT_DIR: str = "Output directory"
     MSG_CANT_CREATE_OUTPUT_DIR: str = "Cannot create output dir at"
+
+    # queries
+    MSG_RUNNING_QUERY: str = "Running query"
+    MSG_QUERY_RUN_ERROR: str = "Could not run query"
+    MSG_APPLYING_REPLACE: str = "Applying replacements to column"
+    MSG_QUERY_EMPTY_ERROR: str = "Query returned no results"
+    MSG_QUERY_REPLACE_COLUMN_ERROR: str = "Could not find column"
+    MSG_QUERY_REPLACE_MATCH_ERROR: str = "Skipping match pattern, could not process"
+    MSG_QUERY_REPLACE_ERROR: str = "Could not complete query replacement"
+    MSG_APPLYING_POSTPROCESS: str = "Applying postprocess function"
+    MSG_POSTPROCESS_NOT_FOUND_ERROR: str = "Could not load postprocess function"
+    MSG_POSTPROCESS_OTHER_TYPE_ERROR: str = "Could not apply postprocess function"
+    MSG_POSTPROCESS_WRONG_ARGS: str = (
+        "Wrong number of arguments in your postprocess function"
+    )
+    MSG_POSTPROCESS_RETURNED_EMPTY_DF: str = (
+        "No data returned from postprocess function"
+    )
+    MSG_POSTPROCESS_RETURNED_OTHER: str = "Wrong return type from postprocess function"
+    MSG_POSTPROCESS_ARGS_PS: str = """Remember:
+Your postprocess function must take a DataFrame as its one argument,
+and return the processed DataFrame as its one result."""
+    MSG_POSTPROCESS_EXAMINE_CODE: str = "This error seems to be in your custom code."
+    MSG_QUERY_SAVE_ERROR: str = "Could not save query to database"
