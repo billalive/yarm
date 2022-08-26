@@ -35,6 +35,7 @@ Configures your final report.
 ```{eval-rst}
 .. literalinclude:: /validate/validate_key_output.yaml
     :language: yaml
+    :emphasize-lines: 1
 
 .. note::
     Defined in: :func:`yarm.validate.validate_key_output`
@@ -116,6 +117,7 @@ _Optional._ Options for modifying your input tables before you run the queries.
 ```{eval-rst}
 .. literalinclude:: /validate/validate_key_input.yaml
     :language: yaml
+    :emphasize-lines: 1
 
 .. note::
     Defined in: :func:`yarm.validate.validate_key_input`
@@ -189,11 +191,15 @@ If omitted, defaults to `false`.
   Uppercasing makes your data more consistent, which can be useful for data like addresses.
 ```
 
+```{eval-rst}
+.. _input-include-index:
+```
+
 ### `include_index:`
 
-If omitted, defaults to `false`, _except_ for tables which use `pivot:`\_. Pivot tables default to `true` (see below.)
-
 ```{eval-rst}
+If omitted, defaults to ``false``, *except* for tables which use `pivot:`_. Pivot tables default to ``true`` (see below.)
+
 ``true``
   Include a separate column for the index in the final output.
 
@@ -215,6 +221,7 @@ Pivot tables are different, because in order to pivot a table, we manually set o
 ```{eval-rst}
 .. literalinclude:: /validate/validate_key_tables_config.yaml
     :language: yaml
+    :emphasize-lines: 1
 
 .. note::
     Defined in: :func:`yarm.validate.validate_key_tables_config`
@@ -259,11 +266,24 @@ Each source must have, at minimum, a `path: <table-source-path>`_. But you have 
 
 Remember, each source is a **separate list item** beneath its table.
 
+### Table Source Order of Operations
+
+No matter what order you place these keys within each table source, the operations run in this order:
+
+```{eval-rst}
+1. The file in `path: <table-source-path>`_ (and, for a spreadsheet, the `sheet:`_ for this path), is read into the database.
+2. If `pivot:`_ is defined, the table is pivoted. (This will usually create many new columns.)
+3. If `datetime:`_ is defined, those columns are formatted.
+
+.. seealso::
+  Table operations order is set in: :func:`yarm.tables.df_tables_config_options`
+```
+
 ### `path:`
 
 ```{eval-rst}
 
-.. _table-source-path::
+.. _table-source-path:
 
 **REQUIRED.** Path to source file.
 
@@ -290,9 +310,129 @@ If omitted, the first sheet will be used.
     The first sheet is ``0``, the second is ``1``, etc.
 ```
 
+### `pivot:`
+
+_Optional._ Pivot a table.
+
+```{eval-rst}
+.. literalinclude:: /validate/validate_key_tables_config_pivot.yaml
+    :language: yaml
+    :emphasize-lines: 4-7
+
+.. include :: altered_columns_tables_config.rst
+```
+
+#### How Does Pivoting Work?
+
+Pivoting is easiest to understand with an example.
+
+In [WordPress](https://wordpress.org), there's a table called `postmeta`, used for storing extra _meta_ information about the _posts_. In theory, the designers could have tried to predict every kind of information that anyone would ever want to attach to their posts... plus every third-party plugin that would ever be written... and then made sure to add enough columns to cover every possible use case.
+
+Right.
+
+Instead, `postmeta` is extremely flexible. Each row has only four columns:
+
+- `META_ID`
+- `POST_ID`
+- `META_KEY`
+- `META_VALUE`
+
+A few random rows from this table might look like this:
+
+| META_ID | POST_ID | META_KEY       | META_VALUE  |
+| ------- | ------- | -------------- | ----------- |
+| 1000    | 42      | export_format  | pdf         |
+| 1001    | 42      | shareability   | 97          |
+| 1002    | 42      | oxford_commas  | 18          |
+| 1003    | 43      | export_format  | docx        |
+| 1004    | 43      | puppy_mentions | 0           |
+| 1005    | 43      | shareability   | 31          |
+| 1006    | 44      | export_format  | calligraphy |
+| 1007    | 44      | unironic       | 1           |
+
+As you can see, each row is bound to a particular post by `POST_ID`, and `META_KEY` is _basically_ a column name.
+
+But trying to query this table would be a pain. It would be much easier if the data looked like this:
+
+| POST_ID | export_format | shareability | oxford_commas | puppy_mentions | unironic |
+| ------- | ------------- | ------------ | ------------- | -------------- | -------- |
+| 42      | pdf           | 97           | 18            | NULL           | NULL     |
+| 43      | docx          | 31           | NULL          | 0              | NULL     |
+| 44      | calligraphy   | NULL         | NULL          | NULL           | 1        |
+
+Which is what this bit of `pivot:` config will do:
+
+```{eval-rst}
+.. literalinclude:: /validate/validate_key_tables_config_pivot.yaml
+    :language: yaml
+```
+
+#### `pivot:` and `include_index:`
+
+```{eval-rst}
+When a source is pivoted, the ref:`include_index: <table-include-index>` for the entire table
+is automatically set to ``true``. This is because the index column was present in your original
+data, so you probably expect to see it in the output.
+
+If you don't want to see that index column, add ``include_index: false`` to **this source**.
+
+It's not enough to set the overall ``include_index`` to ``false`` up in
+:ref:`input: <input-include-index>`, because that already defaults to ``false``,
+*except for pivot tables*.
+```
+
+#### A Pivot Only Affects This Source
+
+```{eval-rst}
+If your table includes multiple sources, only those sources with a `pivot:` block will be pivoted.
+
+But you need to ensure that the non-pivoted source and the pivoted source (*after* its pivot) share at least one column, so they can merge. See `Multiple Sources Get Merged`_.
+```
+
+### `include_index:`
+
+```{eval-rst}
+*Optional.* Override the :ref:`overall value of include_index: <input-include-index>` for **this table**.
+
+``true``
+  For **this table**, include a separate column for the index in the final output.
+
+``false``
+  For **this table**, Silently omit the index column.
+
+.. important::
+   Unlike other keys in a source, this key affects the entire table. So you can only set it
+   **once** in any particular table. It doesn't matter which source you choose.
+   If you try to set ``include_index:`` on more than one source in a table, you'll get an error.
+```
+
 ### `datetime:`
 
 _Optional._ One or more columns that should be converted to `datetime` format.
+
+Each column should be added as a key.
+
+If you omit any value for the key, then the column will be converted to the default datetime format.
+
+If you include a format string as the value, the column will formatted with that string. (See [Formatting Codes].)
+
+```{eval-rst}
+.. literalinclude:: /validate/validate_key_tables_config_datetime.yaml
+    :language: yaml
+    :emphasize-lines: 4-10
+
+.. important ::
+  Because these are keys in the same block, each column name must be **unique**.
+
+.. include :: altered_columns_tables_config.rst
+
+.. warning ::
+  Similarly, if you `pivot:`_ the table, you will get a whole new set
+  of columns than the original data. You need to use those **new**** column names here,
+  not the column names in the original data.
+```
+
+[formatting codes]: https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
 
 ## `import:`
 
@@ -301,6 +441,7 @@ _Optional,_ but you need it if you set a `postprocess:` function for a query.
 ```{eval-rst}
 .. literalinclude:: /validate/validate_key_import.yaml
     :language: yaml
+    :emphasize-lines: 1
 
 .. note::
     Defined in: :func:`yarm.validate.validate_key_import`
@@ -318,11 +459,19 @@ _Optional,_ but you need it if you set a `postprocess:` function for a query.
 
 ```{eval-rst}
 
-.. _table-source-path::
+.. _import-path:
 
-**REQUIRED.** Path to Python module (``.py`` file).
+**REQUIRED.** Path to Python module (``.py`` file) where you have defined your `postprocess:`_ function(s).
 
 .. include:: path_relative.rst
+
+.. note::
+   You can define more than one function in a file, so you normally will only need one `path:`.
+
+```
+
+```{eval-rst}
+.. _queries:
 ```
 
 ## `queries:`
@@ -332,21 +481,125 @@ _Optional,_ but you need it if you set a `postprocess:` function for a query.
 ```{eval-rst}
 .. literalinclude:: /validate/validate_key_queries.yaml
     :language: yaml
+    :emphasize-lines: 1
 
 .. note::
     Defined in: :func:`yarm.validate.validate_key_queries`
 
+.. warning::
+   Unlike tables in `tables_config:`_, each query is a **list item**. See :ref:`query-list-item`. The order in which you list the queries matters, at least if you want a later query to refer to an earlier query. The order of keys *within* each query does not matter, because the keys are always processed in the same order. See :ref:`when-does-order-matter`
+```
+
+In this block, you define one or more queries.
+
+Each query will be output to either a single CSV file or a sheet in a spreadsheet.
+
+Within each query, some keys are **REQUIRED**, while others are _Optional_.
+
+### Query Order of Operations
+
+No matter what order you place these keys, the operations run in this order:
+
+```{eval-rst}
+1. The statement in `sql:`_ is run, generating the query result.
+2. If defined, the `replace:`_ items are processed.
+3. Last of all, if it's defined, the data is run through the `postprocess:`_ function.
+
+.. seealso::
+  Query operations order is set in: :func:`yarm.queries.query_options`
 ```
 
 ### `name:`
+
+**REQUIRED.** Name for this query.
+
+The name is used:
+
+- As the name of the database table that holds this query.
+
+- When output to a spreadsheet: as the name of the sheet that contains this query.
+
+- When output to CSV: as the filename for this CSV.
 
 ```{eval-rst}
 
 .. _query-name:
 
-.. warning ::
+.. important ::
    Use a **unique name** for each query. Do not use a name that you've already used for
    another query, or **even a table** in `tables_config:`_ Conflicting names will cause problems
    for the internal database. Case does not matter here, so ``QUERY A`` and ``query A``
    would conflict.
 ```
+
+### `sql:`
+
+**REQUIRED.** The SQL statement for this query.
+
+```{eval-rst}
+For readability, this can be a **multiline string**. See :ref:`sql-multiline`.
+
+.. warning ::
+   If you have altered your data in any earlier options, such as `input:`_ or `tables_config:`_,
+   make sure you query this altered data.
+
+   For instance, if you used `pivot:`_, you need to `SELECT` from the new columns you've created,
+   not the columns in the original data.
+
+   By contrast, all **other options in this block** run **after** this SQL statement.
+   If you use `replace:`_ or `postprocess:`_, they can only operate on
+
+
+```
+
+### `replace:`
+
+```{eval-rst}
+*Optional.* After you have run the query in `sql:`_, you can find and replace data within particular columns.
+
+.. literalinclude:: /validate/validate_key_queries.yaml
+    :language: yaml
+    :emphasize-lines: 17-23
+
+.. important::
+   Each match and replace happens **within one column**. If you need to find and replace the
+   same patterns across multiple columns, you will need to define them separately for each column.
+
+.. warning::
+  If you have altered the data at any point (e.g. `uppercase_rows:`_), you'll need to
+  match that altered data here.
+```
+
+Note that in this block, we do **not** use any lists.
+
+Each column is a key, and within each column, each match pattern is a key.
+
+#### Replacements Can Occur In Any Order
+
+Because we're using matches as keys, not list items, replacements can occur in any order.
+
+This has not been a problem for me yet, because I haven't needed to do cascading replacements that depend on earlier replacements.
+
+This block is intended for casual, cosmetic replacements for reports, like replacing `member_level1` with `Bronze`.
+
+```{eval-rst}
+If your needs are more complex, you may want to write a :doc:`postprocess function </postprocess>`.
+```
+
+That said, if I get [feedback] that a strict order of replacements is desirable, I'm open to adding the extra code to allow processing this block as a list (or list of lists).
+
+### `postprocess:`
+
+```{eval-rst}
+*Optional.* After you have run the query in `sql:`_ and applied any other alterations (currently just `replace:`_), run the data through this custom function you have defined.
+
+.. important::
+   This function must be defined in one of the ``.py`` files imported with `import:`_
+
+.. seealso::
+   For full details and examples on writing a postprocess function, see:
+   :doc:`/postprocess`
+
+```
+
+[feedback]: https://github.com/billalive/yarm/issues

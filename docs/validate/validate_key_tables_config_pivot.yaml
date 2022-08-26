@@ -1,0 +1,7 @@
+tables_config:
+  TABLE_NAME_A:
+    - path: SOURCE_A.xlsx
+      pivot:
+        index: POST_ID
+        columns: META_KEY
+        values: META_VALUE

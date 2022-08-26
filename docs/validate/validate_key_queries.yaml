@@ -1,21 +1,10 @@
 queries:
   - name: QUERY A
-    sql: |
-      SELECT
-      *
-      FROM
-      table_from_spreadsheet AS s
-      ;
+    sql: SELECT * FROM table_from_spreadsheet AS s;
 
   - name: QUERY B
-    postprocess: postprocess_function
-    replace:
-      FIELD_A:
-      MATCH A1: REPLACE A1
-      MATCH A2: REPLACE A2
-      FIELD_B:
-      MATCH B1: REPLACE B1
-    sql: |
+    # For the SQL, you can use a multiline string for readability.
+    sql: >
       SELECT
       *
       FROM
@@ -25,3 +14,11 @@ queries:
       ON
       s.id = c.id
       ;
+    replace:
+      COLUMN_A:
+        MATCH A1: REPLACE A1
+        # You may want to quote strings with spaces and punctuation.
+        "MATCH A2": "REPLACE A2"
+      COLUMN_B:
+        MATCH B1: REPLACE B1
+    postprocess: postprocess_function

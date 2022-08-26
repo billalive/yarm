@@ -47,12 +47,7 @@ tables_config:
 
 queries:
   - name: QUERY A
-    sql: >
-      SELECT
-      *
-      FROM
-      table_from_spreadsheet AS s
-      ;
+    sql: SELECT * FROM table_from_spreadsheet AS s;
 
   - name: QUERY B
     sql: >

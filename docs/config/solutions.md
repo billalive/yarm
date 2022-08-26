@@ -95,7 +95,12 @@ The error messages here can be confusing; you'll get a line number, but the erro
 
 E.g., if you have `output` instead of `output:`, that will error, but error message might focus on a later line. It's confusing.
 
-### Watch Out for the Multiline String in `sql`
+```{eval-rst}
+
+.. _sql-multiline:
+```
+
+### Watch Out for the Multiline String in `sql:`
 
 Each query needs an `sql` statement, and they can be gloriously long. So long, in fact, that I have toyed with having these statements in a separate `.sql` file that could be edited separately, with syntax highlighting, and then imported.
 
@@ -138,6 +143,10 @@ input:
 ```
 
 ...this will (sadly) throw an error.
+
+```{eval-rst}
+.. _watch-out-lists:
+```
 
 ### Watch Out For Lists!
 
@@ -183,6 +192,8 @@ You cannot have **duplicate keys** at the same level.
 
 Think about it: in this situation, what is `products['path']`? Is it the first CSV, or the second?
 
+#### Each Table Is a Key, With a List of Sources
+
 Because a table can have more than one source, each source is a separate **list** item.
 
 ```yaml
@@ -223,6 +234,34 @@ tables_config:
 ```
 
 But since each table name needs to be unique, this should be easy to remember.
+
+```{eval-rst}
+.. _query-list-item:
+```
+
+#### Each Query is a List Item
+
+```{eval-rst}
+Meanwhile, in :ref:`queries`, **each query** is a **list item**, *not* a key.
+```
+
+```yaml
+---
+queries:
+  - name: Vacation Days
+    sql: |
+      SELECT * FROM clocks WHERE type LIKE "vacation";
+
+  - name: Timesheets
+    sql: |
+      SELECT * FROM clocks WHERE type LIKE "work";
+    postprocess: add_quarter_hours
+```
+
+Making each query a list item has these advantages:
+
+- Queries are run in **order**. This means that a later query can `SELECT` from an earlier query, as if it were a table.
+- Usually, the `name:` value will be used as the title of a sheet in a spreadsheet. Since we use the value, not the key (the way we use a key as the name for a table), you can use spaces and punctuation in this value without any trouble. Yes, technically you can use spaces and punctuation in a key, but I find it confusing. (And if you plan to reference this query in a later query, you may want to keep this name short anyway.)
 
 ```{eval-rst}
 .. _when-does-order-matter:

@@ -75,7 +75,7 @@ $ yarm run -f
 
 ## Advanced Usage
 
-Please see the [documentation][read the docs] for more details and features.
+Please see the extensive [documentation][read the docs] for more details and features.
 
 ## Example Report Config File
 
@@ -124,12 +124,7 @@ tables_config:
 # Set up your output spreadsheet:
 queries:
   - name: Order Details with Product Names
-    sql: >
-      SELECT *
-      FROM order_details as od
-      JOIN products as p
-      ON od.product_id = p.id
-      ;
+    sql: SELECT * FROM order_details as od JOIN products as p ON od.product_id = p.id;
 
   - name: Orders With Sales Tax
     sql: >
@@ -141,7 +136,7 @@ queries:
       ;
     # These query results will need a Python function to complete this sheet:
     postprocess: calculate_tax
-    # But we can do simple regex replacements right here:
+    # But first, we can do simple regex replacements right here:
     replace:
       billing_state:
         Virginia: VA
@@ -153,11 +148,11 @@ import:
   - path: custom.py
 ```
 
-_Learn more about your [configuration file options][config]..._
+Read more about [basic configuration][config] and [advanced options][options].
 
 ## Custom Postprocessing Code
 
-If make-it-easy options like `slugify_columns` and SQL aren't enough for you, you can write a [custom postprocess function][postprocess] for any query you like.
+If the power of SQL and make-it-easy options like `slugify_columns` aren't enough for you, you can write a [custom postprocess function][postprocess] for any query you like.
 
 ## Status: Alpha
 
@@ -190,7 +185,9 @@ $ pipx install yarm
 
 ## Documentation
 
-Full documentation is at [yarm.readthedocs.io][read the docs]
+Complete, _extensive_ documentation is at [yarm.readthedocs.io][read the docs].
+
+Dive right in.
 
 ## Roadmap: Future Features
 
@@ -306,7 +303,8 @@ This project was generated from [@cjolowicz]'s [Hypermodern Python Cookiecutter]
 [jq]: https://stedolan.github.io/jq/
 [mlr]: https://miller.readthedocs.io/en/latest/
 [htmlq]: https://github.com/mgdm/htmlq
-[config]: https://yarm.readthedocs.io/en/latest/config.html
+[config]: https://yarm.readthedocs.io/en/latest/config/
+[options]: https://yarm.readthedocs.io/en/latest/config/options.html
 [postprocess]: https://yarm.readthedocs.io/en/latest/postprocess.html
 
 <!-- github-only -->

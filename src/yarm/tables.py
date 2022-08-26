@@ -70,7 +70,7 @@ def create_tables(conn: Connection, config: Nob):
 
         try:
             # TODO Is table_df ever None by now? If so, what action is needed?
-            if table_df is not None:
+            if table_df is not None:  # pragma: no branch
                 table_df.to_sql(
                     table_name, conn, if_exists=exists_mode, index=include_index_table
                 )
@@ -422,6 +422,7 @@ def df_tables_config_options(
     """
     s = Settings()
     sc: NobView = source_config
+    # NOTE Pivot first, so that we can work with the new columns if needed.
     if s.KEY_PIVOT in sc:
         msg_with_data(s.MSG_APPLYING_PIVOT, input_file)
         # show_df(df, table_name, 4)
