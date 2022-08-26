@@ -2,7 +2,7 @@
 
 You can run the results of any query through your own custom postprocess function.
 
-Yes, the main point of `yarm` is to make common data ~~wrangling~~ ~~munging~~ carpentry tasks as easy as a line of YAML config. But if you need more, you can write custom Python.
+Yes, the main point of `yarm` is to make repetitive, tedious tasks in data wrangling as easy as a line of YAML config. But if you need more, you can write custom Python.
 
 ## The Basic Rules
 
