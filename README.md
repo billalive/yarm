@@ -1,6 +1,6 @@
 # yarm
 
-Yarm, yet another report maker.
+Yarm: Yet Another Report Maker.
 
 [![PyPI](https://img.shields.io/pypi/v/yarm.svg)][pypi_]
 [![Status](https://img.shields.io/pypi/status/yarm.svg)][status]
@@ -25,66 +25,195 @@ Yarm, yet another report maker.
 
 ## Features
 
-Yarm makes it easy for you to create recurring reports by:
+Yarm makes it easy for you to create **recurring reports** by:
 
-- Importing spreadsheets and CSVs
-- Running SQL queries or Python code on this data
-- Exporting the results to spreadsheets, CSVs, charts, and more
-- All configured in a simple YAML file
+- Importing **multiple spreadsheets and CSVs** into a temporary database.
+- Offering **easy** options for **common data cleaning** tasks (e.g. `replace`, `slugify_columns`, `pivot`)
+- Running **SQL queries** (or, for [pandas] fans, [custom **Python** code][postprocess]) on all this data.
+- **Exporting the results** as a new **spreadsheet**, **CSV**, or even SQLite **database**.
+- All configured in a [simple **YAML file**][config] for easy **reuse**. Download fresh data, `yarm run`, and you're done.
 
-## Coming soon...
+## Basic Usage
 
-Yarm is nearly at alpha, but it's not yet ready for release. Come back soon.
+### First Time You Run a New Report
+
+- Collect your XLSX and/or CSV data files into a directory for this report.
+
+- Initialize a new YAML config file:
+
+```console
+$ yarm new
+```
+
+- Edit the YAML config file (see below).
+
+  - Configure your input spreadsheets and CSV files as tables.
+  - Write one or more [SELECT] queries on these tables to create output sheets.
+  - (Optional) Need advanced manipulation of your data? Write [pandas] code in a separate `.py` file.
+
+- Run the report:
+
+```yaml
+$ yarm run
+```
+
+- Send the output spreadsheet to your boss/client/head of state. Was it really that easy?
+
+### Every Subsequent Time
+
+- Collect fresh data. Save it over the old files.
+
+- Run the report.
+
+```yaml
+$ yarm run -f
+```
+
+- Send the output spreadsheet.
+
+- Take the afternoon off.
+
+## Advanced Usage
+
+Please see the extensive [documentation][read the docs] for more details and features.
+
+## Example Report Config File
+
+You configure a report in a [single YAML file][config].
+
+Each query becomes a separate sheet in your output spreadsheet.
+
+This example config file is moderately complex. Your report can be much simpler; you might have only one or two tables and a single query. (Or you might have ten queries, each with a [custom postprocess function][postprocess]...)
+
+```yaml
+---
+output:
+  dir: Output
+  basename: Sales_Report
+
+# Optional input options (more are available):
+input:
+  slugify_columns: true
+  lowercase_columns: true
+
+# Set up your data sources:
+tables_config:
+  # CSV file: the easiest data source.
+  products:
+    - path: Products.csv
+
+  # Spreadsheet: You need both the path and the sheet name.
+  orders:
+    - path: Orders.xlsx
+      sheet: Orders
+
+  # You can import different sheets as separate tables.
+  order_details:
+    - path: Orders.xlsx
+      sheet: Order Details
+
+  # You can combine multiple data sources into a single table,
+  # as long as their columns can be merged.
+  tax:
+    - path: Sales Tax Rates Northeast.xlsx
+      sheet: NY
+    - path: Sales Tax Rates Northeast.xlsx
+      sheet: PA
+    - path: TAXES_SOUTH.csv
+
+# Set up your output spreadsheet:
+queries:
+  - name: Order Details with Product Names
+    sql: SELECT * FROM order_details as od JOIN products as p ON od.product_id = p.id;
+
+  - name: Orders With Sales Tax
+    sql: >
+      SELECT orders.*,
+      tax.rate
+      FROM orders
+      JOIN tax
+      ON orders.billing_state = tax.state
+      ;
+    # These query results will need a Python function to complete this sheet:
+    postprocess: calculate_tax
+    # But first, we can do simple regex replacements right here:
+    replace:
+      billing_state:
+        Virginia: VA
+        West Virginia: WV
+
+# Since we need that custom function calculate_tax(), we'll
+# write it in a separate Python file.
+import:
+  - path: custom.py
+```
+
+Read more about [basic configuration][config] and [advanced options][options].
+
+## Custom Postprocessing Code
+
+If the power of SQL and make-it-easy options like `slugify_columns` aren't enough for you, you can write a [custom postprocess function][postprocess] for any query you like.
+
+## Status: Alpha (Try It!)
+
+Yarm is currently in **alpha**. Core features are **working** and thoroughly [documented][read the docs].
+
+I rely on `yarm` for my own recurring reports.
+
+If you are desperate to stop doing a recurring report by hand, give _yarm_ a try.
+
+If something breaks, or if you have any suggestions or comments, please [file an issue]. I'd love to hear what you think.
+
+For upcoming features, see the [Roadmap].
 
 ## Requirements
 
-- TODO
+- Python 3.7 or later
+- A terminal
+- One or more spreadsheets that you want to query
+- Something to do with all this impending free time...
 
 ## Installation
 
-You can install _Yarm_ via [pip] from [PyPI]:
+You can install _yarm_ via [pip] from [PyPI]:
 
 ```console
 $ pip install yarm
 ```
 
-## Usage
+But since _yarm_ is a command line tool, you may prefer the excellent [pipx]:
 
-Please see the [Command-line Reference] for details.
+```console
+$ pipx install yarm
+```
 
 ## Documentation
 
-Full documentation is at [yarm.readthedocs.io][read the docs]
+Complete, _extensive_ documentation is at [yarm.readthedocs.io][read the docs].
 
-## Roadmap: Future Features
+Dive right in.
 
-These features are not yet implemented, but they're on the roadmap.
+## Is `yarm` for You?
 
-### `include`
+This tool has a clear focus: Make it **easy** to run and **rerun reports** from the **command line** that query **multiple sources** of tabular data.
 
-The `include` key will let you include other config files. For example, if you have a set of tables that you often want to create in different reports, `include` will let you define them once, in one file.
+Once you set up the initial configuration file, the workflow for future reports is simple. Download fresh data over the old files, then rerun the report.
 
-This feature will be powerful, but for now, it's on the roadmap, because the recursion is complex.
+This means that `yarm` is **not** a tool for data **exploration**.
 
-It will also require careful thought to ensure that the overrides are intuitive.
+True, you may still want `yarm` to **prepare** your data for exploration. Once you get used to listing a few data sources, setting a few options, and spitting out a nice, clean SQLite database or set of CSV files to play with, you may get hooked.
 
-For instance, what happens if a table with the same name is defined differently in `tables_config:` in two separate included files? I think that the most recent definition should _completely_ override any previous definitions, because it's quite possible that, without realizing it, you're using the same table name to describe different data.
+But for iterative tinkering with your data, you're going to need other tools.
 
-On the other hand, I would like to be able to override `input:` and `output:` on a key by key basis. For example, I almost always want to set `input.slugify_columns` and `input.lowercase_columns` to `true`, but if I have a report where I need to override `input.lowercase_columns` to `false`, I'd like to be able to do this without also losing my included setting of `input.slugify_columns` as `true`.
+### Other Open Source Tools You Might Prefer
 
-So this feature will need some nuance.
+- [sqlitebrowser]: An excellent GUI for exploring your SQLite database. I sometimes use this to **figure out my queries** before I save them into my config file.
 
-### `create_tables`
+- [Jupyter Lab]: If you find your SQL queries getting more and more arcane and complex, it's probably time to learn [pandas], and that means unleashing the power of this [interactive "notebook"][jupyter lab]. Some reports are so complex that they really deserve to be run step-by-step, with immediate output after every command. Jupyter Lab makes that absurdly easy... and repeatable.
 
-If you want to include a configuration file that defines more tables than you want for a particular report, you will be able to use `create_tables` to limit the tables for _this_ report to a particular subset.
+- [SQL Notebook]: A newer offering that I haven't used yet, but it looks like an interesting GUI combination of sqlitebrowser and a "Jupyter-style notebook interface". Could be very powerful.
 
-### Visualizations?
-
-Since we're already loading all the data into [pandas], we might as well add [matplotlib] and let you generate some charts, right?
-
-I'm not sure. I can see the use cases, but by the time you start needing charts, it might be time to upgrade to [Jupyter Lab].
-
-### Import/Export JSON? Other file formats?
+- For quick, **one-off** data manipulations on the **command line**, you can reach for excellent tools like [jq] for JSON, [mlr] for CSV, and even [htmlq] for HTML. But once the command gets long and complex enough that you want to save it to a script, you might start missing SQL queries and `yarm` features like `slugify_columns: true`.
 
 ## Contributing
 
@@ -98,8 +227,7 @@ _Yarm_ is free and open source software.
 
 ## Issues
 
-If you encounter any problems,
-please [file an issue] along with a detailed description.
+If you encounter any problems, please [file an issue] along with a detailed description.
 
 ## Credits
 
@@ -110,9 +238,20 @@ This project was generated from [@cjolowicz]'s [Hypermodern Python Cookiecutter]
 [hypermodern python cookiecutter]: https://github.com/cjolowicz/cookiecutter-hypermodern-python
 [file an issue]: https://github.com/billalive/yarm/issues
 [pip]: https://pip.pypa.io/
+[pipx]: https://pypa.github.io/pipx/
 [matplotlib]: https://matplotlib.org/
 [pandas]: https://pandas.pydata.org/
 [jupyter lab]: https://jupyter.org/try
+[select]: https://www.sqlite.org/lang_select.html
+[sqlitebrowser]: https://sqlitebrowser.org/
+[sql notebook]: https://sqlnotebook.com/
+[jq]: https://stedolan.github.io/jq/
+[mlr]: https://miller.readthedocs.io/en/latest/
+[htmlq]: https://github.com/mgdm/htmlq
+[config]: https://yarm.readthedocs.io/en/latest/config/
+[options]: https://yarm.readthedocs.io/en/latest/config/options.html
+[postprocess]: https://yarm.readthedocs.io/en/latest/postprocess.html
+[roadmap]: https://yarm.readthedocs.io/en/latest/roadmap.html
 
 <!-- github-only -->
 

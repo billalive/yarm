@@ -7,7 +7,6 @@ import:
 output:
   dir: OUTPUT
   basename: BASENAME
-  prepend_date: true
   export_tables: csv
   export_queries: csv
   styles:
@@ -15,7 +14,7 @@ output:
 
 input:
   strip: true
-  slugify_columns: true
+  slugify_columns: false
   lowercase_columns: false
   uppercase_rows: false
   include_index: false
@@ -33,7 +32,6 @@ tables_config:
   TABLE_PIVOT:
     - path: SOURCE_C.xlsx
       sheet: C.PIVOT
-      # pivot key sets include_index to true
       pivot:
         index: ID
         columns: KEY
@@ -45,31 +43,18 @@ tables_config:
       datetime:
         CREATED:
         MODIFIED: "%b %d, %Y"
-        TOUCHED: "%Y-%m-%d"
+        "TOUCHED UP": "%Y-%m-%d"
 
 queries:
   - name: QUERY A
-    sql: |
-      SELECT
-      *
-      FROM
-      table_from_spreadsheet AS s
-      ;
+    sql: SELECT * FROM table_from_spreadsheet AS s;
 
   - name: QUERY B
-    replace:
-      FIELD_A:
-        MATCH A1: REPLACE A1
-        MATCH A2: REPLACE A2
-        'MATCH B1 W/"''COMPLEX''" #STRING': 'REPLACE B1 W/''"COMPLEX"'' #STRING'
-      FIELD_B_MISSING:
-        MATCH B1: This match won't ever happen, because the field is missing.
-    postprocess: test
-    sql: |
+    sql: >
       SELECT
       s.id,
-      FIELD_A,
-      FIELD_B
+      COLUMN_A,
+      COLUMN_B
       FROM
       TABLE_FROM_SPREADSHEET AS s
       LEFT JOIN
@@ -77,3 +62,11 @@ queries:
       ON
       s.id = c.ID
       ;
+    replace:
+      COLUMN_A:
+        MATCH A1: REPLACE A1
+        MATCH A2: REPLACE A2
+        'MATCH B1 W/"''COMPLEX''" #STRING': 'REPLACE B1 W/''"COMPLEX"'' #STRING'
+      COLUMN_B_MISSING:
+        MATCH B1: This match won't ever happen, because the field is missing.
+    postprocess: test

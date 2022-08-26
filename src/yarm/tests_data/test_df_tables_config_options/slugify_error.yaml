@@ -1,0 +1,16 @@
+output:
+  dir: output
+  basename: test
+  export_tables: csv
+
+tables_config:
+  dates:
+    - path: slugify_error_datetime.csv
+      datetime:
+        "DATE CREATED":
+  pivoting:
+    - path: slugify_error_pivot.csv
+      pivot:
+        index: ID
+        columns: KEY
+        values: "VALUE NAME"

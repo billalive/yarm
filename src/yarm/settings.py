@@ -7,7 +7,7 @@ class Settings:
     """Define global settings.
 
     When you need a setting in a function, make an instance of this class.
-    These settings should NOT be changed; treat them as constants.
+    These settings should **not** be changed elsewhere. Treat them as constants.
     """
 
     PKG = "yarm"
@@ -104,7 +104,7 @@ with a higher level of verbosity, such as """
     # import
     MSG_IMPORTING_MODULE_PATH: str = "Importing code from"
     # All import paths are loaded into IMPORT_MODULE_NAME
-    IMPORT_MODULE_NAME: str = "custom"
+    IMPORT_MODULE_NAME: str = "yarm_import"
     MSG_POSTPROCESS_FUNCTION_NOT_FOUND: str = "Could not run postprocess function"
     MSG_POSTPROCESS_FUNCTION_NOT_FOUND_PS: str = (
         "Are you sure you defined this function in your import: code?"
@@ -151,7 +151,7 @@ with a higher level of verbosity, such as """
     - case-sensitive (unless you set lowercase_columns = true)
     - must be spelled the same in every path."""
     MSG_MERGE_TYPE_ERROR: str = "Type error while merging table"
-    MSG_CONVERTING_DATETIME: str = "Converting field(s) to datetime:"
+    MSG_CONVERTING_DATETIME: str = "Converting column(s) to datetime:"
 
     MSG_INPUT_FORMAT_UNRECOGNIZED: str = "Format for input path not recognized"
 
@@ -252,3 +252,7 @@ Your postprocess function must take a DataFrame as its one argument,
 and return the processed DataFrame as its one result."""
     MSG_POSTPROCESS_EXAMINE_CODE: str = "This error seems to be in your custom code."
     MSG_QUERY_SAVE_ERROR: str = "Could not save query to database"
+
+    MSG_SUCCESS_REPORT_COMPLETE: str = (
+        "Report run complete, output file(s) exported to directory"
+    )

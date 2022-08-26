@@ -1,6 +1,7 @@
-"""Create tables."""
+"""Create tables from validated configuration."""
 import re
 from pathlib import Path
+from sqlite3 import Connection
 from typing import Union
 
 import pandas as pd
@@ -18,8 +19,18 @@ from yarm.helpers import show_df
 from yarm.settings import Settings
 
 
-def create_tables(conn, config):
-    """Import files into database and create tables."""
+def create_tables(conn: Connection, config: Nob):
+    """Read data from :data:`tables_config:` into database and create tables.
+
+    Args:
+        conn: Temporary database in memory
+        config: Report configuration
+
+    See Also:
+        - :func:`create_table_df()`
+        - :func:`yarm.export.export_tables`
+
+    """
     s = Settings()
 
     tables: NobView = config[s.KEY_TABLES_CONFIG]
@@ -49,56 +60,21 @@ def create_tables(conn, config):
             table, table_name, include_index_all
         )
 
-        for i, _val in enumerate(table):
-            filename = table[i]["path"][:]
-            file_ext = Path(filename).suffix
-            msg_with_data(s.MSG_IMPORTING_DATA, filename, verbose=2, indent=1)
+        for source, _val in enumerate(table):
+            table_df = create_table_df(
+                conn, config, table_df, table_name, table, source, exists_mode
+            )
 
-            path_config: NobView = table[i]
-
-            if re.findall(s.CSV, file_ext):
-                table_df = input_path(
-                    input_format=s.CSV,
-                    conn=conn,
-                    config=config,
-                    path_config=path_config,
-                    table_name=table_name,
-                    table_df=table_df,
-                    input_file=filename,
-                    input_sheet=None,
-                )
-            elif re.findall(s.XLSX, file_ext):
-                sheet = Union[int, str]
-                if s.KEY_TABLE__SHEET in table[i]:
-                    sheet = table[i][s.KEY_TABLE__SHEET][:]
-                    msg_with_data(s.MSG_IMPORTING_SHEET, sheet, verbose=2, indent=2)
-                else:
-                    # If no sheet is provided, use the first sheet.
-                    # TODO Implement option to import *all* sheets?
-                    # pd.read_excel() will do this if sheet_name = None
-                    # TODO Implement option to pass a sheet number instead of name?
-                    sheet = 0
-                    msg_with_data(s.MSG_NO_SHEET_PROVIDED, filename, indent=2)
-                table_df = input_path(
-                    input_format=s.XLSX,
-                    conn=conn,
-                    config=config,
-                    path_config=path_config,
-                    table_name=table_name,
-                    table_df=table_df,
-                    input_file=filename,
-                    input_sheet=sheet,
-                )
-            else:
-                abort(s.MSG_BAD_FILE_EXT, file_path=filename)
             # If there are any more paths for this table, we will want to append.
             exists_mode = "append"
 
         try:
-            table_df.to_sql(
-                table_name, conn, if_exists=exists_mode, index=include_index_table
-            )
-            msg_with_data(s.MSG_CREATED_TABLE, table_name)
+            # TODO Is table_df ever None by now? If so, what action is needed?
+            if table_df is not None:  # pragma: no branch
+                table_df.to_sql(
+                    table_name, conn, if_exists=exists_mode, index=include_index_table
+                )
+                msg_with_data(s.MSG_CREATED_TABLE, table_name)
         except pd.io.sql.DatabaseError as error:  # pragma: no cover
             # TODO Figure out how to test these errors.
             conn.close()
@@ -111,14 +87,112 @@ def create_tables(conn, config):
             conn.close()
             abort(
                 s.MSG_CREATE_TABLE_VALUE_ERROR,
-                error=error,
+                error=str(error),
                 data=table_name,
             )
     export_tables(config=config, conn=conn)
 
 
+def create_table_df(
+    conn: Connection,
+    config: Nob,
+    table_df: Union[None, DataFrame],
+    table_name: str,
+    table: NobView,
+    source,
+    exists_mode: str,
+) -> DataFrame:
+    """Create or append to a table from a configured source.
+
+    Note:
+        Each **table** is defined by a list of one or more **sources**,
+        all of which are merged into a single table.
+
+        This function is called separately for *each* source.
+
+        (See :data:`yarm.validate.validate_key_tables_config`.)
+
+    Args:
+        conn: Temporary database in memory
+        config: Report configuration
+        table_df: :data:`None` if this table is new, otherwise the existing table
+        table_name: Table we are creating or appending to
+        table: Table configuration
+        source: Source configuration
+        exists_mode: :data:`replace` for a new table, otherwise :data:`append`
+
+    Returns:
+        DataFrame of our new or updated table
+
+    See Also:
+        - :func:`input_source`
+        - :func:`create_tables`
+        - :func:`df_input_options`
+        - :func:`df_tables_config_options`
+        - :func:`yarm.validate.validate_key_tables_config`
+
+    """
+    s = Settings()
+
+    filename = table[source]["path"][:]
+    file_ext = Path(filename).suffix
+    msg_with_data(s.MSG_IMPORTING_DATA, filename, verbose=2, indent=1)
+
+    source_config: NobView = table[source]
+
+    if re.findall(s.CSV, file_ext):
+        table_df = input_source(
+            input_format=s.CSV,
+            conn=conn,
+            config=config,
+            source_config=source_config,
+            table_name=table_name,
+            table_df=table_df,
+            input_file=filename,
+            input_sheet=None,
+        )
+    elif re.findall(s.XLSX, file_ext):
+        sheet: Union[int, str] = 0
+        if s.KEY_TABLE__SHEET in table[source]:
+            sheet = table[source][s.KEY_TABLE__SHEET][:]
+            msg_with_data(s.MSG_IMPORTING_SHEET, str(sheet), verbose=2, indent=2)
+        else:
+            # If no sheet is provided, use the first sheet.
+            # TODO Implement option to import *all* sheets?
+            # pd.read_excel() will do this if sheet_name = None
+            # TODO Implement option to pass a sheet number instead of name?
+            sheet = 0
+            msg_with_data(s.MSG_NO_SHEET_PROVIDED, filename, indent=2)
+        table_df = input_source(
+            input_format=s.XLSX,
+            conn=conn,
+            config=config,
+            source_config=source_config,
+            table_name=table_name,
+            table_df=table_df,
+            input_file=filename,
+            input_sheet=sheet,
+        )
+    else:
+        abort(s.MSG_BAD_FILE_EXT, file_path=filename)
+    return table_df
+
+
 def get_include_index_all(config: Nob) -> bool:
-    """Set input:include_index for all inputs."""
+    """Set default :data:`input:include_index` for all tables.
+
+    Args:
+        config: Report configuration
+
+    Returns:
+        **Default** value for whether to include the index in each table
+
+    Note:
+        This value can be overridden by each particular table.
+
+    See Also:
+        - :func:`get_include_index_table`
+    """
     s = Settings()
     include_index_all: bool = False
     if s.KEY_INPUT__INCLUDE_INDEX in config:
@@ -133,7 +207,19 @@ def get_include_index_all(config: Nob) -> bool:
 def get_include_index_table(
     table: NobView, table_name: str, include_index_all: bool
 ) -> bool:
-    """Set include_index for a particular table."""
+    """Set :data:`include_index` for a particular table.
+
+    Args:
+        table: Configuration for this table
+        table_name: Name for this table
+        include_index_all: Default :data:`include_index` value
+
+    Returns:
+        Whether to include the index in **this** table
+
+    See Also:
+        - :func:`get_include_index_all`
+    """
     s = Settings()
     include_index_table: bool = include_index_all
 
@@ -160,22 +246,37 @@ def get_include_index_table(
     return include_index_table
 
 
-def input_path(
+def input_source(
     input_format: str,
     conn,
     config: Nob,
-    path_config: NobView,
+    source_config: NobView,
     table_name: str,
     table_df: Union[DataFrame, None],
     input_file: str,
     input_sheet: Union[int, str, None],
 ) -> DataFrame:
-    """Input a path into a table DataFrame.
+    """Input a source into a table DataFrame.
 
-    If we have already imported at least one path into this table,
-    pass this table as table_df, and merge in this new path.
+    Args:
+        input_format: Format for this source (e.g. :data:`CSV`)
+        conn: Temporary database in memory
+        config: Report configuration
+        source_config: Configuration for this source
+        table_name: Table we are creating or appending to
+        table_df: :data:`None` if this table is new, otherwise the existing table
+        input_file: Actual file with source data
+        input_sheet: Name of sheet if source is spreadsheet, otherwise :data:`None`
 
-    If this is the first path for this table, table_df should be None.
+    Returns:
+        New or updated table
+
+    Important:
+        If a table has multiple sources, each subsequent source is merged with an
+        **outer join**.
+
+    See Also:
+        - :func:`create_table_df`
     """
     s = Settings()
 
@@ -195,7 +296,7 @@ def input_path(
     show_df(df, msg_show_df, 4)
 
     df = df_input_options(df, config)
-    df = df_tables_config_options(df, path_config, table_name, input_file)
+    df = df_tables_config_options(df, source_config, table_name, input_file)
 
     # After all transformations, merge to existing table_df.
     msg_with_data(s.MSG_MERGING_PATH, data=input_file, indent=1, verbose=2)
@@ -228,16 +329,33 @@ def input_path(
     return df
 
 
-def df_input_options(df: DataFrame, c):
-    """Process input data using the options in input: key.
+def df_input_options(df: DataFrame, config: Nob) -> DataFrame:
+    """Process input data using the options in :data:`input:` key.
 
-    These options are applied to /every/ input file.
+    These options are applied to *every* input file.
 
-    If you modify these options, you must also modify validate_key_input()
+    Important:
+        If you modify these options, you must also modify
+        :func:`yarm.validate.validate_key_input`
 
-    For per-file options, see df_tables_config_options().
+    Note:
+        For per-source options, see :func:`df_tables_config_options`.
+
+    Args:
+        df: Data we will manipulate
+        config: Report configuration
+
+    Returns:
+        Data with options applied
+
+    See Also:
+        - :func:`yarm.validate.validate_key_input`
+        - :func:`create_tables`
+        - :func:`df_tables_config_options`
+
     """
     s = Settings()
+    c: Nob = config
     if s.KEY_INPUT in c:
         # Strip whitespace at start and end of string.
         # https://stackoverflow.com/a/53089888
@@ -272,57 +390,65 @@ def df_input_options(df: DataFrame, c):
     return df
 
 
-def df_tables_config_options(df, path_config: NobView, table_name: str, input_file):
-    """Process tables_config: options for a particular path.
+def df_tables_config_options(
+    df: DataFrame, source_config: NobView, table_name: str, input_file
+) -> DataFrame:
+    """Process options for a particular **source** in a **table**.
 
-    For input: options applied to all input files, see df_input_options().
+    Important:
+        If you modify these source options, you must also modify
+        :func:`yarm.validate.validate_key_tables_config`.
 
-    A table is defined as a list of one or more paths, all of which are merged into
-    a single table. So we can only process options for one path at a time.
+        That function also ensures that all necessary keys are present (e.g., that if
+        a pivot stanza is present, it also has index, columns, and values).
 
-    If you modify these path options, you must also modify validate_key_tables_config().
-
-    That function also ensures that all necessary keys are present (e.g., that if
-    a pivot stanza is present, it also has index, columns, and values).
+    Note:
+        For :data:`input:` options applied to all input files,
+        see :func:`df_input_options`.
 
     Args:
-        df: dataframe containing this table.
-            May have data from previously imported paths.
-        path_config: config for this path only.
-        table_name: name of this table.
-        input_file: path to this data.
+        df: Table we will modify
+        source_config: Configuration for this source
+        table_name: Name of this table
+        input_file: Path to this source data
 
     Returns:
-        df: dataframe of this table, with options applied from this path.
+        Updated table, with options applied from this source
+
+    See Also:
+        - :func:`create_tables`
+        - :func:`yarm.validate.validate_key_tables_config`
+        - :func:`df_input_options`.
     """
     s = Settings()
-    pc: NobView = path_config
-    if s.KEY_PIVOT in pc:
+    sc: NobView = source_config
+    # NOTE Pivot first, so that we can work with the new columns if needed.
+    if s.KEY_PIVOT in sc:
         msg_with_data(s.MSG_APPLYING_PIVOT, input_file)
         # show_df(df, table_name, 4)
         try:
             df = pd.pivot(
                 data=df,
-                index=pc[s.KEY_PIVOT_INDEX][:],
-                columns=pc[s.KEY_PIVOT_COLUMNS][:],
-                values=pc[s.KEY_PIVOT_VALUES][:],
+                index=sc[s.KEY_PIVOT_INDEX][:],
+                columns=sc[s.KEY_PIVOT_COLUMNS][:],
+                values=sc[s.KEY_PIVOT_VALUES][:],
             )
         except KeyError as error:
             abort(s.MSG_PIVOT_FAILED_KEY_ERROR, data=str(error), file_path=input_file)
-    if s.KEY_DATETIME in pc:
+    if s.KEY_DATETIME in sc:
         msg(s.MSG_CONVERTING_DATETIME, indent=1, verbose=2)
-        for key in pc[s.KEY_DATETIME][:]:
+        for key in sc[s.KEY_DATETIME][:]:
             if key in df.columns:
                 df = back_up_column(df, key)
 
                 # Make the original column datetime
                 df[key] = pd.to_datetime(df[key])
 
-                if pc[s.KEY_DATETIME][key][:] is not None:
+                if sc[s.KEY_DATETIME][key][:] is not None:
                     # If value present, use as datetime format.
                     # TODO Test for bad format? strictyaml makes this a str,
                     # so it may not be possible to trigger an error.
-                    datetime_format: str = pc[s.KEY_DATETIME][key][:]
+                    datetime_format: str = sc[s.KEY_DATETIME][key][:]
                     msg_with_data(key, data=datetime_format, indent=2, verbose=2)
                     df[key] = df[key].dt.strftime(f"{datetime_format}")
                 else:
@@ -335,8 +461,19 @@ def df_tables_config_options(df, path_config: NobView, table_name: str, input_fi
     return df
 
 
-def back_up_column(df: DataFrame, col):
-    """Save a backup copy of a column."""
+def back_up_column(df: DataFrame, col: str):
+    """Save a backup copy of a column.
+
+    Args:
+        df: data we are manipulating
+        col: column to back up
+
+    Returns:
+        Data with copy of column :data:`col` that has :data:`_raw`
+        appended to the column name. The original column can now safely
+        be manipulated by further code.
+
+    """
     # Make backup copy of this column at column_raw
     col_raw_name: str = f"{col}_raw"
     df[col_raw_name] = df[col]

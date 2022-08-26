@@ -1,0 +1,19 @@
+tables_config:
+  TABLE_NAME_A:
+    - path: SOURCE_A1.csv
+      include_index: false
+    - path: SOURCE_A2.csv
+  TABLE_NAME_B:
+    - path: SOURCE_B.xlsx
+      sheet: B.1
+      pivot:
+        index: ID_COLUMN
+        columns: KEY_COLUMN
+        values: VALUE_COLUMN
+      datetime:
+        # You can supply a custom format string.
+        COLUMN_1: "%Y-%m"
+        # To use default datetime format, omit format string.
+        COLUMN_2:
+        # Spaces or punctuation in the column name? Add quotes.
+        "COLUMN 3":

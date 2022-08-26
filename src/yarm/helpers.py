@@ -37,15 +37,30 @@ def msg_options(
 ):
     """Show a message with various options.
 
+    Important:
+        This function is not normally used directly. Instead, use:
+
+        - :func:`msg`
+        - :func:`msg_with_data`
+        - :func:`abort`
+        - :func:`warn`
+        - :func:`success`
+
     Args:
-        msg: (str)  message
-        prefix: (str, optional)  e.g. Error
-        prefix_color: (str, optional) e.g. s.COLOR_ERROR
-        error: (str, optional)  error
-        file_path: (str, optional)  file with this error, display on separate line
-        data: (str, optional) data to display after msg
-        ps: (str, optional) final postscript to add at end of message.
-        indent: (str, optional) indent the message by this many tabs.
+        msg: Message
+        prefix: e.g. :data:`Error`
+        prefix_color: e.g. :data:`red`
+        error: Error message (**see note**)
+        data: Display this data after message, shown on **same** line
+        file_path: File associated with this message, shown on **separate** line
+        ps: Final postscript to add at end of message
+        indent: Number of indents before message
+
+    Note:
+        This function expects :data:`error` to be type :data:`str`, but the error
+        returned by an :data:`except:` clause may need to be converted with
+        :func:`str`.
+
     """
     s = Settings()
     # TODO Use err=True to print to stderr?
@@ -80,7 +95,13 @@ def warn(
 ) -> None:
     """Show warning, but proceed.
 
-    For args, see message_with_options()
+    Args:
+        msg: Message
+        error: Error message (**see note** in :func:`msg_options`)
+        data: Display this data after message, shown on **same** line
+        file_path: File associated with this message, shown on **separate** line
+        ps: Final postscript to add at end of message
+        indent: Number of indents before message
     """
     s = Settings()
     msg_options(
@@ -107,7 +128,14 @@ def abort(
 ):
     """Abort with error message and status 1.
 
-    For args, see message_with_options()
+    Args:
+        msg: Message
+        error: Error message (**see note** in :func:`msg_options`)
+        data: Display this data after message, shown on **same** line
+        file_path: File associated with this message, shown on **separate** line
+        ps: Final postscript to add at end of message
+        indent: Number of indents before message
+        suggest_verbose: Verbosity level to pass to :func:`msg_suggest_verbose`
     """
     s = Settings()
 
@@ -126,8 +154,16 @@ def abort(
     sys.exit(1)
 
 
-def msg_suggest_verbose(suggest_verbose):
-    """Suggest rerunning with a higher level of verbosity."""
+def msg_suggest_verbose(suggest_verbose: int):
+    """Show message suggesting rerunning with a higher level of verbosity.
+
+    Note:
+        This message will only be shown if the verbosity level is set lower
+        than :data:`suggest_verbose`.
+
+    Args:
+        suggest_verbose: Verbosity level that message will suggest
+    """
     s = Settings()
     ctx = click.get_current_context()
     if s.ARG_VERBOSE in ctx.params:
@@ -145,15 +181,17 @@ def msg_suggest_verbose(suggest_verbose):
 
 def success(
     msg: str,
-    prefix: str = None,
-    prefix_color: str = None,
     file_path: str = None,
     data: str = None,
     ps: str = None,
 ) -> None:
     """Show success message.
 
-    For args, see message_with_options()
+    Args:
+        msg: Message
+        data: Display this data after message, shown on **same** line
+        file_path: File associated with this message, shown on **separate** line
+        ps: Final postscript to add at end of message
     """
     s = Settings()
     msg_options(
@@ -167,14 +205,14 @@ def success(
 
 
 def load_yaml_file(input_file: str, schema: Any) -> YAML:
-    """Read YAML file into strictyaml, and validate against a schema.
+    """Read YAML file into :data:`strictyaml`, and validate against a schema.
 
     Args:
-        input_file (str): path to YAML file
-        schema: strictyaml schema
+        input_file: path to YAML file
+        schema: :data:`strictyaml` schema
 
     Returns:
-        YAML object
+        Validated YAML
     """
     s = Settings()
     try:
@@ -195,12 +233,14 @@ def load_yaml_file(input_file: str, schema: Any) -> YAML:
 def msg(msg: str, verbose: int = 0, indent: int = 0):
     """Show message.
 
-    By default, does not require -v flag.
+    Note:
+        By default, this message will still show even if user did not use
+        a :data:`-v` flag.
 
     Args:
-        msg (str): message to display
-        verbose (int): (optional) verbosity level required to show this message.
-        indent (int): (optional) number of indents before message
+        msg: Message to display
+        verbose: Minimum verbosity required to show this message
+        indent: Number of indents before message
     """
     s = Settings()
     if verbose_ge(verbose):
@@ -211,13 +251,15 @@ def msg(msg: str, verbose: int = 0, indent: int = 0):
 def msg_with_data(msg: str, data: str, verbose: int = 1, indent: int = 0):
     """Show message with accompanying data.
 
-    By default, requires at least one -v flag.
+    Note:
+        By default, the message will only be shown if the user used at least
+        one :data:`-v` flag.
 
     Args:
-        msg (str): message to display
-        data (str): data to display after message
-        verbose (int): (optional) verbosity level required to show this message.
-        indent (int): (optional) number of indents before message
+        msg: Message to display
+        data: Display this data after message, shown on **same** line
+        verbose: Minimum verbosity required to show this message
+        indent: Number of indents before message
     """
     s = Settings()
     if verbose_ge(verbose):
@@ -228,7 +270,15 @@ def msg_with_data(msg: str, data: str, verbose: int = 1, indent: int = 0):
 
 
 def verbose_ge(verbose: int) -> bool:
-    """Return True if verbosity >= verbose."""
+    """Return :data:`True` if verbosity >= :data:`verbose`.
+
+    Args:
+        verbose: verbosity level
+
+    Returns:
+        True if user used `verbose` or more `-v` flags, otherwise False
+
+    """
     s = Settings()
     ctx = click.get_current_context()
     if ctx.params[s.ARG_VERBOSE] >= verbose:
@@ -240,15 +290,19 @@ def verbose_ge(verbose: int) -> bool:
 def overwrite_file(path: str, indent: int = 1) -> bool:
     """Overwrite a file if it exists.
 
-    (Technically, this function only removes the file.)
+    Note:
+        Technically, this function only *removes* the file. The new
+        file must be written separately.
+
+    Note:
+        If a prompt question is shown, it is not indented.
 
     Args:
-        path (str): file to overwrite
-        indent (int): (optional) indent for "removed file" message.
-            Prompt question is not indented.
+        path: File to overwrite
+        indent: Number of indents before message
 
     Returns:
-        (bool) True if file existed and was removed, False otherwise.
+        True if file existed and was removed, False otherwise
     """
     # TODO Should this test whether we are in output/dir?
     # And only overwrite files in that directory?
@@ -279,18 +333,25 @@ def overwrite_file(path: str, indent: int = 1) -> bool:
 
 
 def key_show_message(key_msg: List[Tuple[str, str]], config: Nob, verbose: int = 1):
-    """For each key, if that key is in config, show message.
+    """For each key, if that key is in :data:`config`, show the matching message.
 
-    key_msg must be a list of tuples.
+    Important:
+        :data:`key_msg` must be a **list** of **tuples** of the form: `(key, message)`.
 
-    Example:
-    key_msg: list = [
-        (s.KEY_INPUT__STRIP, s.MSG_STRIP_WHITESPACE),
-        (s.KEY_INPUT__SLUGIFY_COLUMNS, s.MSG_SLUGIFY_COLUMNS),
-        (s.KEY_INPUT__LOWERCASE_COLUMNS, s.MSG_LOWERCASE_COLUMNS),
-        (s.KEY_INPUT__UPPERCASE_ROWS, s.MSG_UPPERCASE_ROWS),
-    ]
-    key_show_message(key_msg, config, verbose=1)
+    .. code-block:: python
+
+        key_msg: list = [
+            (s.KEY_INPUT__STRIP, s.MSG_STRIP_WHITESPACE),
+            (s.KEY_INPUT__SLUGIFY_COLUMNS, s.MSG_SLUGIFY_COLUMNS),
+            (s.KEY_INPUT__LOWERCASE_COLUMNS, s.MSG_LOWERCASE_COLUMNS),
+            (s.KEY_INPUT__UPPERCASE_ROWS, s.MSG_UPPERCASE_ROWS),
+        ]
+        key_show_message(key_msg, config, verbose=1)
+
+    Args:
+        key_msg: List of tuples of the form: :data:`(key, message)`
+        config: Report configuration
+        verbose: Minimum verbosity level required to show this message
 
     """
     for key, msg_str in key_msg:
@@ -299,7 +360,14 @@ def key_show_message(key_msg: List[Tuple[str, str]], config: Nob, verbose: int =
 
 
 def show_df(df: DataFrame, data: str, verbose: int = 3):
-    """Display a dataframe."""
+    """Display a dataframe.
+
+    Args:
+        df: Data to display
+        data: Display this data after message, shown on **same** line
+        verbose: Minimum verbosity level required to show this message
+
+    """
     s = Settings()
     if verbose_ge(verbose):
         print(s.MSG_LINE)

@@ -18,7 +18,6 @@ INPUT:
 oUtpUt:
   DIR: output
   Basename: mwe
-  prepend----date: true
   EXPORT____tables: "csv"
   # Even random punctuation gets transformed into an underscore.
   export.,;-_queries: "csv"

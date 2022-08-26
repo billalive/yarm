@@ -14,8 +14,11 @@ hidden:
 maxdepth: 1
 ---
 
+config/index
+postprocess
 usage
 reference
+roadmap
 contributing
 Code of Conduct <codeofconduct>
 License <license>

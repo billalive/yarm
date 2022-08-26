@@ -113,6 +113,9 @@ def run(
     finally:
         conn.close()
 
+    click.echo()
+    success(s.MSG_SUCCESS_REPORT_COMPLETE, data=config[s.KEY_OUTPUT__DIR][:])
+
     sys.exit()
 
 

@@ -1,0 +1,24 @@
+queries:
+  - name: QUERY A
+    sql: SELECT * FROM table_from_spreadsheet AS s;
+
+  - name: QUERY B
+    # For the SQL, you can use a multiline string for readability.
+    sql: >
+      SELECT
+      *
+      FROM
+      table_from_spreadsheet AS s
+      JOIN
+      table_from_csv AS c
+      ON
+      s.id = c.id
+      ;
+    replace:
+      COLUMN_A:
+        MATCH A1: REPLACE A1
+        # You may want to quote strings with spaces and punctuation.
+        "MATCH A2": "REPLACE A2"
+      COLUMN_B:
+        MATCH B1: REPLACE B1
+    postprocess: postprocess_function

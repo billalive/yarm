@@ -1,0 +1,4 @@
+output:
+  dir: output
+  basename: test
+  export_tables: csv

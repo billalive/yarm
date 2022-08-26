@@ -1,18 +1,15 @@
-#!/usr/bin/env python3
 # pylint: disable=invalid-name
-
 # noqa: B950
 
-"""Validate config file."""
+"""Validate configuration file."""
 
 import importlib.resources as pkg_resources
 import importlib.util
 import os
 import re
 import sys
-
-# from typing import Dict
-from typing import Any
+from typing import Dict
+from typing import List
 from typing import Optional
 from typing import Union
 
@@ -47,15 +44,18 @@ from yarm.settings import Settings
 
 
 class Slug(ScalarValidator):
-    """Class to use slugify to make spelling consistent."""
+    """Class to use `slugify` to make spelling consistent."""
 
     def validate_scalar(self, chunk):
-        """Use slugify to make spelling consistent.
+        """Use `slugify` to make spelling consistent.
 
-        Use _ rather than - for separator; it's more Pythonic.
+        Note:
+            We use `_` rather than `-` for the separator.
 
-        Also, Ansible config files seem to favor underscores, see:
-        https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html
+            The underscore seems more Pythonic.
+
+            Also, `ansible` config files seem to favor underscores. See:
+            https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html.
         """
         return slugify(chunk.contents, separator="_")
 
@@ -64,11 +64,15 @@ def validate_config(config_path: str) -> YAML:
     """Validate config file before running report.
 
     Args:
-        config_path (str): Path to config file
+        config_path: Path to configuration file
 
     Returns:
-        config (YAML): validated config as YAML
+        Validated configuration
 
+    See Also:
+        - :func:`validate_config_schema`
+        - :func:`validate_config_edited`
+        - :func:`validate_minimum_required_keys`
     """
     # Why no test for whether file exists? Because click() handles this.
 
@@ -76,24 +80,31 @@ def validate_config(config_path: str) -> YAML:
     # for key in config:
     #    print(key, config[key])
 
-    config = validate_config_schema(config_path)
+    config_yaml: YAML = validate_config_schema(config_path)
 
     # Check whether config file has been edited.
-    validate_config_edited(config)
+    validate_config_edited(config_yaml)
 
     # Check whether minimum required keys are present.
-    validate_minimum_required_keys(config)
+    validate_minimum_required_keys(config_yaml)
 
     # If all tests pass, config file is validated.
-    return config
+    return config_yaml
 
 
-def validate_config_edited(config: YAML) -> bool:
-    """Check whether config has been edited."""
+def validate_config_edited(config_yaml: YAML) -> bool:
+    """Check whether config has been edited.
+
+    Args:
+        config_yaml: Report configuration
+
+    Returns:
+        True if configuration has been edited, aborts otherwise.
+    """
     # Rather than an exhaustive search, just check a critical setting.
     s = Settings()
     default_config = get_default_config()
-    c = Nob(config.data)
+    c = Nob(config_yaml.data)
     if s.KEY_OUTPUT__BASENAME in c:
         if c[s.KEY_OUTPUT__BASENAME] == default_config[s.KEY_OUTPUT__BASENAME]:
             abort(
@@ -104,10 +115,20 @@ def validate_config_edited(config: YAML) -> bool:
     return True
 
 
-def validate_minimum_required_keys(config: YAML) -> bool:
-    """Check whether config has minimum required keys."""
+def validate_minimum_required_keys(config_yaml: YAML) -> bool:
+    """Check whether config has minimum **required** keys.
+
+    Args:
+        config_yaml: Configuration to validate
+
+    Returns:
+        True if `config` has minimum required keys, abort otherwise.
+
+    Important:
+        To modify which keys are required to run a report, update this function.
+    """
     s = Settings()
-    c = Nob(config.data)
+    c = Nob(config_yaml.data)
     missing_keys = []
     for key in [
         s.KEY_TABLES_CONFIG,
@@ -132,12 +153,12 @@ def validate_minimum_required_keys(config: YAML) -> bool:
     return True
 
 
-def check_is_file(list_of_paths, key: Optional[str]):
+def check_is_file(list_of_paths: List[Union[str, Dict]], key: Optional[str]):
     """For each item in a list, check that the value is a file.
 
     Args:
-        list_of_paths: (list) List of strings or dictionaries
-        key: (str) (optional) If dictionaries, this key matches the paths.
+        list_of_paths: List of strings or dictionaries
+        key: If dictionaries, this is the key for the path (e.g. :data:`path`)
 
     """
     s = Settings()
@@ -174,14 +195,28 @@ class StrNotEmpty(Str):
 
     @staticmethod
     def validate_scalar(chunk: YAMLChunk) -> str:
-        """Invalidate if string is empty."""
+        """Invalidate if string is empty.
+
+        Args:
+            chunk: YAML to be validated
+
+        Returns:
+            Validated string
+        """
         if any([chunk.contents == ""]):
             chunk.expecting_but_found("when expecting a string that is not empty")
         return chunk.contents
 
 
 def msg_validating_key(key: str, suffix: str = None, verbose: int = 1):
-    """Show a message that a key is being validated."""
+    """Show a message that a key is being validated.
+
+    Args:
+        key: Key being validated
+        suffix: String to add after message
+        verbose: Minimum verbosity level required to show this message
+
+    """
     s = Settings()
     if verbose_ge(verbose):
         msg = s.MSG_VALIDATING_KEY
@@ -191,28 +226,20 @@ def msg_validating_key(key: str, suffix: str = None, verbose: int = 1):
         msg_with_data(msg, key, verbose=verbose)
 
 
-def validate_key_tables_config(c: YAML, config_path: str):
+def validate_key_tables_config(config_yaml: YAML, config_path: str):
     """Validate config key: tables_config.
 
-    Example Format:
+    .. literalinclude:: validate/validate_key_tables_config.yaml
+       :language: yaml
 
-    tables_config:
-     TABLE_NAME_A:
-       - path: SOURCE_A.xlsx
-         sheet: SHEET A.1
-         datetime:
-           FIELD_1: NONE_OR_STR
-           FIELD_2: NONE_OR_STR
-         pivot:
-           index: FIELD_ID
-           columns: FIELD_KEY
-           values: FIELD_VALUE
-         include_index: false
-     TABLE_NAME_B:
-       - path: SOURCE_B.csv
+    Args:
+        config_yaml: Configuration to validate
+        config_path: Configuration file
+
     """
     s = Settings()
-    key: str = check_key("tables_config", c)
+    c: YAML = config_yaml
+    key: Union[str, None] = check_key("tables_config", c)
     if key:
         # Do not use Slug() on table names, because user will expect to use
         # their table names in their queries.
@@ -270,37 +297,51 @@ def validate_key_tables_config(c: YAML, config_path: str):
                         )
 
 
-def check_key(key: str, c: YAML):
+def check_key(key: str, config_yaml: YAML) -> Union[str, None]:
     """Check whether a key exists in configuration YAML.
 
     Args:
-       key (str)   name of key
-       c (YAML)    config YAML
+       key:    Name of key
+       config_yaml: Configuration to check
 
     Returns:
-       name of key (str) if present, None if not
+       name of key if present, None if not
     """
-    if key in c:
+    if key in config_yaml:
         msg_validating_key(key)
         return key
     else:
         return None
 
 
-def validate_key_import(c: YAML, config_path: str):
+def validate_key_import(config_yaml: YAML, config_path: str):
     """Validate config key: import.
 
-    Example Format:
+    .. literalinclude:: validate/validate_key_import.yaml
+       :language: yaml
 
-    import:
-     - path: MODULE_A.py
-     - path: MODULE_B.py
+    This key allows the user to import their own custom Python code.
+    Any imported function can be applied to the results of a query using
+    the :data:`postprocess` key.
 
-    If more than one module in this list defines the same function,
-    the later module will silently override the previous definition.
+    Warning:
+        If more than one module in this list defines the same function,
+        the **later module** in the list will **silently override** the
+        previous definition.
+
+        This may be desired behavior, but only if you expect it.
+
+    Args:
+        config_yaml: Configuration to validate
+        config_path: Configuration file
+
+    See Also:
+        - :func:`validate_key_queries`
+        - :func:`yarm.query.df_query_postprocess`
     """
     s = Settings()
-    key: str = check_key("import", c)
+    c: YAML = config_yaml
+    key: Union[str, None] = check_key("import", c)
     if key:
         schema = Seq(Map({"path": StrNotEmpty()}, key_validator=Slug()))
         revalidate_yaml(c[key], schema, config_path)
@@ -316,19 +357,22 @@ def validate_key_import(c: YAML, config_path: str):
             spec.loader.exec_module(module)  # type: ignore
 
 
-def validate_key_input(c: YAML, config_path: str):
+def validate_key_input(config_yaml: YAML, config_path: str):
     """Validate config key: input.
 
-    Example Format:
+    .. literalinclude:: validate/validate_key_input.yaml
+       :language: yaml
 
-    input:
-        strip: true
-        slugify_columns: true
-        lowercase_columns: true
-        uppercase_rows: true
-        include_index: true
+    Args:
+        config_yaml: Configuration to validate
+        config_path: Configuration file
+
+    See Also:
+        - :func:`yarm.tables.df_input_options`
+
     """
-    key: str = check_key("input", c)
+    c: YAML = config_yaml
+    key: Union[str, None] = check_key("input", c)
     if key:
         schema = Map(
             {
@@ -343,28 +387,26 @@ def validate_key_input(c: YAML, config_path: str):
         revalidate_yaml(c[key], schema, config_path)
 
 
-def validate_key_output(c: YAML, config_path: str):
+def validate_key_output(config_yaml: YAML, config_path: str):
     """Validate config key: output.
 
-    Example Format:
+    .. literalinclude:: validate/validate_key_output.yaml
+       :language: yaml
 
-    output:
-        dir: output
-        basename: BASENAME
-        prepend_date: true
-        export_tables: csv
-        export_queries: csv
-        styles:
-            column_width: 15
+    Args:
+        config_yaml: Configuration to validate
+        config_path: Configuration file
+
     """
     s = Settings()
-    key: str = check_key("output", c)
+    c: YAML = config_yaml
+    key: Union[str, None] = check_key("output", c)
     if key:
         schema = Map(
             {
                 "basename": StrNotEmpty(),
                 OptionalYAML("dir"): StrNotEmpty(),
-                OptionalYAML("prepend_date"): Bool(),
+                # OptionalYAML("prepend_date"): Bool(),
                 OptionalYAML("export_tables"): Enum(s.SCHEMA_EXPORT_FORMATS),
                 OptionalYAML("export_queries"): Enum(s.SCHEMA_EXPORT_FORMATS),
                 OptionalYAML("styles"): AnyYAML(),
@@ -383,11 +425,16 @@ def validate_key_output(c: YAML, config_path: str):
         validate_key_output_dir(c)
 
 
-def validate_key_output_dir(c: YAML):
-    """Prepare output directory."""
+def validate_key_output_dir(config_yaml: YAML):
+    """Prepare output directory.
+
+    Args:
+        config_yaml: Report configuration
+
+    """
     s = Settings()
-    config: Nob = Nob(c.data)
-    output_dir = os.fspath(config[s.KEY_OUTPUT__DIR][:])
+    c: Nob = Nob(config_yaml.data)
+    output_dir = os.fspath(c[s.KEY_OUTPUT__DIR][:])
     if not os.path.isdir(output_dir):
         if os.path.exists(output_dir):
             abort(s.MSG_CANT_CREATE_OUTPUT_DIR, data=output_dir)
@@ -399,41 +446,28 @@ def validate_key_output_dir(c: YAML):
     msg_with_data(s.MSG_OUTPUT_DIR, data=output_dir)
 
 
-def validate_key_queries(c: YAML, config_path: str):
+def validate_key_queries(config_yaml: YAML, config_path: str):
     """Validate config key: queries.
 
-    Example Format:
+    .. literalinclude:: validate/validate_key_queries.yaml
+       :language: yaml
 
-    queries:
-    - name: QUERY A
-      sql: |
-      SELECT
-      *
-      FROM
-      table_from_spreadsheet AS s
-      ;
+    Args:
+        config_yaml: Configuration to validate
+        config_path: Configuration file
 
-    - name: QUERY B
-      postprocess: postprocess_function
-      replace:
-        FIELD_A:
-          MATCH A1: REPLACE A1
-          MATCH A2: REPLACE A2
-        FIELD_B:
-          MATCH B1: REPLACE B1
-      sql: |
-      SELECT
-      *
-      FROM
-      table_from_spreadsheet AS s
-      JOIN
-      table_from_csv AS c
-      ON
-      s.id = c.id
-      ;
+    Important:
+        A postprocess function is defined by the user in a separate Python file,
+        which must be imported with the :data:`import:` key.
+        See :func:`yarm.validate.validate_key_import`
+
+    See Also:
+        - :func:`validate_key_import`
+        - :func:`yarm.query.df_query_postprocess`
     """
     s = Settings()
-    key: str = check_key("queries", c)
+    c: YAML = config_yaml
+    key: Union[str, None] = check_key("queries", c)
     if key:
         for query in c[key]:
             schema = Map(
@@ -452,9 +486,9 @@ def validate_key_queries(c: YAML, config_path: str):
                 revalidate_yaml(
                     query["replace"], schema, config_path, f"{query['name']}: replace"
                 )
-                for field in query["replace"]:
+                for column in query["replace"]:
                     schema = MapPattern(Str(), Str())
-                    revalidate_yaml(query["replace"][field], schema, config_path)
+                    revalidate_yaml(query["replace"][column], schema, config_path)
 
             if "postprocess" in query:
                 if "import" not in c:
@@ -472,14 +506,14 @@ def revalidate_yaml(
     msg_key: Union[str, None] = None,
     msg_suffix: Union[str, None] = None,
 ):
-    """Revalidate yaml from config_path according to schema.
+    """Revalidate configuration YAML from `config_path` according to `schema`.
 
     Args:
-        yaml (YAML): yaml to revalidate
-        schema (Map | MapPattern): schema to validate with
-        config_path (str): file in which this YAML was found.
-        msg_key (str): (optional) if provided, message that this key is validating.
-        msg_suffix (str): (optional) message suffix
+        yaml: YAML to revalidate
+        schema: Schema to revalidate this YAML against
+        config_path: File in which this configuration YAML was found
+        msg_key: Message that this key is validating
+        msg_suffix: Message suffix
     """
     s = Settings()
     try:
@@ -493,19 +527,26 @@ def revalidate_yaml(
         abort(s.MSG_INVALID_YAML, err, file_path=config_path)
 
 
-def validate_config_schema(config_path: str) -> Any:
-    """Return YAML for config file if it validates agaist schema.
+def validate_config_schema(config_path: str) -> YAML:
+    """Return YAML for config file if it validates against top-level schema.
 
     Args:
-        config_path (str): Path to config file
+        config_path: Path to config file
 
     Returns:
-        config (YAML): validated config as YAML
+        Configuration validated against top-level schema.
+
+    See Also:
+        - :func:`validate_key_tables_config`
+        - :func:`validate_key_import`
+        - :func:`validate_key_output`
+        - :func:`validate_key_input`
+        - :func:`validate_key_queries`
 
     """
     s = Settings()
 
-    # During initial validation, all fields are Optional because they
+    # During initial validation, all columns are Optional because they
     # may be spread across multiple included files.
     # Once we have processed all config files, we will check separately that
     # all critical config items have been provided.
@@ -524,27 +565,27 @@ def validate_config_schema(config_path: str) -> Any:
         key_validator=Slug(),
     )
 
-    c = load_yaml_file(config_path, schema)
+    config: YAML = load_yaml_file(config_path, schema)
 
     msg_with_data(s.MSG_BEGIN_VALIDATING_FILE, config_path, verbose=2)
 
     # TODO Uncoment include and create_tables when we implement these options.
     # validate_key_include(c, config_path)
-    validate_key_tables_config(c, config_path)
+    validate_key_tables_config(config, config_path)
     # validate_key_create_tables(c, config_path)
-    validate_key_import(c, config_path)
-    validate_key_input(c, config_path)
-    validate_key_output(c, config_path)
-    validate_key_queries(c, config_path)
+    validate_key_import(config, config_path)
+    validate_key_input(config, config_path)
+    validate_key_output(config, config_path)
+    validate_key_queries(config, config_path)
 
     msg_with_data(s.MSG_CONFIG_FILE_VALID, config_path, verbose=2)
 
     # If configuration validates, return config object.
-    return c
+    return config
 
 
 def get_default_config() -> Nob:
-    """Get default config."""
+    """Return default configuration."""
     s = Settings()
     return Nob(
         load(

@@ -1,7 +1,8 @@
-"""Run queries."""
+"""Run queries on tables."""
 
 import re
 import sys
+from sqlite3 import Connection
 
 import pandas as pd
 from nob.nob import Nob
@@ -18,8 +19,18 @@ from yarm.helpers import warn
 from yarm.settings import Settings
 
 
-def run_queries(conn, config: Nob):
-    """Run queries."""
+def run_queries(conn: Connection, config: Nob):
+    """Run all the queries.
+
+    Args:
+        config: Report configuration
+        conn: Temporary database in memory
+
+    See Also:
+        - :func:`run_query`
+        - :func:`save_query_to_database`
+        - :func:`yarm.export.export_queries`
+    """
     s = Settings()
 
     if s.KEY_QUERIES in config:
@@ -28,8 +39,8 @@ def run_queries(conn, config: Nob):
         for i, _val in enumerate(queries):
             query = queries[i]
             # Within this query, start keys with "/" to ensure you have correct key.
-            # Because "replace" can have arbitrarily named fields, this avoids error
-            # if a field is e.g. 'name'.
+            # Because "replace" can have arbitrarily named columns, this avoids error
+            # if a column is e.g. 'name'.
             sql = query[s.KEY_QUERY__SQL][:]
             name = query[s.KEY_QUERY__NAME][:]
 
@@ -53,12 +64,17 @@ def query_options(df: DataFrame, config: Nob, query_config: NobView) -> DataFram
     """Process options for a particular query.
 
     Args:
-        df (DataFrame): dataframe with initial query results
-        config (Nob): config
-        query_config (NobView): config for this query
+        df: Data with initial query results
+        config: Report configuration
+        query_config: configuration for this query
 
     Returns:
-        df (DataFrame):   modified results
+        Query data with all options applied for this query.
+
+    See Also:
+        - :func:`df_query_replace`
+        - :func:`df_query_postprocess`
+        - :func:`yarm.validate.validate_key_queries`
     """
     s = Settings()
     qc: NobView = query_config
@@ -77,7 +93,15 @@ def query_options(df: DataFrame, config: Nob, query_config: NobView) -> DataFram
 
 
 def df_query_replace(df: DataFrame, query_config: NobView) -> DataFrame:
-    """Process replacements for a particular query."""
+    """Process :data:`replace:` keys for a particular query.
+
+    Args:
+        df: Query results
+        query_config: Configuration for this query
+
+    Returns:
+        Query data with replacements applied
+    """
     s = Settings()
     qc = query_config
     if s.KEY_QUERY__REPLACE in qc:
@@ -114,7 +138,21 @@ def df_query_replace(df: DataFrame, query_config: NobView) -> DataFrame:
 def df_query_postprocess(
     df: DataFrame, config: Nob, query_config: NobView
 ) -> DataFrame:
-    """Process postprocess function for a particular query."""
+    """Process postprocess function for a particular query.
+
+    Args:
+        df: Results of query
+        config: Report configuration
+        query_config: Configuration for this query
+
+    Returns:
+        Query data after applying postprocess function
+
+    Important:
+        A postprocess function is defined by the user in a separate Python file,
+        which must be imported with the :data:`import:` key.
+        See :func:`yarm.validate.validate_key_import`
+    """
     s = Settings()
     qc = query_config
     # postprocess:
@@ -174,8 +212,22 @@ def df_query_postprocess(
     return df
 
 
-def run_query(config, query, conn, sql, name):
-    """Run query, apply options, and return a dataframe."""
+def run_query(config: Nob, query: NobView, conn: Connection, sql: str, name: str):
+    """Run a query, apply the options, and return a DataFrame.
+
+    Args:
+        config: Report configuration
+        query: Configuration for this query
+        conn: Temporary database in memory
+        sql: SQL statement for this query
+        name: Name for this query
+
+    Returns:
+        Initial query results
+
+    See Also:
+        - :func:`query_options`
+    """
     s = Settings()
     try:
         df = pd.read_sql(sql, conn)
@@ -188,8 +240,14 @@ def run_query(config, query, conn, sql, name):
     return df
 
 
-def save_query_to_database(df, conn, name):
-    """Save the processed query to the database."""
+def save_query_to_database(df: DataFrame, conn: Connection, name: str):
+    """Save the processed query to the database.
+
+    Args:
+        df: Query data after all processing
+        conn: Temporary database in memory
+        name: Name for this query
+    """
     s = Settings()
     try:
         df.to_sql(name, conn, index=False)
@@ -197,8 +255,7 @@ def save_query_to_database(df, conn, name):
         # TODO Does this error ever trigger?
         abort(s.MSG_QUERY_SAVE_ERROR, data=name, error=str(error))
     except ValueError as error:
-        error = str(error)
-        if re.match(r"Table .* already exists", error):
+        if re.match(r"Table .* already exists", str(error)):
             abort(
                 s.MSG_QUERY_DUPLICATE_ERROR,
                 data=name,
