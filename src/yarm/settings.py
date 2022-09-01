@@ -20,7 +20,7 @@ class Settings:
     ARG_FORCE: str = "force"
 
     # Maximum number of -v switches.
-    MAX_VERBOSE = 3
+    MAX_VERBOSE = 4
     MSG_MAX_VERBOSE_ERROR = "Maximum verbosity level is"
 
     EXT_YAML: str = ".yaml"
@@ -146,12 +146,23 @@ with a higher level of verbosity, such as """
         "Please define 'include_index' for only one path, at most, in each table."
     )
     MSG_MERGING_PATH: str = "Merging path"
+    MSG_CONCAT_PATH: str = "Joining path with pandas.concat()"
     MSG_MERGE_ERROR: str = "Merge error: No common column to merge on with table"
     MSG_MERGE_ERROR_PS: str = """Remember: merge column names are...
     - case-sensitive (unless you set lowercase_columns = true)
     - must be spelled the same in every path."""
     MSG_MERGE_TYPE_ERROR: str = "Type error while merging table"
     MSG_CONVERTING_DATETIME: str = "Converting column(s) to datetime:"
+    MSG_CONCAT_DATETIME_FIX: str = "Forcing datetime after concatenation on key"
+    MSG_CONCAT_DATETIME_FIX_PS: str = """
+This warning means that you merged one or more paths that have a datetime column,
+but no datetime format specified. If you tried to set a datetime format for this
+column, it has been lost. All data in this column now has a generic datetime format.
+
+Also, all times have been converted to UTC.
+
+To fix: specify the same datetime format for this column on every path.
+"""
 
     MSG_INPUT_FORMAT_UNRECOGNIZED: str = "Format for input path not recognized"
 

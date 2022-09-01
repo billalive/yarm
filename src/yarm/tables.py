@@ -16,6 +16,7 @@ from yarm.helpers import key_show_message
 from yarm.helpers import msg
 from yarm.helpers import msg_with_data
 from yarm.helpers import show_df
+from yarm.helpers import warn
 from yarm.settings import Settings
 
 
@@ -71,6 +72,21 @@ def create_tables(conn: Connection, config: Nob):
         try:
             # TODO Is table_df ever None by now? If so, what action is needed?
             if table_df is not None:  # pragma: no branch
+
+                # If we have converted a field to datetime, but not provided a format,
+                # to_sql will fail unless we convert back to datetime.
+                for key in table_df.columns:
+                    if isinstance(
+                        table_df[key].iloc[0], pd._libs.tslibs.timestamps.Timestamp
+                    ):
+                        table_df[key] = pd.to_datetime(table_df[key], utc=True)
+                        warn(
+                            s.MSG_CONCAT_DATETIME_FIX,
+                            data=key,
+                            indent=0,
+                            ps=s.MSG_CONCAT_DATETIME_FIX_PS,
+                        )
+
                 table_df.to_sql(
                     table_name, conn, if_exists=exists_mode, index=include_index_table
                 )
@@ -298,11 +314,14 @@ def input_source(
     df = df_input_options(df, config)
     df = df_tables_config_options(df, source_config, table_name, input_file)
 
-    # After all transformations, merge to existing table_df.
-    msg_with_data(s.MSG_MERGING_PATH, data=input_file, indent=1, verbose=2)
+    # After all transformations, concat with existing table_df.
+    # TODO Allow supplying an index?
+    # msg_with_data(s.MSG_MERGING_PATH, data=input_file, indent=1, verbose=2)
+    msg_with_data(s.MSG_CONCAT_PATH, data=input_file, indent=1, verbose=2)
     if isinstance(table_df, DataFrame):
         try:
-            df = pd.merge(left=table_df, right=df, how="outer")
+            # df = pd.merge(left=table_df, right=df, how="outer")
+            df = pd.concat([table_df, df])
         except pd.errors.MergeError:
             abort(
                 s.MSG_MERGE_ERROR,
@@ -437,6 +456,9 @@ def df_tables_config_options(
             abort(s.MSG_PIVOT_FAILED_KEY_ERROR, data=str(error), file_path=input_file)
     if s.KEY_DATETIME in sc:
         msg(s.MSG_CONVERTING_DATETIME, indent=1, verbose=2)
+        # TODO If this is the second or more source in this table, do we need to compare
+        # whether datetime field(s) here are also present, with same values, in other
+        # sources? It seems not, if we allow merges that do not share identical columns.
         for key in sc[s.KEY_DATETIME][:]:
             if key in df.columns:
                 df = back_up_column(df, key)
@@ -456,6 +478,8 @@ def df_tables_config_options(
 
             else:
                 abort(s.MSG_MISSING_DATETIME, data=key, file_path=input_file)
+
+    # TODO Add config option to pass index to join on.
 
     # Always return the dataframe!
     return df
