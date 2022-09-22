@@ -187,22 +187,21 @@ def test_df_tables_config_options(runner: CliRunner) -> None:
         assert "products_pivot2.csv" in result.output
     with runner.isolated_filesystem():
         append_config = """
-    - path: products_no_merge.csv
+    - path: products_merge_missing_cols.csv
 """
         prep_test_config(test_dir, append_config=append_config)
         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
-        assert result.exit_code == 1
-        assert s.MSG_MERGE_ERROR in result.output
-    with runner.isolated_filesystem():
-        append_config = """
-    - path: products_merge_value_error.csv
-"""
-        prep_test_config(test_dir, append_config=append_config)
-        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
-        # print("RESULT OUTPUT:")
-        # print(result.output)
-        assert result.exit_code == 1
-        assert s.MSG_CREATE_TABLE_VALUE_ERROR in result.output
+        assert result.exit_code == 0
+    #     with runner.isolated_filesystem():
+    #         append_config = """
+    #     - path: products_merge_value_error.csv
+    # """
+    #         prep_test_config(test_dir, append_config=append_config)
+    #         result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+    #         print("RESULT OUTPUT:")
+    #         print(result.output)
+    #         assert result.exit_code == 1
+    #         assert s.MSG_CREATE_TABLE_VALUE_ERROR in result.output
     with runner.isolated_filesystem():
         append_config = """
 input:
