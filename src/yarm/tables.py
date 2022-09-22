@@ -322,7 +322,8 @@ def input_source(
         try:
             # df = pd.merge(left=table_df, right=df, how="outer")
             df = pd.concat([table_df, df])
-        except pd.errors.MergeError:
+        except pd.errors.MergeError:  # pragma: no cover
+            # TODO Figure out how to test this.
             abort(
                 s.MSG_MERGE_ERROR,
                 data=table_name,
@@ -337,7 +338,8 @@ def input_source(
                 data=table_name,
                 file_path=input_file,
             )
-        except ValueError as error:
+        except ValueError as error:  # pragma: no cover
+            # TODO Figure out how to test this.
             conn.close()
             abort(
                 s.MSG_CREATE_TABLE_VALUE_ERROR,
