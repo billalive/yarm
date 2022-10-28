@@ -106,6 +106,14 @@ def create_tables(conn: Connection, config: Nob):
                 error=str(error),
                 data=table_name,
             )
+        except IndexError as error:  # pragma: no cover
+            # TODO Figure out how to test this.
+            conn.close()
+            abort(
+                s.MSG_INDEX_ERROR,
+                error=str(error),
+                data=table_name,
+            )
     export_tables(config=config, conn=conn)
 
 
@@ -343,6 +351,14 @@ def input_source(
             conn.close()
             abort(
                 s.MSG_CREATE_TABLE_VALUE_ERROR,
+                error=str(error),
+                data=table_name,
+            )
+        except IndexError as error:  # pragma: no cover
+            # TODO Figure out how to test this.
+            conn.close()
+            abort(
+                s.MSG_INDEX_ERROR,
                 error=str(error),
                 data=table_name,
             )

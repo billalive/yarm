@@ -165,6 +165,7 @@ To fix: specify the same datetime format for this column on every path.
 """
 
     MSG_INPUT_FORMAT_UNRECOGNIZED: str = "Format for input path not recognized"
+    MSG_INDEX_ERROR: str = "Index Error"
 
     MSG_SHOW_DF: str = "Dataframe"
     MSG_NO_SHEET_PROVIDED: str = "No 'sheet' key provided, importing first sheet from"
