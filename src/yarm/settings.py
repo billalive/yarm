@@ -119,6 +119,7 @@ with a higher level of verbosity, such as """
     # tables_config
     MSG_CREATING_TABLE: str = "Creating table"
     MSG_CREATED_TABLE: str = "Table created"
+    MSG_DIDNT_CREATE_TABLE_EMPTY: str = "Could not create table (no data)"
     MSG_IMPORTING_DATA: str = "Importing data from"
     MSG_IMPORTING_SHEET: str = "Importing sheet"
     MSG_STRIP_WHITESPACE: str = (
@@ -147,6 +148,8 @@ with a higher level of verbosity, such as """
     )
     MSG_MERGING_PATH: str = "Merging path"
     MSG_CONCAT_PATH: str = "Joining path with pandas.concat()"
+    MSG_MERGE_ORIGINAL: str = "Original dataframe"
+    MSG_MERGE_NEW: str = "New dataframe"
     MSG_MERGE_ERROR: str = "Merge error: No common column to merge on with table"
     MSG_MERGE_ERROR_PS: str = """Remember: merge column names are...
     - case-sensitive (unless you set lowercase_columns = true)
@@ -167,7 +170,10 @@ To fix: specify the same datetime format for this column on every path.
     MSG_INPUT_FORMAT_UNRECOGNIZED: str = "Format for input path not recognized"
     MSG_INDEX_ERROR: str = "Index Error"
 
-    MSG_SHOW_DF: str = "Dataframe"
+    MSG_SHOW_DF: str = "DataFrame"
+    MSG_EMPTY_DF: str = "Empty DataFrame"
+    MSG_EMPTY_DF_ORIGINAL: str = "Returning original table_df unchanged"
+    MSG_EMPTY_DF_NONE: str = "Returning empty dataframe"
     MSG_NO_SHEET_PROVIDED: str = "No 'sheet' key provided, importing first sheet from"
     MSG_BAD_FILE_EXT: str = "Bad file extension in"
     MSG_CREATE_TABLE_DATABASE_ERROR: str = "Database Error: Could not create table"

@@ -372,5 +372,8 @@ def show_df(df: DataFrame, data: str, verbose: int = 3):
     if verbose_ge(verbose):
         print(s.MSG_LINE)
         msg_with_data(s.MSG_SHOW_DF, data=data)
-        print(df)
+        if df.empty:
+            warn(s.MSG_EMPTY_DF)
+        else:
+            print(df)
         print(s.MSG_LINE)
