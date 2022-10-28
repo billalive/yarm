@@ -70,8 +70,7 @@ def create_tables(conn: Connection, config: Nob):
             exists_mode = "append"
 
         try:
-            # TODO Is table_df ever None by now? If so, what action is needed?
-            if table_df is not None:  # pragma: no branch
+            if not table_df.empty:  # pragma: no branch
 
                 # If we have converted a field to datetime, but not provided a format,
                 # to_sql will fail unless we convert back to datetime.
@@ -91,6 +90,9 @@ def create_tables(conn: Connection, config: Nob):
                     table_name, conn, if_exists=exists_mode, index=include_index_table
                 )
                 msg_with_data(s.MSG_CREATED_TABLE, table_name)
+            else:
+                # TODO Should we provide the option to error out if a table is empty?
+                warn(s.MSG_DIDNT_CREATE_TABLE_EMPTY, data=table_name)
         except pd.io.sql.DatabaseError as error:  # pragma: no cover
             # TODO Figure out how to test these errors.
             conn.close()
@@ -322,47 +324,81 @@ def input_source(
     df = df_input_options(df, config)
     df = df_tables_config_options(df, source_config, table_name, input_file)
 
-    # After all transformations, concat with existing table_df.
-    # TODO Allow supplying an index?
-    # msg_with_data(s.MSG_MERGING_PATH, data=input_file, indent=1, verbose=2)
-    msg_with_data(s.MSG_CONCAT_PATH, data=input_file, indent=1, verbose=2)
-    if isinstance(table_df, DataFrame):
-        try:
-            # df = pd.merge(left=table_df, right=df, how="outer")
-            df = pd.concat([table_df, df])
-        except pd.errors.MergeError:  # pragma: no cover
-            # TODO Figure out how to test this.
-            abort(
-                s.MSG_MERGE_ERROR,
-                data=table_name,
-                file_path=input_file,
-                ps=s.MSG_MERGE_ERROR_PS,
-            )
-        except TypeError as error:  # pragma: no cover
-            # TODO Figure out how to test this.
-            abort(
-                s.MSG_MERGE_TYPE_ERROR,
-                error=str(error),
-                data=table_name,
-                file_path=input_file,
-            )
-        except ValueError as error:  # pragma: no cover
-            # TODO Figure out how to test this.
-            conn.close()
-            abort(
-                s.MSG_CREATE_TABLE_VALUE_ERROR,
-                error=str(error),
-                data=table_name,
-            )
-        except IndexError as error:  # pragma: no cover
-            # TODO Figure out how to test this.
-            conn.close()
-            abort(
-                s.MSG_INDEX_ERROR,
-                error=str(error),
-                data=table_name,
-            )
+    if df.empty:
+        if isinstance(table_df, DataFrame):
+            warn(s.MSG_EMPTY_DF_ORIGINAL, data=table_name)
+            df = table_df
+        else:
+            warn(s.MSG_EMPTY_DF_NONE, data=table_name)
+
+    else:
+        if isinstance(table_df, DataFrame):
+            # After all transformations, concat with existing table_df.
+            # TODO Allow supplying an index?
+            # msg_with_data(s.MSG_MERGING_PATH, data=input_file, indent=1, verbose=2)
+            msg_with_data(s.MSG_CONCAT_PATH, data=input_file, indent=1, verbose=2)
+            concat_dfs(conn, table_name, table_df, df, input_file)
+
     show_df(df, table_name)
+    return df
+
+
+def concat_dfs(
+    conn,
+    table_name: str,
+    orig_df: DataFrame,
+    new_df: DataFrame,
+    input_file: str,
+) -> DataFrame:
+    """Merge two dataframes with pd.concat into a single table.
+
+    Args:
+        conn: Temporary database in memory
+        table_name: Table we are creating or appending to
+        orig_df: Existing dataframe
+        new_df: New dataframe we want to merge
+        input_file: Actual file with source data
+
+    Returns:
+        Merged dataframe
+    """
+    s = Settings()
+    try:
+        # df = pd.merge(left=table_df, right=df, how="outer")
+        df = pd.concat([orig_df, new_df])
+    except pd.errors.MergeError:  # pragma: no cover
+        # TODO Figure out how to test this.
+        abort(
+            s.MSG_MERGE_ERROR,
+            data=table_name,
+            file_path=input_file,
+            ps=s.MSG_MERGE_ERROR_PS,
+        )
+    except TypeError as error:  # pragma: no cover
+        # TODO Figure out how to test this.
+        abort(
+            s.MSG_MERGE_TYPE_ERROR,
+            error=str(error),
+            data=table_name,
+            file_path=input_file,
+        )
+    except ValueError as error:  # pragma: no cover
+        # TODO Figure out how to test this.
+        conn.close()
+        abort(
+            s.MSG_CREATE_TABLE_VALUE_ERROR,
+            error=str(error),
+            data=table_name,
+        )
+    except IndexError as error:  # pragma: no cover
+        # TODO Figure out how to test this.
+        # Can be triggered by empty df, which should no longer happen.
+        conn.close()
+        abort(
+            s.MSG_INDEX_ERROR,
+            error=str(error),
+            data=table_name,
+        )
     return df
 
 
