@@ -940,7 +940,7 @@ testing = ["beautifulsoup4", "coverage[toml]", "pytest (>=6,<7)", "pytest-cov", 
 
 [[package]]
 name = "nbclient"
-version = "0.6.6"
+version = "0.7.0"
 description = "A client library for executing notebooks. Formerly nbconvert's ExecutePreprocessor."
 category = "dev"
 optional = false
@@ -954,7 +954,7 @@ traitlets = ">=5.2.2"
 
 [package.extras]
 sphinx = ["Sphinx (>=1.7)", "autodoc-traits", "mock", "moto", "myst-parser", "sphinx-book-theme"]
-test = ["black", "check-manifest", "flake8", "ipykernel", "ipython (<8.0.0)", "ipywidgets (<8.0.0)", "mypy", "pip (>=18.1)", "pre-commit", "pytest (>=4.1)", "pytest-asyncio", "pytest-cov (>=2.6.1)", "setuptools (>=60.0)", "testpath", "twine (>=1.11.0)", "xmltodict"]
+test = ["black", "check-manifest", "flake8", "ipykernel", "ipython", "ipywidgets", "mypy", "nbconvert", "pip (>=18.1)", "pre-commit", "pytest (>=4.1)", "pytest-asyncio", "pytest-cov (>=2.6.1)", "setuptools (>=60.0)", "testpath", "twine (>=1.11.0)", "xmltodict"]
 
 [[package]]
 name = "nbconvert"
@@ -2742,8 +2742,8 @@ myst-parser = [
     {file = "myst_parser-0.18.0-py3-none-any.whl", hash = "sha256:4965e51918837c13bf1c6f6fe2c6bddddf193148360fbdaefe743a4981358f6a"},
 ]
 nbclient = [
-    {file = "nbclient-0.6.6-py3-none-any.whl", hash = "sha256:09bae4ea2df79fa6bc50aeb8278d8b79d2036792824337fa6eee834afae17312"},
-    {file = "nbclient-0.6.6.tar.gz", hash = "sha256:0df76a7961d99a681b4796c74a1f2553b9f998851acc01896dce064ad19a9027"},
+    {file = "nbclient-0.7.0-py3-none-any.whl", hash = "sha256:434c91385cf3e53084185334d675a0d33c615108b391e260915d1aa8e86661b8"},
+    {file = "nbclient-0.7.0.tar.gz", hash = "sha256:a1d844efd6da9bc39d2209bf996dbd8e07bf0f36b796edfabaa8f8a9ab77c3aa"},
 ]
 nbconvert = [
     {file = "nbconvert-6.5.3-py3-none-any.whl", hash = "sha256:2564bb5125d862949f72475de0c0348392add7ea62cc950985347bfe7bbc2034"},
