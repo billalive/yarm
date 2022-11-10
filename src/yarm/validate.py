@@ -208,7 +208,7 @@ class StrNotEmpty(Str):
         return chunk.contents
 
 
-def msg_validating_key(key: str, suffix: str = None, verbose: int = 1):
+def msg_validating_key(key: str, suffix: Optional[str] = None, verbose: int = 1):
     """Show a message that a key is being validated.
 
     Args:

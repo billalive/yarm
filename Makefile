@@ -1,5 +1,9 @@
 .PHONY: nox tests docs mypy list-sessions coverage
 
+# Disable keyring, see 1.2.0 bug:
+# https://github.com/python-poetry/poetry/issues/1917
+POETRY=PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring poetry
+
 nox:
 	nox -r
 
@@ -16,20 +20,23 @@ docs:
 	nox -rxs docs
 
 build:
-	poetry build
+	$(POETRY) build
 
 publish:
-	poetry publish
+	$(POETRY) publish
 
 run:
-	poetry run yarm
+	$(POETRY) run yarm
+
+update:
+	$(POETRY) update
 
 list-sessions:
 	nox --list-sessions
 
 # https://cookiecutter-hypermodern-python.readthedocs.io/en/2022.6.3.post1/guide.html#version-constraints
 lock:
-	poetry lock --no-update
+	$(POETRY) lock --no-update
 
 coverage:
 	coverage html
@@ -37,15 +44,15 @@ coverage:
 
 3.10:
 	pyenv local 3.10.5
-	poetry env use 3.10.5
+	$(POETRY) env use 3.10.5
 
 3.9:
 	pyenv local 3.9.12
-	poetry env use 3.9.12
+	$(POETRY) env use 3.9.12
 
 3.7:
 	pyenv local 3.7.13
-	poetry env use 3.7.13
+	$(POETRY) env use 3.7.13
 
 jupyter:
-	poetry run jupyter notebook
+	$(POETRY) run jupyter notebook

@@ -70,15 +70,14 @@ def create_tables(conn: Connection, config: Nob):
             exists_mode = "append"
 
         try:
-            if not table_df.empty:  # pragma: no branch
-
+            if not table_df.empty:  # type: ignore  # pragma: no branch
                 # If we have converted a field to datetime, but not provided a format,
                 # to_sql will fail unless we convert back to datetime.
-                for key in table_df.columns:
+                for key in table_df.columns:  # type: ignore
                     if isinstance(
-                        table_df[key].iloc[0], pd._libs.tslibs.timestamps.Timestamp
+                        table_df[key].iloc[0], pd._libs.tslibs.timestamps.Timestamp  # type: ignore  # noqa: B950
                     ):
-                        table_df[key] = pd.to_datetime(table_df[key], utc=True)
+                        table_df[key] = pd.to_datetime(table_df[key], utc=True)  # type: ignore  # noqa: B950
                         warn(
                             s.MSG_CONCAT_DATETIME_FIX,
                             data=key,
@@ -86,7 +85,7 @@ def create_tables(conn: Connection, config: Nob):
                             ps=s.MSG_CONCAT_DATETIME_FIX_PS,
                         )
 
-                table_df.to_sql(
+                table_df.to_sql(  # type: ignore
                     table_name, conn, if_exists=exists_mode, index=include_index_table
                 )
                 msg_with_data(s.MSG_CREATED_TABLE, table_name)

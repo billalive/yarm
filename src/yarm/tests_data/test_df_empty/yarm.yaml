@@ -1,0 +1,11 @@
+---
+# To test both MSG_EMPTY_DF and MSG_EMPTY_DF_ORIGINAL, we need two paths.
+tables_config:
+  empty:
+    - path: empty.csv
+    - path: empty2.csv
+
+output:
+  dir: output
+  basename: test_df_empty
+  export_tables: csv

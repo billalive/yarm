@@ -162,7 +162,7 @@ def new(edit: Any, force: Any, custom_config_path: str) -> None:
         else:
             warn(s.MSG_NEW_CONFIG_FILE_OVERWRITE, data=config_file)
 
-    with open(config_file, "wt") as new_config:
+    with open(config_file, "w") as new_config:
         new_config.write(default_config)
 
     if edit:
