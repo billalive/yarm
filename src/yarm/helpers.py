@@ -6,6 +6,7 @@ import os
 import sys
 from typing import Any
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 import click
@@ -27,12 +28,12 @@ from yarm.settings import Settings
 
 def msg_options(
     msg: str,
-    prefix: str = None,
-    prefix_color: str = None,
-    error: str = None,
-    file_path: str = None,
-    data: str = None,
-    ps: str = None,
+    prefix: Optional[str] = None,
+    prefix_color: Optional[str] = None,
+    error: Optional[str] = None,
+    file_path: Optional[str] = None,
+    data: Optional[str] = None,
+    ps: Optional[str] = None,
     indent: int = 0,
 ):
     """Show a message with various options.
@@ -87,10 +88,10 @@ def msg_options(
 
 def warn(
     msg: str,
-    error: str = None,
-    file_path: str = None,
-    data: str = None,
-    ps: str = None,
+    error: Optional[str] = None,
+    file_path: Optional[str] = None,
+    data: Optional[str] = None,
+    ps: Optional[str] = None,
     indent: int = 0,
 ) -> None:
     """Show warning, but proceed.
@@ -119,10 +120,10 @@ def warn(
 
 def abort(
     msg: str,
-    error: str = None,
-    file_path: str = None,
-    data: str = None,
-    ps: str = None,
+    error: Optional[str] = None,
+    file_path: Optional[str] = None,
+    data: Optional[str] = None,
+    ps: Optional[str] = None,
     indent: int = 0,
     suggest_verbose: int = 1,
 ):
@@ -181,9 +182,9 @@ def msg_suggest_verbose(suggest_verbose: int):
 
 def success(
     msg: str,
-    file_path: str = None,
-    data: str = None,
-    ps: str = None,
+    file_path: Optional[str] = None,
+    data: Optional[str] = None,
+    ps: Optional[str] = None,
 ) -> None:
     """Show success message.
 
