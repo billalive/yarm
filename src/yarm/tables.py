@@ -75,9 +75,9 @@ def create_tables(conn: Connection, config: Nob):
                 # to_sql will fail unless we convert back to datetime.
                 for key in table_df.columns:  # type: ignore
                     if isinstance(
-                        table_df[key].iloc[0], pd._libs.tslibs.timestamps.Timestamp  # type: ignore
+                        table_df[key].iloc[0], pd._libs.tslibs.timestamps.Timestamp  # type: ignore  # noqa: B950
                     ):
-                        table_df[key] = pd.to_datetime(table_df[key], utc=True)  # type: ignore
+                        table_df[key] = pd.to_datetime(table_df[key], utc=True)  # type: ignore  # noqa: B950
                         warn(
                             s.MSG_CONCAT_DATETIME_FIX,
                             data=key,

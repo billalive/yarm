@@ -324,3 +324,16 @@ input:
         print(result.output)
         assert s.MSG_PIVOT_FAILED_KEY_ERROR in result.output
         assert result.exit_code == 1
+
+
+def test_df_empty(runner: CliRunner) -> None:
+    """Empty df triggers correct message."""
+    s = Settings()
+    test_dir: str = "test_df_empty"
+    with runner.isolated_filesystem():
+        prep_test_config(test_dir)
+        result = runner.invoke(cli, [s.CMD_RUN, "-vvv"])
+        assert s.MSG_EMPTY_DF in result.output
+        assert s.MSG_EMPTY_DF_ORIGINAL in result.output
+        # Warning, not error.
+        assert result.exit_code == 0
