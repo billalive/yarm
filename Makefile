@@ -28,6 +28,9 @@ publish:
 run:
 	$(POETRY) run yarm
 
+update:
+	$(POETRY) update
+
 list-sessions:
 	nox --list-sessions
 
