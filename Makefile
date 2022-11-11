@@ -22,8 +22,9 @@ docs:
 build:
 	$(POETRY) build
 
+# NOTE You will need your own local keyring to publish an update to PyPi.
 publish:
-	$(POETRY) publish
+	poetry publish
 
 run:
 	$(POETRY) run yarm
