@@ -57,3 +57,9 @@ coverage:
 
 jupyter:
 	$(POETRY) run jupyter notebook
+
+# List pull requests.
+# To merge, do:
+# gh-merge NUM
+pr:
+	gh pr list
